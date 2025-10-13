@@ -1,45 +1,50 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { login, signup } from '../actions'
+import { useState } from "react";
+import { login, signup } from "../actions";
+import { useAppStore } from "@/lib/store/useAppStore";
 
 export default function LoginPage() {
+  const { setLoading } = useAppStore();
+
   const [form, setForm] = useState({
-    email: '',
-    password: '',
-  })
+    email: "",
+    password: "",
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setForm(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    const formData = new FormData();
-    formData.append("email", form.email);
-    formData.append("password", form.password);
-  
-    login(formData);
-  }
+    try {
+      const formData = new FormData();
+      formData.append("email", form.email);
+      formData.append("password", form.password);
+
+      const response = await login(formData);
+      if (response && response.status === 400) {
+        console.log(response.message);
+      }
+    } catch {
+      console.log("Login error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex items-center justify-center min-h-screen px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md rounded-2xl shadow-lg p-8 space-y-6"
-      >
-        <h1 className="text-2xl font-bold text-white text-center">
-          Chào mừng đến với HNB Hub
-        </h1>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 rounded-2xl p-8 shadow-lg">
+        <h1 className="text-center text-2xl font-bold text-white">Chào mừng đến với HNB Hub</h1>
 
         {/* Email */}
         <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-slate-100 mb-1"
-          >
+          <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-100">
             Email
           </label>
           <input
@@ -49,17 +54,14 @@ export default function LoginPage() {
             value={form.email}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring focus:ring-indigo-200 focus:outline-none"
             placeholder="you@example.com"
           />
         </div>
 
         {/* Password */}
         <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-slate-100 mb-1"
-          >
+          <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-100">
             Mật khẩu
           </label>
           <input
@@ -69,25 +71,25 @@ export default function LoginPage() {
             value={form.password}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-indigo-200"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring focus:ring-indigo-200 focus:outline-none"
             placeholder="••••••••"
           />
         </div>
 
         <button
           formAction={signup}
-          className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 focus:ring focus:ring-indigo-300 transition"
+          className="w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition hover:bg-indigo-700 focus:ring focus:ring-indigo-300"
         >
           Continue
         </button>
 
         <p className="text-center text-sm text-gray-500">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <a href="/auth/signup" className="text-indigo-600 hover:underline">
             Sign in
           </a>
         </p>
       </form>
     </div>
-  )
+  );
 }

@@ -8,20 +8,25 @@ import { createClient } from "@/lib/supabase/server";
 export async function login(formData: FormData) {
   const supabase = await createClient();
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
-  const data = {
+  const params = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const { data, error } = await supabase.auth.signInWithPassword(params);
 
   if (error) {
-    console.log({ error });
+    if (error.code === "invalid_credentials") {
+      return { status: 400, message: "Email hoặc mật khẩu không đúng. Vui lòng thử lại!" };
+    }
   } else {
-    revalidatePath("/", "layout");
-    redirect("/");
+    const checkUser = await supabase.from("users").select().eq("id", data.user.id);
+    if (checkUser && checkUser.data && checkUser.data.length) {
+      revalidatePath("/", "layout");
+      redirect("/");
+    } else {
+      redirect("/get-start");
+    }
   }
 }
 
