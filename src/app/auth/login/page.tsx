@@ -1,16 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { login, signup } from "../actions";
+import { useEffect, useState } from "react";
+import { login } from "../actions";
 import { useAppStore } from "@/lib/store/useAppStore";
+import { addToast, Button, Form, Input } from "@heroui/react";
+import { LoginIcon } from "@/components/svg";
+import { STATUS_CODE } from "@/app/constants/status";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const { setLoading } = useAppStore();
+  const router = useRouter();
+  const { loading, setLoading } = useAppStore();
 
   const [form, setForm] = useState({
     email: "",
     password: "",
   });
+
+  useEffect(() => {
+    const sessionEmail = sessionStorage.getItem("new-email");
+    if (sessionEmail) {
+      setForm((prev) => ({
+        ...prev,
+        email: sessionEmail,
+      }));
+    }
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -19,6 +34,20 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.email || !form.password) {
+      return addToast({
+        title: "Vui lòng nhập email và mật khẩu!",
+        color: "warning",
+      });
+    }
+
+    if (form.password.length < 6) {
+      return addToast({
+        title: "Mật khẩu dài ít nhất 6 kí tự!",
+        color: "warning",
+      });
+    }
+
     setLoading(true);
 
     try {
@@ -27,8 +56,24 @@ export default function LoginPage() {
       formData.append("password", form.password);
 
       const response = await login(formData);
-      if (response && response.status === 400) {
-        console.log(response.message);
+      if (response && response.status) {
+        switch (response.status) {
+          case STATUS_CODE.OK: {
+            if (response.data) {
+              router.replace("/");
+            } else {
+              router.push("/get-start");
+            }
+            break;
+          }
+          case STATUS_CODE.INVALID_CREDENTIALS: {
+            addToast({
+              title: response.message,
+              color: "danger",
+            });
+            break;
+          }
+        }
       }
     } catch {
       console.log("Login error");
@@ -39,57 +84,51 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-md space-y-6 rounded-2xl p-8 shadow-lg">
+      <Form onSubmit={handleSubmit} className="w-full max-w-md space-y-2 rounded-2xl p-8 shadow-lg">
         <h1 className="text-center text-2xl font-bold text-white">Chào mừng đến với HNB Hub</h1>
 
         {/* Email */}
-        <div>
-          <label htmlFor="email" className="mb-1 block text-sm font-medium text-slate-100">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring focus:ring-indigo-200 focus:outline-none"
-            placeholder="you@example.com"
-          />
-        </div>
+        <Input
+          label="Email"
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="troll@hnb.com"
+        />
 
         {/* Password */}
-        <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-slate-100">
-            Mật khẩu
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring focus:ring-indigo-200 focus:outline-none"
-            placeholder="••••••••"
-          />
-        </div>
+        <Input
+          label="Mật khẩu"
+          name="password"
+          type="password"
+          value={form.password}
+          onChange={handleChange}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleSubmit(e);
+            }
+          }}
+          placeholder=""
+        />
 
-        <button
-          formAction={signup}
-          className="w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition hover:bg-indigo-700 focus:ring focus:ring-indigo-300"
+        <Button
+          color="primary"
+          fullWidth
+          isLoading={loading}
+          endContent={<LoginIcon width={16} height={16} />}
+          type="submit"
         >
-          Continue
-        </button>
+          Đăng nhập
+        </Button>
 
-        <p className="text-center text-sm text-gray-500">
-          Already have an account?{" "}
-          <a href="/auth/signup" className="text-indigo-600 hover:underline">
-            Sign in
+        <p className="mx-auto text-center text-sm text-gray-500">
+          Chưa có tài khoản?{" "}
+          <a href="/auth/signup" className="text-sky-600 hover:underline">
+            Đăng ký ngay
           </a>
         </p>
-      </form>
+      </Form>
     </div>
   );
 }

@@ -1,13 +1,12 @@
-import type { Metadata } from "next";
-import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { ThemeProvider } from "next-themes";
-import { Montserrat } from "next/font/google";
 import "./globals.css";
+import type { Metadata } from "next";
+import { Montserrat } from "next/font/google";
+import { Providers } from "./providers";
 
 const montserrat = Montserrat({
-  subsets: ['latin'],
-  variable: '--font-montserrat',
-})
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+});
 
 export const metadata: Metadata = {
   title: "HNB Hub",
@@ -22,14 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={montserrat.variable}>
       <body className="font-sans">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={true}
-          disableTransitionOnChange
-        >
-          <AntdRegistry>{children}</AntdRegistry>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

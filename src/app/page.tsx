@@ -1,9 +1,12 @@
-import CardNav from "@/components/card-nav/CardNav";
+import Navbar from "@/components/navbar";
 
 export default function Home() {
   return (
-    <div className="grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-sans sm:p-20">
-      <CardNav />
+    <div className="flex min-h-screen w-full flex-col items-center justify-start gap-8 p-6 font-sans sm:p-10">
+      <Navbar />
+      <main className="flex w-full max-w-7xl flex-1 flex-col items-center justify-center">
+        {/* page content here */}
+      </main>
     </div>
   );
 }

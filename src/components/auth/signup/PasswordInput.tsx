@@ -1,68 +1,132 @@
 "use client";
 
+import { ArrowLeftIcon, CheckIcon, EyeFilledIcon, EyeSlashFilledIcon } from "@/components/svg";
+import { useAppStore } from "@/lib/store/useAppStore";
+import { addToast, Button, Form, Input } from "@heroui/react";
 import { useState } from "react";
 
 export default function PasswordSignupForm({
   email,
+  setEmail,
   onSubmit,
 }: {
   email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string | null>>;
   onSubmit: (password: string, confirmPassword: string) => void;
 }) {
+  const { loading } = useAppStore();
+
+  const [isVisible, setIsVisible] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+
+  const toggleVisibility = () => setIsVisible(!isVisible);
+
+  const handleBack = () => {
+    setPassword("");
+    setConfirmPassword("");
+    setEmail(null);
+    setIsVisible(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
+    if (password.length < 6 || confirmPassword.length < 6) {
+      addToast({
+        title: "Mật khẩu dài ít nhất 6 kí tự!",
+        color: "warning",
+      });
+    } else if (password !== confirmPassword) {
+      addToast({
+        title: "Mật khẩu không trùng khớp. Vui lòng thử lại!",
+        color: "warning",
+      });
+    } else {
+      onSubmit(password, confirmPassword);
     }
-    setError("");
-    onSubmit(password, confirmPassword);
   };
 
   return (
-    <form
+    <Form
       onSubmit={handleSubmit}
-      className="mx-auto mt-10 max-w-sm space-y-5 rounded-2xl border border-gray-700 bg-gray-900 p-6 text-gray-100 shadow-lg"
+      className="mx-auto mt-10 w-full space-y-4 rounded-2xl border border-gray-700 bg-gray-900 p-6 text-gray-100 shadow-lg sm:w-96"
     >
-      <h2 className="text-center text-xl font-semibold">Set Your Password</h2>
-      <p className="text-center text-sm text-gray-400">for {email}</p>
-
-      <div>
-        <label className="mb-2 block text-sm text-gray-400">Password</label>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="w-full rounded-lg border border-gray-700 bg-gray-800 p-3 text-gray-100 focus:border-transparent focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          placeholder="••••••••"
-        />
+      <div className="relative mb-8 flex w-full items-center justify-center">
+        <div className="absolute top-1/2 left-0 -translate-y-1/2">
+          <Button isIconOnly startContent={<ArrowLeftIcon />} onPress={handleBack} />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-center text-lg font-bold sm:text-xl">Tạo mật khẩu</h2>
+          <p className="text-center text-xs text-gray-400 sm:text-sm">
+            cho{" "}
+            <strong>
+              {email.split("@")[0].substring(0, 3)}***@{email.split("@")[1]}
+            </strong>
+          </p>
+        </div>
       </div>
 
-      <div>
-        <label className="mb-2 block text-sm text-gray-400">Confirm Password</label>
-        <input
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className="w-full rounded-lg border border-gray-700 bg-gray-800 p-3 text-gray-100 focus:border-transparent focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-          placeholder="••••••••"
-        />
-      </div>
+      <Input
+        endContent={
+          <button
+            aria-label="toggle password visibility"
+            className="outline-transparent focus:outline-solid"
+            type="button"
+            onClick={toggleVisibility}
+          >
+            {isVisible ? (
+              <EyeSlashFilledIcon className="text-default-400 pointer-events-none text-2xl" />
+            ) : (
+              <EyeFilledIcon className="text-default-400 pointer-events-none text-2xl" />
+            )}
+          </button>
+        }
+        label="Mật khẩu"
+        placeholder="Mật khẩu"
+        type={isVisible ? "text" : "password"}
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        variant="faded"
+        labelPlacement="outside"
+        isRequired
+        className="text-black"
+      />
 
-      {error && <p className="text-center text-sm text-red-400">{error}</p>}
+      <Input
+        endContent={
+          <button
+            aria-label="toggle password visibility"
+            className="outline-transparent focus:outline-solid"
+            type="button"
+            onClick={toggleVisibility}
+          >
+            {isVisible ? (
+              <EyeSlashFilledIcon className="text-default-400 pointer-events-none text-2xl" />
+            ) : (
+              <EyeFilledIcon className="text-default-400 pointer-events-none text-2xl" />
+            )}
+          </button>
+        }
+        label="Xác nhận mật khẩu"
+        placeholder="Xác nhận mật khẩu"
+        type={isVisible ? "text" : "password"}
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        variant="faded"
+        labelPlacement="outside"
+        isRequired
+        className="text-black"
+      />
 
-      <button
+      <Button
         type="submit"
-        className="w-full rounded-lg bg-indigo-600 py-2.5 font-medium text-white transition duration-150 hover:bg-indigo-500"
+        color="primary"
+        fullWidth
+        isLoading={loading}
+        startContent={<CheckIcon width={16} height={16} />}
       >
-        Finish Sign Up
-      </button>
-    </form>
+        Hoàn tất
+      </Button>
+    </Form>
   );
 }
