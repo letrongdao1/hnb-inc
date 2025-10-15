@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import GetStartView from "./GetStartView";
 import { STATUS_CODE } from "../../constants/status.enum";
-import { getCurrentUserAuthInfo, getCurrentUserId } from "../auth/actions";
+import { getCurrentUserAuthInfo } from "../auth/actions";
 
 export default async function GetStart() {
   const supabase = await createClient();
@@ -27,19 +27,26 @@ export async function uploadAvatar(file: File) {
 
   const supabase = await createClient();
 
+  const now = Date.now();
+  const newFileName = file.name + "-" + now
+
   const { data, error } = await supabase.storage
     .from("avatar")
-    .upload(`upload/${file.name}`, file, {
+    .upload(`upload/${newFileName}`, file, {
       cacheControl: "3600",
       upsert: false,
     });
 
   if (error) {
-    console.log({error})
-    throw new Error("Tải ảnh lên thất bại: ", error);
+    try {
+      const checkFile = supabase.storage.from("avatar").getPublicUrl(`upload/${newFileName}`);
+      if (checkFile) return { status: STATUS_CODE.OK, data: checkFile.data.publicUrl };
+      else throw new Error();
+    } catch {
+      throw new Error("Tải ảnh lên thất bại: ", error);
+    }
   } else if (data) {
-    console.log({ data });
-    const urlData = supabase.storage.from("avatar").getPublicUrl(`upload/${file.name}`);
+    const urlData = supabase.storage.from("avatar").getPublicUrl(`upload/${newFileName}`);
     return { status: STATUS_CODE.OK, data: urlData.data.publicUrl };
   }
 }

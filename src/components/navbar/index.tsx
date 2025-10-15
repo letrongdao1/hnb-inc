@@ -17,6 +17,8 @@ import {
   DropdownSection,
   DropdownItem,
   addToast,
+  Accordion,
+  AccordionItem,
 } from "@heroui/react";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowDownSLineIcon, LogoutIcon, UserIcon } from "../svg";
@@ -199,23 +201,60 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
       </NavbarContent>
 
       <NavbarMenu className="pt-8">
-        {menuItems.map((item, index) => (
-          <NavbarMenuItem key={`${item}-${index}`}>
-            <Link
-              className="w-full"
-              color={index === menuItems.length - 1 ? "danger" : "foreground"}
-              href={item.href}
-              size="lg"
-              onClick={() => {
-                if (item.type === "button" && item.onClick) {
-                  item.onClick();
-                }
-              }}
-            >
-              {item.label}
-            </Link>
-          </NavbarMenuItem>
-        ))}
+        {menuItems.map((item, index) => {
+          if (item.type === "link")
+            return (
+              <NavbarMenuItem key={`${item}-${index}`} className="px-2">
+                <Link
+                  className="w-full"
+                  color={index === menuItems.length - 1 ? "danger" : "foreground"}
+                  href={item.href}
+                  onClick={() => {
+                    if (item.type === "button" && item.onClick) {
+                      item.onClick();
+                    }
+                  }}
+                >
+                  {item.label}
+                </Link>
+              </NavbarMenuItem>
+            );
+          else if (item.type === "button") {
+            if (item.children) {
+              return (
+                <NavbarMenuItem key={`${item}-${index}`}>
+                  <Accordion>
+                    <AccordionItem title={item.label}>
+                      <div className="flex flex-col items-stretch justify-start gap-2">
+                        {item.children.map((childItem, i) => (
+                          <Link href={childItem.href} key={i}>
+                            {childItem.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </AccordionItem>
+                  </Accordion>
+                </NavbarMenuItem>
+              );
+            } else if (item.onClick) {
+              return (
+                <NavbarMenuItem key={`${item}-${index}`}>
+                  <Link
+                    className="w-full"
+                    color={index === menuItems.length - 1 ? "danger" : "foreground"}
+                    href={item.href}
+                    size="lg"
+                    onClick={() => {
+                      item.onClick();
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                </NavbarMenuItem>
+              );
+            }
+          }
+        })}
       </NavbarMenu>
     </HeroNavbar>
   );

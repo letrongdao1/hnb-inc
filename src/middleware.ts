@@ -2,7 +2,7 @@ import { updateSession } from "@/lib/supabase/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const response = await updateSession(request);
 
   const supabase = createServerClient(
@@ -33,3 +33,7 @@ export async function middleware(request: NextRequest) {
 
   return response;
 }
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+};

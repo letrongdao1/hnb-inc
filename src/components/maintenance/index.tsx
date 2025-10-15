@@ -10,7 +10,9 @@ export default function Maintenance({ showBackButton = true }: { showBackButton?
   const router = useRouter();
 
   return (
-    <div className="m-auto flex w-full flex-col items-center justify-start gap-2 px-2 text-center">
+    <div
+      className={`${showBackButton && "m-auto"} flex w-full flex-col items-center justify-start gap-2 px-2 text-center`}
+    >
       <Image src={MAINTENANCE_IMAGE.src} alt="detective" className="mb-8 w-64 rounded-full" />
       <p className="text-2xl font-semibold">ĐANG PHÁT TRIỂN...</p>
       <p className="max-w-xl italic">
