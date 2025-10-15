@@ -1,16 +1,16 @@
 "use client";
 
 import { checkEmail } from "@/app/auth/actions";
-import { STATUS_CODE } from "@/app/constants/status";
 import { ArrowRightIcon } from "@/components/svg";
-import { useAppStore } from "@/lib/store/useAppStore";
+import { STATUS_CODE } from "@/constants/status.enum";
 import { createClient } from "@/lib/supabase/client";
+import { useAppStore } from "@/providers/app-store.provider";
 import { addToast, Button, Input } from "@heroui/react";
 import { useState } from "react";
 
 export default function EmailSignupForm({ onNext }: { onNext: (email: string) => void }) {
   const supabase = createClient();
-  const { loading, setLoading } = useAppStore();
+  const { loading, setLoading } = useAppStore((state) => state);
   const [email, setEmail] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,18 +20,17 @@ export default function EmailSignupForm({ onNext }: { onNext: (email: string) =>
     setLoading(true);
 
     try {
-      onNext(email);
-      // const response = await checkEmail(email);
+      const response = await checkEmail(email);
 
-      // if (response.status === STATUS_CODE.CONFLICT) {
-      //   setEmail("");
-      //   return addToast({
-      //     title: "Email này đã tồn tại trên HNB Hub. Vui lòng thử đăng nhập lại!",
-      //     color: "danger",
-      //   });
-      // } else if (response.status === STATUS_CODE.OK) {
-      //   onNext(email);
-      // }
+      if (response.status === STATUS_CODE.CONFLICT) {
+        setEmail("");
+        return addToast({
+          title: "Email này đã tồn tại trên HNB Hub. Vui lòng thử đăng nhập lại!",
+          color: "danger",
+        });
+      } else if (response.status === STATUS_CODE.OK) {
+        onNext(email);
+      }
     } catch {
     } finally {
       setLoading(false);

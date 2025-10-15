@@ -1,4 +1,5 @@
 "use client";
+
 import {
   Navbar as HeroNavbar,
   NavbarBrand,
@@ -9,8 +10,20 @@ import {
   NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
+  Avatar,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownSection,
+  DropdownItem,
+  addToast,
 } from "@heroui/react";
-import { useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowDownSLineIcon, LogoutIcon, UserIcon } from "../svg";
+import { redirect, usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { SYSTEM_MESSAGE } from "@/constants/system-message.enum";
+import { useAppStore } from "@/providers/app-store.provider";
 
 export const AcmeLogo = () => {
   return (
@@ -25,21 +38,50 @@ export const AcmeLogo = () => {
   );
 };
 
-const menuItems = [
-  "Profile",
-  "Dashboard",
-  "Activity",
-  "Analytics",
-  "System",
-  "Deployments",
-  "My Settings",
-  "Team Settings",
-  "Help & Feedback",
-  "Log Out",
-];
+const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
 export default function Navbar() {
+  const { isAuthenticated, user, setAuthenticated, setUser, setLoading } = useAppStore(
+    (state) => state
+  );
+  const pathname = usePathname();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const logout = useCallback(async () => {
+    const supabase = createClient();
+    setLoading(true);
+    const { error } = await supabase.auth.signOut({ scope: "global" });
+    if (error) {
+      return addToast({
+        title: SYSTEM_MESSAGE.SYSTEM_ERROR,
+        color: "danger",
+      });
+    } else {
+      setTimeout(() => {
+        setAuthenticated(false);
+        setUser(null);
+      }, 2000);
+      setLoading(false);
+      redirect("/auth/login");
+    }
+  }, [setAuthenticated, setUser, setLoading]);
+
+  const menuItems = useMemo(
+    () => [
+      { label: "Bảng tin", href: "/news", type: "link" },
+      { label: "Sự kiện", href: "/events", type: "link" },
+      { label: "Về HNB", href: "/about", type: "link" },
+      { label: "Đăng xuất", href: "#", type: "button", onClick: () => logout() },
+    ],
+    [logout]
+  );
+
+  useEffect(() => {
+    console.log({ isAuthenticated, user });
+  }, [isAuthenticated, user]);
+
+  if (pageToHide.some((page) => page === pathname)) return null;
 
   return (
     <HeroNavbar shouldHideOnScroll onMenuOpenChange={setIsMenuOpen}>
@@ -48,38 +90,77 @@ export default function Navbar() {
         className="sm:hidden"
       />
 
-      <NavbarBrand>
-        <AcmeLogo />
-        <p className="font-bold text-inherit">HNB Hub</p>
+      <NavbarBrand className="text-inherit">
+        <Link href="/" className="text-inherit">
+          <AcmeLogo />
+          <p className="font-bold text-inherit">HNB Hub</p>
+        </Link>
       </NavbarBrand>
 
-      <NavbarContent className="hidden gap-4 sm:flex" justify="center">
-        <NavbarItem>
-          <Link color="foreground" href="/news">
-            Bảng tin
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link aria-current="page" href="/events">
-            Sự kiện
-          </Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Link color="foreground" href="/about">
-            Về HNB
-          </Link>
-        </NavbarItem>
+      <NavbarContent className="hidden gap-8 text-white sm:flex" justify="center">
+        {menuItems
+          .filter((item) => item.type === "link")
+          .map((item, index) => (
+            <NavbarItem key={index}>
+              <Link color="foreground" href={item.href}>
+                {item.label}
+              </Link>
+            </NavbarItem>
+          ))}
       </NavbarContent>
 
       <NavbarContent justify="end">
-        <NavbarItem className="hidden lg:flex">
-          <Link href="#">Login</Link>
-        </NavbarItem>
-        <NavbarItem>
-          <Button as={Link} color="primary" href="#" variant="flat">
-            Sign Up
-          </Button>
-        </NavbarItem>
+        {isAuthenticated && user ? (
+          <>
+            <Dropdown>
+              <DropdownTrigger>
+                <Button
+                  variant="bordered"
+                  startContent={<Avatar src={user.avatar} alt="" />}
+                  endContent={<ArrowDownSLineIcon />}
+                  className="border-none text-inherit"
+                >
+                  <p className="hidden max-w-24 overflow-hidden text-ellipsis whitespace-nowrap sm:inline">
+                    {user.display_name}
+                  </p>
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu aria-label="Dropdown menu with description" variant="faded">
+                <DropdownSection title="Tài khoản">
+                  <DropdownItem
+                    key="profile"
+                    className="text-black"
+                    color="default"
+                    startContent={<UserIcon />}
+                    onClick={() => redirect("profile")}
+                  >
+                    Xem hồ sơ
+                  </DropdownItem>
+                  <DropdownItem
+                    key="logout"
+                    className="text-danger"
+                    color="danger"
+                    startContent={<LogoutIcon />}
+                    onClick={logout}
+                  >
+                    Đăng xuất
+                  </DropdownItem>
+                </DropdownSection>
+              </DropdownMenu>
+            </Dropdown>
+          </>
+        ) : (
+          <>
+            <NavbarItem className="hidden lg:flex">
+              <Link href="/auth/login">Login</Link>
+            </NavbarItem>
+            <NavbarItem>
+              <Button as={Link} color="primary" href="/auth/signup" variant="flat">
+                Sign Up
+              </Button>
+            </NavbarItem>
+          </>
+        )}
       </NavbarContent>
 
       <NavbarMenu className="pt-8">
@@ -90,10 +171,15 @@ export default function Navbar() {
               color={
                 index === 2 ? "primary" : index === menuItems.length - 1 ? "danger" : "foreground"
               }
-              href="#"
+              href={item.href}
               size="lg"
+              onClick={() => {
+                if (item.type === "button" && item.onClick) {
+                  item.onClick();
+                }
+              }}
             >
-              {item}
+              {item.label}
             </Link>
           </NavbarMenuItem>
         ))}

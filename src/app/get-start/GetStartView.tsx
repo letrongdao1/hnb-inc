@@ -1,36 +1,25 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+
+import React, { useRef, useState } from "react";
 import IMAGE_PLACEHOLDER from "@/assets/icons/image-placeholder.svg";
 import { addToast, Avatar, Button, DatePicker, Form, Input } from "@heroui/react";
-import { ArrowRightIcon } from "@/components/svg";
-import { SupabaseFile } from "../interfaces/supabaseFile";
-import { uploadAvatar } from "./page";
-import { STATUS_CODE } from "../constants/status";
-
-const PLUS_SVG = (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#000">
-    <path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z"></path>
-  </svg>
-);
-
-function shuffleArray<T>(array: T[]): T[] {
-  const result = [...array];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
+import { ArrowRightIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
+import { createUser, uploadAvatar } from "./page";
+import { STATUS_CODE } from "../../constants/status.enum";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "@/providers/app-store.provider";
 
 export default function GetStartView({ defaultAvatars }: { defaultAvatars: string[] }) {
-  const shuffledAvatarList = useMemo(() => shuffleArray(defaultAvatars || []), [defaultAvatars]);
+  const { loading, setAuthenticated, setUser, setLoading } = useAppStore((state) => state);
+  const router = useRouter();
 
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>();
+  const getRandomAvatar = () => {
+    return defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
+  };
+
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>(getRandomAvatar());
   const [uploadedFile, setUploadedFile] = useState<File>();
-
-  useEffect(() => {
-    setCurrentAvatarUrl(shuffledAvatarList[0]);
-  }, [shuffledAvatarList]);
+  const [currentGender, setCurrentGender] = useState<"M" | "F">();
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const MAX_FILE_SIZE = 500 * 1024;
@@ -51,22 +40,60 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.currentTarget));
-
-    let avatar: string = "";
-    if (uploadedFile) {
-      const uploadResponse = await uploadAvatar(uploadedFile);
-      if (uploadResponse) {
-        if (uploadResponse.status === STATUS_CODE.OK) {
-          console.log(uploadResponse.data);
-          avatar = uploadResponse.data;
-        }
-      }
+    if (!currentGender) {
+      return addToast({
+        title: "Vui lòng chọn giới tính của bạn!",
+        color: "warning",
+      });
     }
 
-    const { display_name, phone, dob } = data;
-    const params = { display_name, phone, dob, avatar };
-    
+    setLoading(true);
+
+    try {
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+
+      let avatar: string = currentAvatarUrl;
+      if (uploadedFile) {
+        const uploadResponse = await uploadAvatar(uploadedFile);
+        if (uploadResponse) {
+          if (uploadResponse.status === STATUS_CODE.OK) {
+            console.log(uploadResponse.data);
+            avatar = uploadResponse.data;
+          }
+        }
+      }
+
+      const { display_name, phone, dob } = data;
+      const params = { display_name, phone, dob, avatar, gender: currentGender };
+
+      const response = await createUser(params);
+      if (response) {
+        switch (response.status) {
+          case STATUS_CODE.CREATED: {
+            if (response.data) {
+              setAuthenticated(true);
+              setUser(response.data);
+            }
+            addToast({
+              title: response.message,
+              color: "success",
+            });
+            router.replace("/");
+            break;
+          }
+          case STATUS_CODE.ERROR: {
+            addToast({
+              title: response.message,
+              color: "danger",
+            });
+            break;
+          }
+        }
+      }
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const uploadRef = useRef<HTMLInputElement>(null);
@@ -78,34 +105,64 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
   };
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center px-4 text-white">
-      <div className="flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-8 rounded-md bg-sky-950 py-8 lg:w-[40em] lg:gap-16">
-        <button
-          onClick={handleUploadClick}
-          className="text-large relative mx-auto h-28 w-28 rounded-full bg-white lg:h-40 lg:w-40"
-        >
-          <Avatar
-            isBordered
-            color="default"
-            src={currentAvatarUrl || IMAGE_PLACEHOLDER}
-            alt="avatar"
-            className="text-large h-full w-full"
+      <div className="flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md bg-sky-950 py-8 lg:w-[40em] lg:gap-16">
+        <div className="flex flex-col items-stretch gap-2">
+          <button
+            onClick={handleUploadClick}
+            className="text-large relative mx-auto mb-4 h-28 w-28 rounded-full bg-white lg:h-40 lg:w-40"
+          >
+            <Avatar
+              isBordered
+              color="default"
+              src={currentAvatarUrl || IMAGE_PLACEHOLDER}
+              alt="avatar"
+              className="text-large h-full w-full"
+            />
+
+            <span className="absolute right-1/2 -bottom-4 translate-x-1/2 rounded-full border border-gray-900 bg-white">
+              <PlusIcon fill="#000" />
+            </span>
+          </button>
+          <input
+            ref={uploadRef}
+            type="file"
+            hidden
+            accept=".jpg,.jpeg,.png"
+            max={1}
+            onChange={handleUpload}
           />
 
-          <span className="absolute right-1/2 -bottom-4 translate-x-1/2 rounded-full border border-gray-900 bg-white">
-            {PLUS_SVG}
-          </span>
-        </button>
-
-        <input
-          ref={uploadRef}
-          type="file"
-          hidden
-          accept=".jpg,.jpeg,.png"
-          max={1}
-          onChange={handleUpload}
-        />
+          <div className="mx-auto grid grid-cols-6 items-center justify-center gap-2">
+            {defaultAvatars.map((ava, index) => (
+              <Avatar
+                key={index}
+                src={ava}
+                alt=""
+                isBordered={ava === currentAvatarUrl}
+                onClick={() => setCurrentAvatarUrl(ava)}
+                className={`cursor-pointer ${ava !== currentAvatarUrl && "brightness-75 hover:brightness-100"} duration-200`}
+              />
+            ))}
+          </div>
+          <p className="text-center text-sm italic">Chọn hoăc upload avatar cho riêng bạn!</p>
+        </div>
 
         <div className="mx-auto flex w-full max-w-[400px] flex-col items-stretch px-1">
+          <div className="mb-4 flex w-full items-stretch justify-center overflow-hidden rounded-2xl border-2">
+            <button
+              onClick={() => setCurrentGender("M")}
+              className={`flex flex-1 cursor-pointer items-center justify-center border-r p-2 ${currentGender === "M" ? "bg-[#1945D1]" : "opacity-75"} duration-200`}
+            >
+              <MaleIcon fill={`${currentGender === "M" ? "#FFFFFF" : "#1945D1"}`} />
+            </button>
+            <button
+              onClick={() => setCurrentGender("F")}
+              className={`flex flex-1 cursor-pointer items-center justify-center p-2 ${currentGender === "F" ? "bg-[#DE2AD3]" : "opacity-75"} duration-200`}
+            >
+              <FemaleIcon fill={`${currentGender === "F" ? "#FFFFFF" : "#DE2AD3"}`} />
+            </button>
+          </div>
+
           <Form onSubmit={handleSubmit} className="flex flex-col items-stretch">
             <div className="flex flex-col items-stretch gap-2">
               <Input
@@ -116,7 +173,9 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
                 name="display_name"
                 autoComplete="off"
               />
+
               <DatePicker isRequired label="Sinh nhật" className="text-black" name="dob" />
+
               <Input
                 isRequired
                 label="Số điện thoại"
@@ -129,7 +188,12 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
             </div>
 
             <div className="mt-8 flex w-full justify-end">
-              <Button type="submit" color="secondary" endContent={<ArrowRightIcon />}>
+              <Button
+                type="submit"
+                color="secondary"
+                endContent={<ArrowRightIcon />}
+                isLoading={loading}
+              >
                 Tiếp tục
               </Button>
             </div>

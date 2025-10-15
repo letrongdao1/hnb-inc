@@ -1,20 +1,35 @@
-import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
-  // update user's auth session
-  return await updateSession(request);
-}
+  const response = await updateSession(request);
 
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
-};
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookiesToSet) =>
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          ),
+      },
+    }
+  );
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const unAuthPaths = ["/auth/login", "/auth/signup"];
+  const isAuthRequired = !unAuthPaths.some((path) => request.nextUrl.pathname.startsWith(path));
+
+  if (isAuthRequired && !user) {
+    const loginUrl = new URL("/auth/login", request.url);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return response;
+}

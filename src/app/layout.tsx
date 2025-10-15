@@ -1,7 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
-import { Providers } from "./providers";
+import { Providers } from "../providers/providers";
+import ClientLayout from "./client-layout";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -13,15 +14,13 @@ export const metadata: Metadata = {
   description: "A hub for HNB Inc.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning className={montserrat.variable}>
+    <html lang="en" className={montserrat.variable} suppressHydrationWarning>
       <body className="font-sans">
-        <Providers>{children}</Providers>
+        <Providers>
+          <ClientLayout>{children}</ClientLayout>
+        </Providers>
       </body>
     </html>
   );

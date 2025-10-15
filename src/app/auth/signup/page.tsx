@@ -5,12 +5,12 @@ import { signup } from "../actions";
 import EmailSignupForm from "@/components/auth/signup/EmailInput";
 import PasswordSignupForm from "@/components/auth/signup/PasswordInput";
 import { addToast } from "@heroui/react";
-import { useAppStore } from "@/lib/store/useAppStore";
-import { STATUS_CODE } from "@/app/constants/status";
+import { STATUS_CODE } from "@/constants/status.enum";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/providers/app-store.provider";
 
 export default function LoginPage() {
-  const { setLoading } = useAppStore();
+  const { setLoading } = useAppStore((state) => state);
   const router = useRouter();
 
   const [email, setEmail] = useState<string | null>(null);

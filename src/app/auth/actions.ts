@@ -1,10 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-
 import { createClient } from "@/lib/supabase/server";
-import { STATUS_CODE } from "../constants/status";
+import { STATUS_CODE } from "../../constants/status.enum";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -25,11 +22,11 @@ export async function login(formData: FormData) {
       };
     }
   } else {
-    const checkUser = await supabase.from("users").select().eq("id", data.user.id);
-    if (checkUser && checkUser.data && checkUser.data.length) {
+    const checkUser = await supabase.from("users").select().eq("id", data.user.id).single();
+    if (checkUser && checkUser.data) {
       return {
         status: STATUS_CODE.OK,
-        data: checkUser.data[0],
+        data: checkUser.data,
         message: "Đăng nhập thành công.",
       };
     } else {
@@ -39,6 +36,31 @@ export async function login(formData: FormData) {
         message: "Đăng nhập thành công.",
       };
     }
+  }
+}
+
+export async function checkSession() {
+  const supabase = await createClient();
+
+  const { data } = await supabase.auth.getSession();
+
+  if (data && data.session) {
+    const { data: authData } = await supabase.auth.getUser(data.session.access_token);
+    const { data: userData } = await supabase
+      .from("users")
+      .select()
+      .eq("id", authData.user?.id)
+      .single();
+
+    return {
+      status: STATUS_CODE.OK,
+      data: userData,
+    };
+  } else {
+    return {
+      status: STATUS_CODE.NOT_FOUND,
+      data: null,
+    };
   }
 }
 
@@ -57,7 +79,7 @@ export async function signup(formData: FormData) {
   } else {
     return {
       status: STATUS_CODE.OK,
-      message: "Chúc mừng bạn đã có mặt trên HNB Hub. Vui lòng đăng nhập để tiếp tục!",
+      message: "Tạo tài khoản HNB Hub thành công. Vui lòng đăng nhập để tiếp tục!",
     };
   }
 }
@@ -83,4 +105,33 @@ export async function checkEmail(email: string) {
       status: STATUS_CODE.OK,
     };
   }
+}
+
+export async function getCurrentUserId() {
+  const supabase = await createClient();
+
+  const { data } = await supabase.auth.getUser();
+  if (data && data.user) return data.user.id;
+  else return null;
+}
+
+export async function getCurrentUserAuthInfo() {
+  const supabase = await createClient();
+
+  const { data } = await supabase.auth.getUser();
+  if (data && data.user)
+    return {
+      id: data.user.id,
+      email: data.user.email,
+    };
+  else return null;
+}
+
+export async function getUserById(id?: string) {
+  if (!id) return null;
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.from("users").select().eq("id", id).single();
+  return error ? null : data;
 }

@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { login } from "../actions";
-import { useAppStore } from "@/lib/store/useAppStore";
 import { addToast, Button, Form, Input } from "@heroui/react";
 import { LoginIcon } from "@/components/svg";
-import { STATUS_CODE } from "@/app/constants/status";
+import { STATUS_CODE } from "@/constants/status.enum";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/providers/app-store.provider";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loading, setLoading } = useAppStore();
+  const { loading, setAuthenticated, setUser, setLoading } = useAppStore((state) => state);
 
   const [form, setForm] = useState({
     email: "",
@@ -25,6 +25,8 @@ export default function LoginPage() {
         email: sessionEmail,
       }));
     }
+
+    console.log({ loading });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +62,8 @@ export default function LoginPage() {
         switch (response.status) {
           case STATUS_CODE.OK: {
             if (response.data) {
+              setAuthenticated(true);
+              setUser(response.data);
               router.replace("/");
             } else {
               router.push("/get-start");
@@ -122,9 +126,9 @@ export default function LoginPage() {
           Đăng nhập
         </Button>
 
-        <p className="mx-auto text-center text-sm text-gray-500">
+        <p className="mx-auto text-center text-sm text-gray-400">
           Chưa có tài khoản?{" "}
-          <a href="/auth/signup" className="text-sky-600 hover:underline">
+          <a href="/auth/signup" className="text-sky-500 hover:underline">
             Đăng ký ngay
           </a>
         </p>
