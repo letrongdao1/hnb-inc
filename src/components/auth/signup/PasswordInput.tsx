@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeftIcon, CheckIcon, EyeFilledIcon, EyeSlashFilledIcon } from "@/components/svg";
-import { useAppStore } from "@/providers/app-store.provider";
 import { addToast, Button, Form, Input } from "@heroui/react";
 import { useState } from "react";
 
@@ -9,13 +8,13 @@ export default function PasswordSignupForm({
   email,
   setEmail,
   onSubmit,
+  loading,
 }: {
   email: string;
   setEmail: React.Dispatch<React.SetStateAction<string | null>>;
   onSubmit: (password: string, confirmPassword: string) => void;
+  loading: boolean;
 }) {
-  const { loading } = useAppStore((state) => state);
-
   const [isVisible, setIsVisible] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

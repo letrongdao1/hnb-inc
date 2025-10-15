@@ -7,13 +7,12 @@ import PasswordSignupForm from "@/components/auth/signup/PasswordInput";
 import { addToast } from "@heroui/react";
 import { STATUS_CODE } from "@/constants/status.enum";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/providers/app-store.provider";
 
 export default function LoginPage() {
-  const { setLoading } = useAppStore((state) => state);
   const router = useRouter();
 
   const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSignUp = async (password: string) => {
     if (!email || !password) return;
@@ -55,7 +54,12 @@ export default function LoginPage() {
       {!email ? (
         <EmailSignupForm onNext={(value) => setEmail(value)} />
       ) : (
-        <PasswordSignupForm email={email} setEmail={setEmail} onSubmit={handleSignUp} />
+        <PasswordSignupForm
+          email={email}
+          setEmail={setEmail}
+          onSubmit={handleSignUp}
+          loading={loading}
+        />
       )}
     </div>
   );

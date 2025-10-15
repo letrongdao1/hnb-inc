@@ -2,14 +2,8 @@ import { Button } from "@heroui/react";
 import React from "react";
 import { ArrowLeftIcon } from "../svg";
 import { redirect } from "next/navigation";
-import Loader from "../loader";
-import { useAppStore } from "@/providers/app-store.provider";
 
 export default function Forbidden403() {
-  const { loading } = useAppStore((state) => state);
-
-  if (loading) return <Loader />;
-
   return (
     <div className="flex flex-col items-stretch justify-center gap-8 text-center">
       <p className="text-6xl font-bold">

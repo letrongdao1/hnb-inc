@@ -6,11 +6,12 @@ import { addToast, Button, Form, Input } from "@heroui/react";
 import { LoginIcon } from "@/components/svg";
 import { STATUS_CODE } from "@/constants/status.enum";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/providers/app-store.provider";
+import Link from "next/link";
+import LogoComponent from "@/components/logo/logo";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loading, setAuthenticated, setUser, setLoading } = useAppStore((state) => state);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const [form, setForm] = useState({
     email: "",
@@ -25,8 +26,6 @@ export default function LoginPage() {
         email: sessionEmail,
       }));
     }
-
-    console.log({ loading });
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,8 +61,6 @@ export default function LoginPage() {
         switch (response.status) {
           case STATUS_CODE.OK: {
             if (response.data) {
-              setAuthenticated(true);
-              setUser(response.data);
               router.replace("/");
             } else {
               router.push("/get-start");
@@ -87,9 +84,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <Form onSubmit={handleSubmit} className="w-full max-w-md space-y-2 rounded-2xl p-8 shadow-lg">
-        <h1 className="text-center text-2xl font-bold text-white">Chào mừng đến với HNB Hub</h1>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center px-2">
+      <LogoComponent />
+
+      <Form
+        onSubmit={handleSubmit}
+        className="flex w-full max-w-md flex-col items-stretch space-y-2 rounded-2xl p-4 shadow-lg"
+      >
+        <h1 className="text-center text-2xl font-bold text-white">Đăng nhập</h1>
 
         {/* Email */}
         <Input
@@ -99,6 +101,7 @@ export default function LoginPage() {
           value={form.email}
           onChange={handleChange}
           placeholder="troll@hnb.com"
+          className="text-inherit"
         />
 
         {/* Password */}
@@ -114,6 +117,7 @@ export default function LoginPage() {
             }
           }}
           placeholder=""
+          className="text-inherit"
         />
 
         <Button
@@ -128,9 +132,9 @@ export default function LoginPage() {
 
         <p className="mx-auto text-center text-sm text-gray-400">
           Chưa có tài khoản?{" "}
-          <a href="/auth/signup" className="text-sky-500 hover:underline">
+          <Link href="/auth/signup" className="text-sky-500 hover:underline">
             Đăng ký ngay
-          </a>
+          </Link>
         </p>
       </Form>
     </div>

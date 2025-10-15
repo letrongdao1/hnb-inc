@@ -6,6 +6,11 @@ export interface UserInfo {
   avatar: string;
   dob: string;
   phone: string;
+  role: {
+    id: string;
+    name: string;
+    status: boolean;
+  }[];
   status: number;
   created_at: string;
 }

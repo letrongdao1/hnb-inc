@@ -4,14 +4,13 @@ import { checkEmail } from "@/app/auth/actions";
 import { ArrowRightIcon } from "@/components/svg";
 import { STATUS_CODE } from "@/constants/status.enum";
 import { createClient } from "@/lib/supabase/client";
-import { useAppStore } from "@/providers/app-store.provider";
 import { addToast, Button, Input } from "@heroui/react";
 import { useState } from "react";
 
 export default function EmailSignupForm({ onNext }: { onNext: (email: string) => void }) {
   const supabase = createClient();
-  const { loading, setLoading } = useAppStore((state) => state);
   const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

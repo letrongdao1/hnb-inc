@@ -2,28 +2,30 @@
 
 import React from "react";
 import MAINTENANCE_IMAGE from "@/assets/images/maintenance.jpg";
-import { Button, Image, Spinner } from "@heroui/react";
+import { Button, Image } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon } from "../svg";
+import { ArrowLeftIcon } from "@/components/svg";
 
-export default function Maintenance() {
+export default function Maintenance({ showBackButton = true }: { showBackButton?: boolean }) {
   const router = useRouter();
 
   return (
     <div className="m-auto flex w-full flex-col items-center justify-start gap-2 px-2 text-center">
-      <Image
-        shadow="lg"
-        src={MAINTENANCE_IMAGE.src}
-        alt="detective"
-        className="mb-8 w-64 rounded-full"
-      />
+      <Image src={MAINTENANCE_IMAGE.src} alt="detective" className="mb-8 w-64 rounded-full" />
       <p className="text-2xl font-semibold">ĐANG PHÁT TRIỂN...</p>
-      <p className="italic max-w-xl">
+      <p className="max-w-xl italic">
         Chức năng đang được bộ phận IT phát triển để đem đến cho HNB trải nghiệm tốt nhất.
       </p>
-      <Button onPress={() => router.back()} className="mt-4 px-8" startContent={<ArrowLeftIcon />}>
-        Quay lại
-      </Button>
+      {showBackButton && (
+        <Button
+          variant="flat"
+          onPress={() => router.back()}
+          className="mt-4 px-8 text-inherit"
+          startContent={<ArrowLeftIcon />}
+        >
+          Quay lại
+        </Button>
+      )}
     </div>
   );
 }

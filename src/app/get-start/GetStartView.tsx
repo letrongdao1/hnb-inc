@@ -7,10 +7,8 @@ import { ArrowRightIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg
 import { createUser, uploadAvatar } from "./page";
 import { STATUS_CODE } from "../../constants/status.enum";
 import { useRouter } from "next/navigation";
-import { useAppStore } from "@/providers/app-store.provider";
 
 export default function GetStartView({ defaultAvatars }: { defaultAvatars: string[] }) {
-  const { loading, setAuthenticated, setUser, setLoading } = useAppStore((state) => state);
   const router = useRouter();
 
   const getRandomAvatar = () => {
@@ -20,6 +18,7 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
   const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>(getRandomAvatar());
   const [uploadedFile, setUploadedFile] = useState<File>();
   const [currentGender, setCurrentGender] = useState<"M" | "F">();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const MAX_FILE_SIZE = 500 * 1024;
@@ -70,10 +69,6 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
       if (response) {
         switch (response.status) {
           case STATUS_CODE.CREATED: {
-            if (response.data) {
-              setAuthenticated(true);
-              setUser(response.data);
-            }
             addToast({
               title: response.message,
               color: "success",
@@ -104,12 +99,12 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
     }
   };
   return (
-    <div className="flex h-screen w-full flex-col items-center justify-center px-4 text-white">
+    <div className="m-auto flex h-full w-full flex-col items-center justify-center px-4 text-white">
       <div className="flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md bg-sky-950 py-8 lg:w-[40em] lg:gap-16">
         <div className="flex flex-col items-stretch gap-2">
           <button
             onClick={handleUploadClick}
-            className="text-large relative mx-auto mb-4 h-28 w-28 rounded-full bg-white lg:h-40 lg:w-40"
+            className="text-large relative mx-auto mb-4 h-28 w-28 cursor-pointer rounded-full bg-white duration-200 hover:brightness-75 lg:h-40 lg:w-40"
           >
             <Avatar
               isBordered
@@ -119,8 +114,9 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
               className="text-large h-full w-full"
             />
 
-            <span className="absolute right-1/2 -bottom-4 translate-x-1/2 rounded-full border border-gray-900 bg-white">
-              <PlusIcon fill="#000" />
+            <span className="absolute right-1/2 -bottom-4 flex translate-x-1/2 items-center rounded-full border border-gray-900 bg-white px-2">
+              <PlusIcon fill="#000" />{" "}
+              <p className="text-xs whitespace-nowrap text-black">Nhấn để upload</p>
             </span>
           </button>
           <input
@@ -172,16 +168,18 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
                 type="text"
                 name="display_name"
                 autoComplete="off"
+                maxLength={50}
               />
 
-              <DatePicker isRequired label="Sinh nhật" className="text-black" name="dob" />
+              <DatePicker color="primary" isRequired label="Sinh nhật" name="dob" />
 
               <Input
                 isRequired
                 label="Số điện thoại"
                 placeholder="090..."
                 type="text"
-                maxLength={12}
+                minLength={10}
+                maxLength={11}
                 name="phone"
                 autoComplete="off"
               />
@@ -190,11 +188,12 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
             <div className="mt-8 flex w-full justify-end">
               <Button
                 type="submit"
-                color="secondary"
+                color="success"
                 endContent={<ArrowRightIcon />}
                 isLoading={loading}
+                className="font-semibold"
               >
-                Tiếp tục
+                Hoàn tất
               </Button>
             </div>
           </Form>

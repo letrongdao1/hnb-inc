@@ -35,6 +35,7 @@ export async function uploadAvatar(file: File) {
     });
 
   if (error) {
+    console.log({error})
     throw new Error("Tải ảnh lên thất bại: ", error);
   } else if (data) {
     console.log({ data });

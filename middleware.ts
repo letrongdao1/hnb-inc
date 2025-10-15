@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const unAuthPaths = ["/auth/login", "/auth/signup"];
-  const isAuthRequired = !unAuthPaths.some((path) => request.nextUrl.pathname.startsWith(path));
+  const isAuthRequired = !unAuthPaths.some((path) => request.nextUrl.pathname.includes(path));
 
   if (isAuthRequired && !user) {
     const loginUrl = new URL("/auth/login", request.url);

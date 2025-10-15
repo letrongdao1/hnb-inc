@@ -14,7 +14,6 @@ export async function login(formData: FormData) {
   const { data, error } = await supabase.auth.signInWithPassword(params);
 
   if (error) {
-    console.log({ error });
     if (error.code === "invalid_credentials") {
       return {
         status: STATUS_CODE.INVALID_CREDENTIALS,
@@ -89,8 +88,6 @@ export async function checkEmail(email: string) {
 
   const { data, error } = await supabase.auth.admin.listUsers();
 
-  console.log({ data, error });
-
   const exists = data.users.some((u) => u.email === email);
 
   if (error) {
@@ -127,11 +124,21 @@ export async function getCurrentUserAuthInfo() {
   else return null;
 }
 
-export async function getUserById(id?: string) {
-  if (!id) return null;
-
+export async function getCurrentUserInfo() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase.from("users").select().eq("id", id).single();
-  return error ? null : data;
+  const { data } = await supabase.auth.getUser();
+  if (!data || !data.user) {
+    return null;
+  } else {
+    const { data: userData } = await supabase
+      .from("users")
+      .select(
+        "id, email, display_name, gender, avatar, dob, phone, role:users_role_fkey(id, name, status), status, created_at"
+      )
+      .eq("id", data.user.id)
+      .single();
+
+    return userData;
+  }
 }
