@@ -30,7 +30,7 @@ export default function LoginPage() {
       formData.append("email", email);
       formData.append("password", password);
       const res = await signup(formData);
-      if (res.status === STATUS_CODE.OK) {
+      if (res && res.status === STATUS_CODE.OK) {
         sessionStorage.setItem("new-email", email);
         addToast({
           title: res.message,
