@@ -1,7 +1,8 @@
 "use server";
 
+import { ROLE, STATUS_CODE } from "@/constants/enums";
+import { UserInfo } from "@/interfaces/user";
 import { createClient } from "@/lib/supabase/server";
-import { STATUS_CODE } from "../../constants/status.enum";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -71,16 +72,61 @@ export async function signup(formData: FormData) {
     password: formData.get("password") as string,
   };
 
-  const { error } = await supabase.auth.signUp(params);
+  const { data: authResponse, error } = await supabase.auth.signUp(params);
 
   if (error) {
     throw new Error("Tạo tài khoản thất bại: ", error);
   } else {
-    return {
-      status: STATUS_CODE.OK,
-      message: "Tạo tài khoản HNB Hub thành công. Vui lòng đăng nhập để tiếp tục!",
-    };
+    if (authResponse.user) {
+      return {
+        status: STATUS_CODE.OK,
+        message: "Tạo tài khoản HNB Hub thành công. Vui lòng đăng nhập để tiếp tục!",
+      };
+    }
   }
+}
+
+export async function createUserRole(userId: string, roles: ROLE[]) {
+  if (!userId || !roles || roles.length === 0) {
+    return;
+  }
+
+  const supabase = await createClient();
+
+  return roles.map(async (role) => {
+    const { data: roleData, error } = await supabase
+      .from("roles")
+      .select("id")
+      .eq("name", role)
+      .single();
+
+    if (error) {
+      return {
+        status: STATUS_CODE.ERROR,
+        message: `Tạo role: ${role} lỗi cho người dùng ${userId}`,
+        data: null,
+      };
+    } else {
+      const { data: insertData, error: insertError } = await supabase
+        .from("user_roles")
+        .insert({
+          user_id: userId,
+          role_id: roleData.id,
+        })
+        .select("user_id, role:user_roles_role_fkey(id, name, status)")
+        .maybeSingle();
+
+      if (!insertError && insertData) {
+        return { status: STATUS_CODE.CREATED, message: "Tạo role thành công!", data: insertData };
+      } else {
+        return {
+          status: STATUS_CODE.ERROR,
+          message: `Tạo role: ${role} lỗi cho người dùng ${userId}`,
+          data: null,
+        };
+      }
+    }
+  });
 }
 
 export async function checkEmail(email: string) {
@@ -133,12 +179,25 @@ export async function getCurrentUserInfo() {
   } else {
     const { data: userData } = await supabase
       .from("users")
-      .select(
-        "id, email, display_name, gender, avatar, dob, phone, role:users_role_fkey(id, name, status), status, created_at"
-      )
+      .select("id, email, display_name, gender, avatar, dob, phone, status, created_at")
       .eq("id", data.user.id)
       .single();
 
-    return userData;
+    const { data: roleData } = await supabase
+      .from("user_roles")
+      .select("role:user_roles_role_fkey(*)")
+      .eq("user_id", data.user.id);
+
+    const roles = roleData ? roleData.map((r) => r.role[0]) : [];
+
+    if (userData) {
+      const userDataWithRoles: UserInfo = {
+        ...userData,
+        roles,
+      };
+      return userDataWithRoles;
+    } else {
+      return null;
+    }
   }
 }

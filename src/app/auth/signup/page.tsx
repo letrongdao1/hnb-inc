@@ -5,8 +5,8 @@ import { signup } from "../actions";
 import EmailSignupForm from "@/components/auth/signup/EmailInput";
 import PasswordSignupForm from "@/components/auth/signup/PasswordInput";
 import { addToast } from "@heroui/react";
-import { STATUS_CODE } from "@/constants/status.enum";
 import { useRouter } from "next/navigation";
+import { STATUS_CODE } from "@/constants/enums";
 
 export default function LoginPage() {
   const router = useRouter();

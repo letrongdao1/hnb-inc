@@ -13,8 +13,8 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
     >
       <HeroUIProvider>
-        <ToastProvider placement="top-right" maxVisibleToasts={3} toastProps={{ timeout: 5000 }} />
         {children}
+        <ToastProvider placement="top-right" maxVisibleToasts={3} toastProps={{ timeout: 5000 }} />
       </HeroUIProvider>
     </ThemeProvider>
   );

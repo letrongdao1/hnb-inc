@@ -2,7 +2,7 @@
 
 import { checkEmail } from "@/app/auth/actions";
 import { ArrowRightIcon } from "@/components/svg";
-import { STATUS_CODE } from "@/constants/status.enum";
+import { STATUS_CODE } from "@/constants/enums";
 import { createClient } from "@/lib/supabase/client";
 import { addToast, Button, Input } from "@heroui/react";
 import { useState } from "react";
@@ -19,6 +19,12 @@ export default function EmailSignupForm({ onNext }: { onNext: (email: string) =>
     setLoading(true);
 
     try {
+      //* TEST ONLY
+      const TEST_ACCESS = process.env.NEXT_PUBLIC_IS_TESTING;
+      if (TEST_ACCESS && TEST_ACCESS === "TRUE") {
+        return onNext(email);
+      }
+
       const response = await checkEmail(email);
 
       if (response.status === STATUS_CODE.CONFLICT) {

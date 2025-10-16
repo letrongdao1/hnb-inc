@@ -1,3 +1,14 @@
+export enum ROLE {
+  STAFF = "STAFF",
+  ADMIN = "ADMIN",
+  CEO = "CEO",
+  BOT = "BOT",
+  SECURITY = "SECURITY",
+  IT = "IT",
+  HR = "HR",
+  ATTACHMENT = "ATTACHMENT",
+}
+
 export enum STATUS_CODE {
   // SUCCESS
   OK = 200,
@@ -18,4 +29,8 @@ export enum STATUS_CODE {
   INTERNAL_SERVER_ERROR = 500,
   BAD_GATEWAY = 502,
   SERVICE_UNAVAILABLE = 503,
+}
+
+export enum SYSTEM_MESSAGE {
+  SYSTEM_ERROR = "Lỗi hệ thống. Vui lòng liên hệ phòng IT để được hỗ trợ!",
 }

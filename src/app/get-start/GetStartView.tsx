@@ -5,8 +5,8 @@ import IMAGE_PLACEHOLDER from "@/assets/icons/image-placeholder.svg";
 import { addToast, Avatar, Button, DatePicker, Form, Input } from "@heroui/react";
 import { ArrowRightIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
 import { createUser, uploadAvatar } from "./page";
-import { STATUS_CODE } from "../../constants/status.enum";
 import { useRouter } from "next/navigation";
+import { STATUS_CODE } from "@/constants/enums";
 
 export default function GetStartView({ defaultAvatars }: { defaultAvatars: string[] }) {
   const router = useRouter();

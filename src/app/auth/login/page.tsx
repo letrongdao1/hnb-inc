@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { login } from "../actions";
 import { addToast, Button, Form, Input } from "@heroui/react";
 import { LoginIcon } from "@/components/svg";
-import { STATUS_CODE } from "@/constants/status.enum";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LogoComponent from "@/components/logo/logo";
+import { STATUS_CODE } from "@/constants/enums";
 
 export default function LoginPage() {
   const router = useRouter();

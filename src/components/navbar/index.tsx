@@ -21,12 +21,12 @@ import {
   AccordionItem,
 } from "@heroui/react";
 import { useCallback, useMemo, useState } from "react";
-import { ArrowDownSLineIcon, LogoutIcon, UserIcon } from "../svg";
+import { ArrowDownSLineIcon, LogoutIcon, OfficeIcon, UserGroupIcon, UserIcon } from "../svg";
 import { redirect, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { SYSTEM_MESSAGE } from "@/constants/system-message.enum";
 import { UserInfo } from "@/interfaces/user";
 import LogoComponent from "../logo/logo";
+import { SYSTEM_MESSAGE } from "@/constants/enums";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
@@ -62,13 +62,15 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
         children: [
           {
             label: "Thành viên HNB",
-            href: "/members",
+            href: "/list/members",
             type: "link",
+            icon: <UserGroupIcon />,
           },
           {
             label: "Trụ sở & văn phòng",
-            href: "/venues",
+            href: "/list/venues",
             type: "link",
+            icon: <OfficeIcon />,
           },
         ],
       },
@@ -93,8 +95,8 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
         className="sm:hidden"
       />
 
-      <NavbarBrand className="text-inherit">
-        <Link href="/" className="text-inherit">
+      <NavbarBrand className="cursor-pointer text-inherit">
+        <Link onClick={() => redirect("/")} className="text-inherit">
           <LogoComponent />
         </Link>
       </NavbarBrand>
@@ -106,7 +108,11 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
             if (item.type === "link")
               return (
                 <NavbarItem key={index}>
-                  <Link color="foreground" href={item.href}>
+                  <Link
+                    color="foreground"
+                    onClick={() => redirect(item.href)}
+                    className="cursor-pointer"
+                  >
                     {item.label}
                   </Link>
                 </NavbarItem>
@@ -121,7 +127,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                         variant="light"
                         endContent={<ArrowDownSLineIcon />}
                         radius="sm"
-                        className="text-medium text-inherit"
+                        className="text-medium text-inherit hover:!bg-transparent hover:brightness-50"
                       >
                         {item.label}
                       </Button>
@@ -137,7 +143,13 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                     {item.children && item.children.length
                       ? item.children.map((childItem, index) => (
                           <DropdownItem key={index} className="text-black">
-                            {childItem.label}
+                            <Link
+                              onClick={() => redirect(childItem.href)}
+                              className="flex items-center gap-2 text-inherit"
+                            >
+                              {childItem.icon}
+                              {childItem.label}
+                            </Link>
                           </DropdownItem>
                         ))
                       : []}
@@ -154,11 +166,11 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
             <DropdownTrigger>
               <Button
                 variant="bordered"
-                startContent={<Avatar src={user.avatar} alt="" />}
+                startContent={<Avatar isBordered src={user.avatar} alt="" />}
                 endContent={<ArrowDownSLineIcon />}
-                className="border-none text-inherit"
+                className="h-full border-none text-inherit"
               >
-                <p className="hidden max-w-24 overflow-hidden text-ellipsis whitespace-nowrap sm:inline">
+                <p className="hidden h-fit max-w-24 overflow-hidden px-1 text-ellipsis whitespace-nowrap sm:inline">
                   {user.display_name}
                 </p>
               </Button>
@@ -170,7 +182,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                   className="text-black"
                   color="default"
                   startContent={<UserIcon />}
-                  onClick={() => redirect("profile")}
+                  onClick={() => redirect("/profile")}
                 >
                   Xem hồ sơ
                 </DropdownItem>

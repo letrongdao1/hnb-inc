@@ -6,7 +6,7 @@ export interface UserInfo {
   avatar: string;
   dob: string;
   phone: string;
-  role: {
+  roles: {
     id: string;
     name: string;
     status: boolean;

@@ -2,8 +2,9 @@
 
 import { createClient } from "@/lib/supabase/server";
 import GetStartView from "./GetStartView";
-import { STATUS_CODE } from "../../constants/status.enum";
-import { getCurrentUserAuthInfo } from "../auth/actions";
+import { createUserRole, getCurrentUserAuthInfo } from "../auth/actions";
+import { ROLE, STATUS_CODE } from "@/constants/enums";
+import { UserInfo } from "@/interfaces/user";
 
 export default async function GetStart() {
   const supabase = await createClient();
@@ -28,7 +29,7 @@ export async function uploadAvatar(file: File) {
   const supabase = await createClient();
 
   const now = Date.now();
-  const newFileName = file.name + "-" + now
+  const newFileName = file.name + "-" + now;
 
   const { data, error } = await supabase.storage
     .from("avatar")
@@ -72,10 +73,18 @@ export async function createUser(params: any) {
     };
   } else {
     const { data: userData } = await supabase.from("users").select().eq("id", authInfo.id).single();
-    return {
-      status: STATUS_CODE.CREATED,
-      message: `Thiết lập hoàn tất. Chào mừng ${params.display_name || "bạn"} đến với HNB Hub!`,
-      data: userData,
-    };
+    if (userData) {
+      const createRoleResponse = await createUserRole(userData.id, [ROLE.STAFF]);
+
+      if (
+        createRoleResponse &&
+        createRoleResponse.some((res) => res.then((r) => r.status === STATUS_CODE.CREATED))
+      ) {        
+        return {
+          status: STATUS_CODE.CREATED,
+          message: `Thiết lập hoàn tất. Chào mừng ${params.display_name || "bạn"} đến với HNB Hub!`,
+        };
+      }
+    }
   }
 }
