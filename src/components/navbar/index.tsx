@@ -27,6 +27,7 @@ import { createClient } from "@/lib/supabase/client";
 import { UserInfo } from "@/interfaces/user";
 import LogoComponent from "../logo/logo";
 import { SYSTEM_MESSAGE } from "@/constants/enums";
+import "./index.scss";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
@@ -89,7 +90,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
   if (pageToHide.some((page) => page === pathname)) return null;
 
   return (
-    <HeroNavbar shouldHideOnScroll onMenuOpenChange={setIsMenuOpen}>
+    <HeroNavbar shouldHideOnScroll onMenuOpenChange={setIsMenuOpen} className="navbar-container">
       <NavbarMenuToggle
         aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         className="sm:hidden"
@@ -97,11 +98,11 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
 
       <NavbarBrand className="cursor-pointer text-inherit">
         <Link onClick={() => redirect("/")} className="text-inherit">
-          <LogoComponent />
+          <LogoComponent responsive="lg" />
         </Link>
       </NavbarBrand>
 
-      <NavbarContent className="hidden gap-8 text-inherit sm:flex" justify="center">
+      <NavbarContent className="hidden gap-8 text-inherit lg:flex" justify="center">
         {menuItems
           .filter((item) => !Boolean(item.hiddenOnMain))
           .map((item, index) => {
@@ -168,7 +169,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                 variant="bordered"
                 startContent={<Avatar isBordered src={user.avatar} alt="" />}
                 endContent={<ArrowDownSLineIcon />}
-                className="h-full border-none text-inherit"
+                className="h-full border-none text-inherit px-0 sm:px-1"
               >
                 <p className="hidden h-fit max-w-24 overflow-hidden px-1 text-ellipsis whitespace-nowrap sm:inline">
                   {user.display_name}

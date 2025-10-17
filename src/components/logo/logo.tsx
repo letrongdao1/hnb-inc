@@ -13,11 +13,19 @@ const AcmeLogo = () => {
   );
 };
 
-export default function LogoComponent() {
+export default function LogoComponent({
+  responsive,
+}: {
+  responsive?: "xs" | "sm" | "md" | "lg" | "xl";
+}) {
   return (
     <div className="flex items-center gap-2">
       <AcmeLogo />
-      <p className="font-bold text-inherit text-2xl">HNB Hub</p>
+      <p
+        className={`text-2xl font-bold text-inherit ${responsive && `hidden ${responsive}:block`}`}
+      >
+        HNB Hub
+      </p>
     </div>
   );
 }

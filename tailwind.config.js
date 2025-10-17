@@ -12,6 +12,7 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["var(--font-montserrat)", "sans-serif"],
+        title: ["var(--font-alfaSlabOne)", "sans-serif"],
       },
     },
   },

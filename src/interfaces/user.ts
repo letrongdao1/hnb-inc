@@ -6,11 +6,13 @@ export interface UserInfo {
   avatar: string;
   dob: string;
   phone: string;
-  roles: {
-    id: string;
-    name: string;
-    status: boolean;
-  }[];
+  roles: RoleInfo[];
   status: number;
   created_at: string;
+}
+
+export interface RoleInfo {
+  id: string;
+  name: string;
+  status: boolean;
 }

@@ -3,15 +3,18 @@
 import ErrorComponent from "@/components/error/error";
 import { createClient } from "@/lib/supabase/server";
 import MembersList from "./MembersList";
+import { getUserRolesByUserID } from "@/app/auth/users";
+import { ROLE } from "@/constants/enums";
 
 export interface MemberResponse {
   id: string;
   display_name: string;
   avatar: string;
   dob: string;
-  role: {
+  gender: "M" | "F",
+  roles: {
     id: string;
-    name: string;
+    name: ROLE;
     status: boolean;
   }[];
   status: number;
@@ -21,12 +24,23 @@ export interface MemberResponse {
 export default async function Members() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data: userData, error } = await supabase
     .from("users")
-    .select("id, display_name, avatar, dob, status, role:users_role_fkey(id, name, status), created_at")
+    .select("id, display_name, gender, avatar, dob, status, created_at")
     .order("created_at", { ascending: true });
+
+  const userDataWithRoles = !userData
+    ? []
+    : await Promise.all(
+        userData.map(async (data) => {
+          return {
+            ...data,
+            roles: await getUserRolesByUserID(data.id),
+          };
+        })
+      );
 
   if (error) return <ErrorComponent error={error.message} />;
 
-  return <MembersList members={data} />
+  return <MembersList members={userDataWithRoles} />;
 }

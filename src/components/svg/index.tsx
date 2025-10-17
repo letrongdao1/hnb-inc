@@ -129,7 +129,6 @@ export const CheckIcon = ({ fill = "currentColor", size, height, width, ...props
   );
 };
 
-
 export const OfficeIcon = ({ fill = "currentColor", size, height, width, ...props }: SVGProps) => {
   return (
     <svg
@@ -377,6 +376,57 @@ export const DeleteDocumentIcon = (props: SVGProps) => {
         fill="currentColor"
         fillRule="evenodd"
       />
+    </svg>
+  );
+};
+
+export const SecurityIcon = ({
+  fill = "currentColor",
+  size,
+  height,
+  width,
+  ...props
+}: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M5 4.60434V13.7889C5 15.1263 5.6684 16.3752 6.7812 17.1171L12 20.5963L17.2188 17.1171C18.3316 16.3752 19 15.1263 19 13.7889V4.60434L12 3.04879L5 4.60434ZM3.78307 2.82598L12 1L20.2169 2.82598C20.6745 2.92766 21 3.33347 21 3.80217V13.7889C21 15.795 19.9974 17.6684 18.3282 18.7812L12 23L5.6718 18.7812C4.00261 17.6684 3 15.795 3 13.7889V3.80217C3 3.33347 3.32553 2.92766 3.78307 2.82598ZM12 13.5L9.06107 15.0451L9.62236 11.7725L7.24472 9.45492L10.5305 8.97746L12 6L13.4695 8.97746L16.7553 9.45492L14.3776 11.7725L14.9389 15.0451L12 13.5Z"></path>
+    </svg>
+  );
+};
+
+export const RobotIcon = ({ fill = "currentColor", size, height, width, ...props }: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M11 1V2H7C5.34315 2 4 3.34315 4 5V8C4 10.7614 6.23858 13 9 13H15C17.7614 13 20 10.7614 20 8V5C20 3.34315 18.6569 2 17 2H13V1H11ZM6 5C6 4.44772 6.44772 4 7 4H17C17.5523 4 18 4.44772 18 5V8C18 9.65685 16.6569 11 15 11H9C7.34315 11 6 9.65685 6 8V5ZM9.5 9C10.3284 9 11 8.32843 11 7.5C11 6.67157 10.3284 6 9.5 6C8.67157 6 8 6.67157 8 7.5C8 8.32843 8.67157 9 9.5 9ZM14.5 9C15.3284 9 16 8.32843 16 7.5C16 6.67157 15.3284 6 14.5 6C13.6716 6 13 6.67157 13 7.5C13 8.32843 13.6716 9 14.5 9ZM6 22C6 18.6863 8.68629 16 12 16C15.3137 16 18 18.6863 18 22H20C20 17.5817 16.4183 14 12 14C7.58172 14 4 17.5817 4 22H6Z"></path>
+    </svg>
+  );
+};
+
+export const CrownIcon = ({ fill = "currentColor", size, height, width, ...props }: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M2.00488 19H22.0049V21H2.00488V19ZM2.00488 5L7.00488 8.5L12.0049 2L17.0049 8.5L22.0049 5V17H2.00488V5ZM4.00488 8.84131V15H20.0049V8.84131L16.5854 11.2349L12.0049 5.28024L7.42435 11.2349L4.00488 8.84131Z"></path>
     </svg>
   );
 };

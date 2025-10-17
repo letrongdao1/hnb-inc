@@ -17,7 +17,7 @@ export default function ClientLayout({
   const pathname = usePathname();
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-stretch justify-start gap-8 px-2 py-4 sm:p-10">
+    <div className="mx-auto flex min-h-screen w-full flex-col items-stretch justify-start gap-8 px-2 py-4 sm:p-10 lg:max-w-[80em]">
       <Navbar user={user} />
 
       <AnimatePresence mode="wait">

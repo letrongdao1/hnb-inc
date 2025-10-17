@@ -3,6 +3,14 @@
 import { Spinner } from "@heroui/react";
 import React from "react";
 
-export default function Loader() {
-  return <Spinner size="lg" variant="gradient" labelColor="foreground" />;
+export default function Loader({ margin = 20 }: { margin?: number }) {
+  return (
+    <Spinner
+      size="lg"
+      variant="gradient"
+      labelColor="foreground"
+      color="default"
+      className={`mt-[${margin}vh]`}
+    />
+  );
 }
