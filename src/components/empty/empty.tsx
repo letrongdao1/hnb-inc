@@ -9,13 +9,13 @@ export default function EmptyComponent({
   description,
   button,
 }: {
-  title: string;
+  title?: string;
   description?: string;
   button?: React.ReactNode;
 }) {
   return (
     <div
-      className={`m-auto flex w-full flex-col items-center justify-start gap-2 px-2 text-center`}
+      className={`m-auto mt-[10vh] flex w-full flex-col items-center justify-start gap-2 px-2 text-center`}
     >
       <Image src={EMPTY_IMAGE.src} alt="empty" className="mb-8 w-64" />
       <p className="text-2xl font-semibold">{title}</p>

@@ -2,17 +2,18 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function getUserRolesByUserID(userId: string) {
+export async function getUserRolesByUserID(userId?: string) {
   const supabase = await createClient();
+  const currentUserId = userId || (await supabase.auth.getUser()).data.user?.id;
 
-  const { data: roleData, error } = await supabase
-    .from("user_roles")
-    .select("role:user_roles_role_fkey(*)")
-    .eq("user_id", userId);
+  if (!currentUserId) return;
+
+    const { data: roleData, error } = await supabase
+      .from("user_roles")
+      .select("role:user_roles_role_fkey(*)")
+      .eq("user_id", currentUserId);
 
   if (error) return [];
-
-  console.log({ roleData });
 
   const roles = roleData
     ? roleData.map((r) => {
