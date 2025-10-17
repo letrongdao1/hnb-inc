@@ -11,7 +11,7 @@ export interface MemberResponse {
   display_name: string;
   avatar: string;
   dob: string;
-  gender: "M" | "F",
+  gender: "M" | "F";
   roles: {
     id: string;
     name: ROLE;
@@ -19,6 +19,13 @@ export interface MemberResponse {
   }[];
   status: number;
   created_at: string;
+}
+
+export async function generateMetadata() {
+  return {
+    title: `Danh sách thành viên HNB`,
+    description: "Danh sách thành viên HNB",
+  };
 }
 
 export default async function Members() {
@@ -29,13 +36,13 @@ export default async function Members() {
     .select("id, display_name, gender, avatar, dob, status, created_at")
     .order("created_at", { ascending: true });
 
-  const userDataWithRoles = !userData
+  const userDataWithRoles: MemberResponse[] = !userData
     ? []
     : await Promise.all(
         userData.map(async (data) => {
           return {
             ...data,
-            roles: await getUserRolesByUserID(data.id),
+            roles: await getUserRolesByUserID(data.id) || [],
           };
         })
       );

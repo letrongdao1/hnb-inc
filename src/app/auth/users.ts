@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { CommonUtils } from "@/utils/common.utils";
 
 export async function getUserRolesByUserID(userId?: string) {
   const supabase = await createClient();
@@ -17,7 +18,7 @@ export async function getUserRolesByUserID(userId?: string) {
 
   const roles = roleData
     ? roleData.map((r) => {
-        return r.role as any;
+        return CommonUtils.getSingleDataFromUnknown(r.role);
       })
     : [];
 

@@ -10,7 +10,7 @@ import BOSS_MALE_ART from "@/assets/images/roles/boss-male-art.jpg";
 import BOT_ART from "@/assets/images/roles/robot-art.png";
 import SECURITY_ART from "@/assets/images/roles/security-art.png";
 import { CrownIcon, RobotIcon, SecurityIcon, UserIcon } from "@/components/svg";
-import { RoleUtils } from "@/utils/utils";
+import { RoleUtils } from "@/utils/role.utils";
 
 export default function SingleMember({ user, roleName }: { user: MemberResponse; roleName: ROLE }) {
   const currentRoleColor = RoleUtils.getRoleColor(roleName);
