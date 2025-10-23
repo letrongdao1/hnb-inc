@@ -20,19 +20,21 @@ import {
   Accordion,
   AccordionItem,
 } from "@heroui/react";
+import "./index.scss";
 import { useCallback, useMemo, useState } from "react";
 import { ArrowDownSLineIcon, LogoutIcon, OfficeIcon, UserGroupIcon, UserIcon } from "../svg";
-import { redirect, usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { UserInfo } from "@/interfaces/user";
 import LogoComponent from "../logo/logo";
 import { SYSTEM_MESSAGE } from "@/constants/enums";
-import "./index.scss";
+import { useUser } from "@/providers/user.providers";
+import { usePathname, useRouter } from "next/navigation";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
-export default function Navbar({ user }: { user: UserInfo | null }) {
+export default function Navbar() {
+  const router = useRouter();
   const pathname = usePathname();
+  const { user } = useUser();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -48,9 +50,9 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
       });
     } else {
       setLoading(false);
-      redirect("/auth/login");
+      router.replace("/auth/login");
     }
-  }, [setLoading]);
+  }, [router, setLoading]);
 
   const menuItems = useMemo(
     () => [
@@ -90,14 +92,19 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
   if (pageToHide.some((page) => page === pathname)) return null;
 
   return (
-    <HeroNavbar shouldHideOnScroll onMenuOpenChange={setIsMenuOpen} className="navbar-container">
+    <HeroNavbar
+      shouldHideOnScroll
+      isMenuOpen={isMenuOpen}
+      onMenuOpenChange={setIsMenuOpen}
+      className="navbar-container"
+    >
       <NavbarMenuToggle
         aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         className="sm:hidden"
       />
 
       <NavbarBrand className="cursor-pointer text-inherit">
-        <Link onClick={() => redirect("/")} className="text-inherit">
+        <Link onClick={() => router.push("/")} className="text-inherit">
           <LogoComponent responsive="lg" />
         </Link>
       </NavbarBrand>
@@ -108,10 +115,10 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
           .map((item, index) => {
             if (item.type === "link")
               return (
-                <NavbarItem key={index}>
+                <NavbarItem key={index} isActive={pathname === item.href}>
                   <Link
                     color="foreground"
-                    onClick={() => redirect(item.href)}
+                    onClick={() => router.push(item.href)}
                     className="cursor-pointer"
                   >
                     {item.label}
@@ -145,7 +152,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                       ? item.children.map((childItem, index) => (
                           <DropdownItem key={index} className="text-black">
                             <Link
-                              onClick={() => redirect(childItem.href)}
+                              onClick={() => router.push(childItem.href)}
                               className="flex items-center gap-2 text-inherit"
                             >
                               {childItem.icon}
@@ -169,7 +176,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                 variant="bordered"
                 startContent={<Avatar isBordered src={user.avatar} alt="" />}
                 endContent={<ArrowDownSLineIcon />}
-                className="h-full border-none text-inherit px-0 sm:px-1"
+                className="h-full border-none px-0 text-inherit sm:px-1"
               >
                 <p className="hidden h-fit max-w-24 overflow-hidden px-1 text-ellipsis whitespace-nowrap sm:inline">
                   {user.display_name}
@@ -183,7 +190,7 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
                   className="text-black"
                   color="default"
                   startContent={<UserIcon />}
-                  onClick={() => redirect("/profile")}
+                  onClick={() => router.push("/profile")}
                 >
                   Xem hồ sơ
                 </DropdownItem>
@@ -202,11 +209,11 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
         ) : (
           <>
             <NavbarItem className="hidden lg:flex">
-              <Link href="/auth/login">Login</Link>
+              <Link href="/auth/login">Đăng nhập</Link>
             </NavbarItem>
             <NavbarItem>
               <Button as={Link} color="primary" href="/auth/signup" variant="flat">
-                Sign Up
+                Đăng ký
               </Button>
             </NavbarItem>
           </>
@@ -217,15 +224,17 @@ export default function Navbar({ user }: { user: UserInfo | null }) {
         {menuItems.map((item, index) => {
           if (item.type === "link")
             return (
-              <NavbarMenuItem key={`${item}-${index}`} className="px-2">
+              <NavbarMenuItem
+                key={`${item}-${index}`}
+                isActive={pathname === item.href}
+                className="px-2"
+              >
                 <Link
                   className="w-full"
                   color={index === menuItems.length - 1 ? "danger" : "foreground"}
-                  href={item.href}
                   onClick={() => {
-                    if (item.type === "button" && item.onClick) {
-                      item.onClick();
-                    }
+                    router.push(item.href);
+                    setIsMenuOpen(false);
                   }}
                 >
                   {item.label}

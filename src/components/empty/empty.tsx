@@ -9,8 +9,8 @@ export default function EmptyComponent({
   description,
   button,
 }: {
-  title?: string;
-  description?: string;
+  title?: string | React.ReactNode;
+  description?: string | React.ReactNode;
   button?: React.ReactNode;
 }) {
   return (

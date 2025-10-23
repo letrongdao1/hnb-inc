@@ -1,12 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { PostResponse } from "./page";
-import { Button } from "@heroui/react";
 import { PlusIcon } from "@/components/svg";
 import SinglePost from "./SinglePost";
 import { PageTitle } from "@/components/text/text";
 import EmptyComponent from "@/components/empty/empty";
+import { AnimatePresence, motion } from "framer-motion";
+import { Button } from "@heroui/react";
+import { usePathname, useRouter } from "next/navigation";
 
 export default function NewsFeed({
   posts,
@@ -15,28 +17,69 @@ export default function NewsFeed({
   posts: PostResponse;
   canCreate: boolean;
 }) {
+  const pathName = usePathname();
+  const router = useRouter();
+
+  const [isHoverAdd, setIsHoverAdd] = useState<boolean>(false);
+
   return (
-    <div className="relative flex w-full flex-col items-stretch gap-4 border-b xl:max-w-[60em]">
+    <div className="relative flex w-full flex-col items-stretch gap-4 pb-20 xl:max-w-[60em]">
       <PageTitle>Bảng tin HNB</PageTitle>
 
       {Boolean(canCreate) && (
-        <div className="fixed right-4 bottom-12 xl:right-16">
-          <button className="group flex h-12 w-12 cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-sky-600 px-3 transition-all duration-300 ease-in-out hover:w-44 hover:bg-sky-800">
-            <PlusIcon fill="#FFFFFF" />
-            <span className="ml-2 hidden whitespace-nowrap opacity-0 transition-all duration-300 ease-in-out group-hover:block group-hover:opacity-100">
-              Tạo bản tin mới
-            </span>
-          </button>
-        </div>
+        <motion.div
+          layout
+          onMouseEnter={() => setIsHoverAdd(true)}
+          onMouseLeave={() => setTimeout(() => setIsHoverAdd(false), 500)}
+          className="fixed right-16 bottom-6 z-50 flex origin-center items-center justify-center"
+          transition={{ type: "keyframes", stiffness: 100, damping: 20 }}
+        >
+          <motion.div layout className={`rounded-full shadow-lg ${isHoverAdd ? "px-4" : "px-3"}`}>
+            <Button
+              color="primary"
+              onPress={() => router.push(`${pathName}/create`)}
+              className="text-primary-foreground bg-primary flex items-center gap-2 rounded-full text-sm font-medium"
+            >
+              <PlusIcon size={20} />
+              <AnimatePresence>
+                {isHoverAdd && (
+                  <motion.span
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeInOut" }}
+                    className="overflow-hidden whitespace-nowrap"
+                  >
+                    Tạo bài viết mới
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </Button>
+          </motion.div>
+        </motion.div>
       )}
 
-      {posts.length === 0 && <EmptyComponent />}
+      {posts.length === 0 && (
+        <EmptyComponent
+          title={<>Chưa có bản tin nào &#128564;</>}
+          description={`"Có thể Bot đang quá bận ở CLB chăng..."`}
+        />
+      )}
 
-      <div className="flex flex-col items-stretch justify-start gap-2">
-        {posts.map((post) => (
-          <SinglePost key={post.id} post={post} />
+      <motion.section
+        initial="hidden"
+        animate="show"
+        variants={{
+          hidden: {},
+          show: { transition: { staggerChildren: 0.08 } },
+        }}
+        className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-6 p-6 lg:grid-cols-2"
+      >
+        {posts.map((post, index) => (
+          <SinglePost key={post.id} post={post} isFirst={index === 0} />
         ))}
-      </div>
+      </motion.section>
     </div>
   );
 }

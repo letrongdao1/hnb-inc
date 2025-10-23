@@ -17,7 +17,7 @@ const CREATE_POST_ENABLED_ROLES = [ROLE.BOT];
 
 export async function generateMetadata() {
   return {
-    title: `Bảng tin HNB`,
+    title: CommonUtils.formatMetaData("Bảng tin"),
     description: "Tất cả các bản tin được Bot đăng ở HNB",
   };
 }
@@ -38,12 +38,23 @@ export async function getPosts({ pageIndex, pageSize }: PaginationProps) {
   const from = (pageIndex - 1) * pageSize;
   const to = from - 1 + pageSize;
 
-  const { data: postData } = await supabase
+  const NOW = new Date(Date.now()).toISOString();
+  const EXPIRED_AFTER = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); //7 days
+
+  const { data: postData, error } = await supabase
     .from("posts")
-    .select(
-      "id, user:news_user_fkey(id, display_name, avatar), title, description, content, image, status, active_at, created_at"
-    )
-    .range(from, to);
+    .select("*, user: users(id, display_name, avatar)")
+    .range(from, to)
+    .eq("status", 1)
+    .lte("active_at", NOW)
+    .gte("active_at", EXPIRED_AFTER)
+    .order("is_hot", { ascending: false })
+    .order("active_at", { ascending: false });
+
+  if (error) {
+    console.log({ error });
+    return [];
+  }
 
   const posts: PostResponse = postData
     ? await Promise.all(

@@ -179,7 +179,7 @@ export async function getCurrentUserInfo() {
   } else {
     const { data: userData } = await supabase
       .from("users")
-      .select("id, email, display_name, gender, avatar, dob, phone, status, created_at")
+      .select("*")
       .eq("id", data.user.id)
       .single();
 
