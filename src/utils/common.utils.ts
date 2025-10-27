@@ -45,15 +45,34 @@ export const CommonUtils = {
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/đ/g, "d")
       .replace(/Đ/g, "D");
-  
+
     const base = fromVietnamese
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .trim()
       .replace(/\s+/g, "-");
-  
+
     const shortTimestamp = Date.now().toString(36);
-  
+
     return `${base}-${shortTimestamp}`;
+  },
+  getHiddenEmail: (email: string) => {
+    if (!email) return "";
+
+    const emailParts = email.split("@");
+
+    if (emailParts.length < 2) return email;
+    else {
+      return [emailParts[0].slice(0, 2), "*****", "@", emailParts[1]].join("");
+    }
+  },
+  generateRandomCode: (length: number = 6, prefix: string = "") => {
+    const digits = "0123456789";
+    let result = prefix;
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * digits.length);
+      result += digits[randomIndex];
+    }
+    return result;
   },
 };

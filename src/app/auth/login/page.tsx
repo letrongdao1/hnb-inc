@@ -8,9 +8,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LogoComponent from "@/components/logo/logo";
 import { STATUS_CODE } from "@/constants/enums";
+import { useUser } from "@/providers/user.providers";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { setUser } = useUser();
   const [loading, setLoading] = useState<boolean>(false);
 
   const [form, setForm] = useState({
@@ -61,6 +63,7 @@ export default function LoginPage() {
         switch (response.status) {
           case STATUS_CODE.OK: {
             if (response.data) {
+              setUser(response.data);
               router.replace("/");
             } else {
               router.push("/get-start");
@@ -84,7 +87,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-center px-2">
+    <div className="flex min-h-[80vh] w-full flex-col items-center justify-center px-2">
       <LogoComponent />
 
       <Form

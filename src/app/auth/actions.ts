@@ -3,6 +3,9 @@
 import { ROLE, STATUS_CODE } from "@/constants/enums";
 import { UserInfo } from "@/interfaces/user";
 import { createClient } from "@/lib/supabase/server";
+import { CommonUtils } from "@/utils/common.utils";
+import { Resend } from "resend";
+import VerifyEmailTemplate from "@/components/email-templates/VerifyEmail";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -22,11 +25,24 @@ export async function login(formData: FormData) {
       };
     }
   } else {
-    const checkUser = await supabase.from("users").select().eq("id", data.user.id).single();
+    const checkUser = await supabase.from("users").select("*").eq("id", data.user.id).single();
     if (checkUser && checkUser.data) {
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role:user_roles_role_fkey(*)")
+        .eq("user_id", data.user.id);
+
+      const roles = roleData
+        ? roleData.map((r) => CommonUtils.getSingleDataFromUnknown(r.role))
+        : [];
+
+      const userDataWithRoles: UserInfo = {
+        ...checkUser.data,
+        roles,
+      };
       return {
         status: STATUS_CODE.OK,
-        data: checkUser.data,
+        data: userDataWithRoles,
         message: "Đăng nhập thành công.",
       };
     } else {
@@ -62,6 +78,30 @@ export async function checkSession() {
       data: null,
     };
   }
+}
+
+export async function sendVerificationCode(props: { email: string; code: string }) {
+  const resend = new Resend(process.env.RESEND_API_KEY!);
+
+  return await resend.emails
+    .send({
+      from: "HNB Inc <no-reply@hnb-inc.site>",
+      to: props.email,
+      subject: "[HNB] MÃ XÁC THỰC ĐĂNG KÝ TÀI KHOẢN HNB HUB",
+      react: VerifyEmailTemplate({ code: props.code }),
+    })
+    .then((res) => {
+      console.log({ data: res.data, error: res.error });
+      return {
+        status: res.error ? STATUS_CODE.ERROR : STATUS_CODE.OK,
+      };
+    })
+    .catch((err) => {
+      console.log(err);
+      return {
+        status: STATUS_CODE.ERROR,
+      };
+    });
 }
 
 export async function signup(formData: FormData) {
@@ -188,7 +228,7 @@ export async function getCurrentUserInfo() {
       .select("role:user_roles_role_fkey(*)")
       .eq("user_id", data.user.id);
 
-    const roles = roleData ? roleData.map((r) => r.role[0]) : [];
+    const roles = roleData ? roleData.map((r) => CommonUtils.getSingleDataFromUnknown(r.role)) : [];
 
     if (userData) {
       const userDataWithRoles: UserInfo = {

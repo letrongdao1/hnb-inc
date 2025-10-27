@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import GetStartView from "./GetStartView";
-import { createUserRole, getCurrentUserAuthInfo } from "../auth/actions";
+import { createUserRole, getCurrentUserAuthInfo, getCurrentUserInfo } from "../auth/actions";
 import { ROLE, STATUS_CODE } from "@/constants/enums";
 import { UserInfo } from "@/interfaces/user";
 
@@ -82,6 +82,7 @@ export async function createUser(params: any) {
       ) {        
         return {
           status: STATUS_CODE.CREATED,
+          data: await getCurrentUserInfo(),
           message: `Thiết lập hoàn tất. Chào mừng ${params.display_name || "bạn"} đến với HNB Hub!`,
         };
       }
