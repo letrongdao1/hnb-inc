@@ -13,7 +13,7 @@ export function PageTitle({
 }) {
   return (
     <p
-      className={`py-4 text-center text-4xl font-bold text-inherit uppercase lg:py-8 ${className}`}
+      className={`py-4 text-center text-xl lg:text-4xl font-bold text-inherit uppercase lg:py-8 ${className}`}
       style={style}
     >
       {children}

@@ -7,9 +7,11 @@ import { ArrowRightIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg
 import { createUser, uploadAvatar } from "./page";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";
+import { useUser } from "@/providers/user.providers";
 
 export default function GetStartView({ defaultAvatars }: { defaultAvatars: string[] }) {
   const router = useRouter();
+  const { setUser } = useUser();
 
   const getRandomAvatar = () => {
     return defaultAvatars[Math.floor(Math.random() * defaultAvatars.length)];
@@ -73,6 +75,9 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
               title: response.message,
               color: "success",
             });
+            if (response.data) {
+              setUser(response.data);
+            }
             router.replace("/");
             break;
           }

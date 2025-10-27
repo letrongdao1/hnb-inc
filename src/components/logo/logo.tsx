@@ -1,6 +1,6 @@
 import React from "react";
 
-const AcmeLogo = () => {
+export const AcmeLogo = () => {
   return (
     <svg fill="none" width="64" height="64" viewBox="0 0 32 32">
       <path
