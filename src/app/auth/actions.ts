@@ -88,7 +88,7 @@ export async function sendVerificationCode(props: { email: string; code: string 
       from: "HNB Inc <no-reply@hnb-inc.site>",
       to: props.email,
       subject: "[HNB] MÃ XÁC THỰC ĐĂNG KÝ TÀI KHOẢN HNB HUB",
-      react: VerifyEmailTemplate({ code: props.code }),
+      react: VerifyEmailTemplate({ validationCode: props.code }),
     })
     .then((res) => {
       console.log({ data: res.data, error: res.error });
