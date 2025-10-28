@@ -16,7 +16,7 @@ export default function MembersList({ members }: { members: MemberResponse[] }) 
     );
 
   return (
-    <div className="flex w-full max-w-[50em] flex-col items-stretch gap-2">
+    <div className="flex min-h-screen w-full max-w-[50em] flex-col items-stretch gap-2">
       <PageTitle>Danh sách thành viên HNB</PageTitle>
 
       {getMembersListByRole([ROLE.CEO]).map((user) => (

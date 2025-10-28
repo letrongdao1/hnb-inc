@@ -17,6 +17,7 @@ import ConfirmModal from "@/components/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 import { now, getLocalTimeZone, today, ZonedDateTime } from "@internationalized/date";
 import { SUPABASE_DATE_FORMAT } from "@/constants/constants";
+import SwitchCard from "@/components/ui/SwitchCard";
 
 const DEFAULT_TITLE = `Bản tin ngày ${dayjs().format("DD/MM/YYYY")}`;
 
@@ -60,7 +61,7 @@ export default function CreatePostForm() {
       });
     };
 
-    console.log(content.length)
+    console.log(content.length);
 
     if (!title) return warning("Vui lòng nhập tiêu đề cho bản tin!");
     else if (!content) return warning("Vui lòng nhập nội dung cho bản tin!");
@@ -185,7 +186,22 @@ export default function CreatePostForm() {
         <RichTextEditor setContent={setContent} placeholder="Nhập nội dung bản tin..." />
       </div>
 
-      <div className="flex w-full flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex w-full flex-col items-start justify-start gap-4 sm:flex-row sm:items-center md:gap-16">
+        <SwitchCard
+          title="Tin HOT"
+          description="Bản tin này sẽ được ưu tiên hiển thị trên bảng tin."
+          checked={isHot}
+          setChecked={setIsHot}
+          switchProps={{
+            color: "danger",
+            thumbIcon: ({ isSelected }) =>
+              isSelected ? (
+                <Image src={FIRE_ICON.src} alt="fire" className="aspect-square w-8" />
+              ) : null,
+          }}
+          switchClassName="flex items-center gap-2"
+        />
+
         <DatePicker
           hideTimeZone
           value={activeAt}
@@ -201,22 +217,6 @@ export default function CreatePostForm() {
           }}
           className="max-w-[284px]"
         />
-
-        <Switch
-          checked={isHot}
-          onChange={(e) => {
-            setIsHot(e.target.checked);
-          }}
-          color="danger"
-          className="flex items-center gap-2"
-          thumbIcon={({ isSelected }) =>
-            isSelected ? (
-              <Image src={FIRE_ICON.src} alt="fire" className="aspect-square w-8" />
-            ) : null
-          }
-        >
-          Tin HOT
-        </Switch>
       </div>
 
       <Button

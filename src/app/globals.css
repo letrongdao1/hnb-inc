@@ -1,9 +1,9 @@
 @import "tailwindcss";
 @plugin './hero.ts';
 @source '../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
-@import "../styles/_variables.scss";
+/* @import "../styles/_variables.scss"; */
 /* @import "../styles/_keyframe-animations.scss"; */
-@custom-variant dark (&:is(.dark *));
+/* @custom-variant dark (&:is(.dark *)); */
 
 @font-face {
   font-family: "Alfa Slab One";
@@ -20,7 +20,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-geiwst-sans);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -47,7 +47,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Montserrat", sans-serif;
-  caret-color: #9c9c9c;
+  /* caret-color: #9c9c9c; */
 }
 
 .font-alfa {

@@ -176,7 +176,7 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
                 maxLength={50}
               />
 
-              <DatePicker color="primary" isRequired label="Sinh nhật" name="dob" />
+              <DatePicker isRequired label="Sinh nhật" name="dob" showMonthAndYearPickers />
 
               <Input
                 isRequired

@@ -11,6 +11,7 @@ import { STATUS_CODE } from "@/constants/enums";
 export default function LoginPage() {
   const router = useRouter();
 
+  const [step, setStep] = useState<1 | 2>(1);
   const [email, setEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -51,12 +52,18 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
-      {!email ? (
-        <EmailSignupForm onNext={(value) => setEmail(value)} />
+      {step === 1 ? (
+        <EmailSignupForm
+          email={email}
+          onNext={(value) => {
+            setEmail(value);
+            setStep(2);
+          }}
+        />
       ) : (
         <PasswordSignupForm
           email={email}
-          setEmail={setEmail}
+          setStep={setStep}
           onSubmit={handleSignUp}
           loading={loading}
         />

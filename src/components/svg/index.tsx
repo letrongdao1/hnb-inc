@@ -511,3 +511,68 @@ export const QRIcon = ({ fill = "currentColor", size, height, width, ...props }:
     </svg>
   );
 };
+
+export const SendIcon = ({ fill = "currentColor", size, height, width, ...props }: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M21.7267 2.95694L16.2734 22.0432C16.1225 22.5716 15.7979 22.5956 15.5563 22.1126L11 13L1.9229 9.36919C1.41322 9.16532 1.41953 8.86022 1.95695 8.68108L21.0432 2.31901C21.5716 2.14285 21.8747 2.43866 21.7267 2.95694ZM19.0353 5.09647L6.81221 9.17085L12.4488 11.4255L15.4895 17.5068L19.0353 5.09647Z"></path>
+    </svg>
+  );
+};
+export const UploadIcon = ({ fill = "currentColor", size, height, width, ...props }: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M3 19H21V21H3V19ZM13 5.82843V17H11V5.82843L4.92893 11.8995L3.51472 10.4853L12 2L20.4853 10.4853L19.0711 11.8995L13 5.82843Z"></path>
+    </svg>
+  );
+};
+
+export const BankCardIcon = ({
+  fill = "currentColor",
+  size,
+  height,
+  width,
+  ...props
+}: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M3.00488 2.99979H21.0049C21.5572 2.99979 22.0049 3.4475 22.0049 3.99979V19.9998C22.0049 20.5521 21.5572 20.9998 21.0049 20.9998H3.00488C2.4526 20.9998 2.00488 20.5521 2.00488 19.9998V3.99979C2.00488 3.4475 2.4526 2.99979 3.00488 2.99979ZM20.0049 10.9998H4.00488V18.9998H20.0049V10.9998ZM20.0049 8.99979V4.99979H4.00488V8.99979H20.0049ZM14.0049 14.9998H18.0049V16.9998H14.0049V14.9998Z"></path>
+    </svg>
+  );
+};
+
+export const DeleteIcon = ({ fill = "currentColor", size, height, width, ...props }: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"></path>
+    </svg>
+  );
+};

@@ -1,14 +1,17 @@
 "use client";
 
-import React, { useRef, useState } from "react";
-import SHINOSUKE_IMAGE from "@/assets/images/shinosuke.jpg";
+import React, { useMemo, useRef, useState } from "react";
+import SHINOSUKE_IMAGE from "@/assets/images/profile/shinosuke.jpg";
+import QR_PLACEHOLDER_IMAGE from "@/assets/images/profile/qr_placeholder.jpg";
 import { Button } from "@heroui/react";
-import { EditIcon } from "../svg";
+import { EditIcon, UploadIcon } from "../svg";
 import Image from "next/image";
 
 export default function QRManagement() {
-  const [currentQR, setCurrentQR] = useState<string>("");
+  const [currentQR, setCurrentQR] = useState<string>(QR_PLACEHOLDER_IMAGE.src);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+
+  const isQREmpty = useMemo(() => currentQR === QR_PLACEHOLDER_IMAGE.src, [currentQR]);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -29,14 +32,18 @@ export default function QRManagement() {
           alt="qr"
           width={200}
           height={300}
-          className="absolute top-1/2 right-8 z-50 aspect-[3/3] w-24 -translate-y-22 rounded-md object-fill"
+          className={`absolute top-1/2 right-8 z-50 aspect-[3/3] w-24 -translate-y-22 rounded-md object-fill ${isQREmpty && "blur-xs"}`}
         />
       </div>
 
       <input type="file" hidden onChange={handleUpload} ref={uploadInputRef} />
 
-      <Button startContent={<EditIcon />} onPress={() => uploadInputRef.current?.click()}>
-        Cập nhật QR
+      <Button
+        color={isQREmpty ? "primary" : "default"}
+        startContent={isQREmpty ? <UploadIcon /> : <EditIcon />}
+        onPress={() => uploadInputRef.current?.click()}
+      >
+        {isQREmpty ? "Tải QR lên" : "Cập nhật QR"}
       </Button>
     </div>
   );

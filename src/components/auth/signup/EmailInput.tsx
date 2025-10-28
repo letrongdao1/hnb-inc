@@ -1,9 +1,8 @@
 "use client";
 
-import { checkEmail, sendVerificationCode } from "@/app/auth/actions";
-import { ArrowRightIcon } from "@/components/svg";
+import { checkEmail } from "@/app/auth/actions";
+import { ArrowRightIcon, CheckIcon, SendIcon } from "@/components/svg";
 import { STATUS_CODE } from "@/constants/enums";
-import { createClient } from "@/lib/supabase/client";
 import { CommonUtils } from "@/utils/common.utils";
 import {
   addToast,
@@ -16,40 +15,82 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@heroui/react";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-export default function EmailSignupForm({ onNext }: { onNext: (email: string) => void }) {
-  const [email, setEmail] = useState("");
+const RESEND_DELAY = 60;
+
+export default function EmailSignupForm({
+  email,
+  onNext,
+}: {
+  email: string | null;
+  onNext: (email: string) => void;
+}) {
+  const [emailInput, setEmailInput] = useState(email || "");
   const [loading, setLoading] = useState<boolean>(false);
   const [inputOTP, setInputOTP] = useState<string>("");
-  const [currentGeneratedOTP, setCurrentGeneratedOTP] = useState<string>();
+  const [isVerified, setIsVerified] = useState<boolean>(false);
 
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [resendCounter, setResendCounter] = useState<number>(RESEND_DELAY);
+  const [canResend, setCanResend] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+
+  useEffect(() => {
+    if (email) setIsVerified(true);
+  }, [email]);
+
+  useEffect(() => {
+    if (!isVerified) return;
+
+    if (email && email !== emailInput) setIsVerified(false);
+  }, [emailInput, isVerified, email]);
+
+  const sendEmail = useCallback(async () => {
+    return await fetch("/api/auth/otp/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: emailInput }),
+    });
+  }, [emailInput]);
+
+  const handleSubmitEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
+    if (!emailInput) return;
+
+    if (isVerified) {
+      onNext(emailInput);
+      return;
+    }
 
     setLoading(true);
 
     try {
-      const response = await checkEmail(email);
+      const response = await checkEmail(emailInput);
 
       if (response.status === STATUS_CODE.CONFLICT) {
-        setEmail("");
+        setEmailInput("");
         return addToast({
           title: "Email này đã tồn tại trên HNB Hub. Vui lòng thử đăng nhập lại!",
           color: "danger",
         });
-      } else if (response.status === STATUS_CODE.OK) {
-        const newOTP = CommonUtils.generateRandomCode();
-        setCurrentGeneratedOTP(newOTP);
-        const sendEmailResponse = await sendVerificationCode({ email, code: newOTP });
-        if (sendEmailResponse.status === STATUS_CODE.OK) {
+      }
+
+      if (response.status === STATUS_CODE.OK) {
+        const otpResponse = await sendEmail();
+
+        const data = await otpResponse.json();
+
+        if (otpResponse.ok) {
           onOpen();
+          addToast({
+            title: "Mã xác thực đã được gửi đến email của bạn. Vui lòng kiểm tra email để lấy mã!",
+            color: "success",
+          });
+          handleCountDownResend();
         } else {
           addToast({
-            title: "Gửi email lỗi. Vui lòng thử lại sau!",
+            title: data.error || "Không thể gửi mã xác thực. Vui lòng thử lại sau!",
             color: "danger",
           });
         }
@@ -60,29 +101,105 @@ export default function EmailSignupForm({ onNext }: { onNext: (email: string) =>
     }
   };
 
-  const handleCompleteOTP = (value?: string) => {
+  const handleCompleteOTP = async (value?: string) => {
     if (!value) return;
+    setLoading(true);
+
+    try {
+      const verifyResponse = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailInput, otp: value }),
+      });
+
+      const data = await verifyResponse.json();
+
+      if (verifyResponse.ok) {
+        addToast({
+          title: "Xác thực email thành công",
+          color: "success",
+        });
+        setIsVerified(true);
+        onNext(emailInput);
+      } else {
+        const attemptsLeft = data.data ? data.data.attemptsLeft : undefined;
+        addToast({
+          title: data.error,
+          color: "danger",
+          description:
+            attemptsLeft && Number(attemptsLeft) > 0
+              ? `Lần xác thực còn lại: ${attemptsLeft}`
+              : undefined,
+        });
+
+        if (
+          verifyResponse.status !== STATUS_CODE.INVALID_CREDENTIALS ||
+          (attemptsLeft && attemptsLeft === 0)
+        ) {
+          setEmailInput("");
+          setInputOTP("");
+          onClose();
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      addToast({
+        title: "Đã xảy ra lỗi. Vui lòng thử lại!",
+        color: "danger",
+      });
+    } finally {
+      setInputOTP("");
+      setLoading(false);
+    }
+  };
+
+  const handleCountDownResend = () => {
+    setResendCounter(RESEND_DELAY);
+    setCanResend(false);
+
+    const interval = setInterval(() => {
+      setResendCounter((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleResend = async () => {
+    if (!emailInput) return;
 
     setLoading(true);
 
-    setTimeout(() => {
-      if (currentGeneratedOTP === value) {
-        onNext(email);
+    try {
+      const otpResponse = await sendEmail();
+      const data = await otpResponse.json();
+
+      if (otpResponse.ok) {
+        onOpen();
+        addToast({
+          title: "Mã xác thực đã được gửi lại. Vui lòng kiểm tra email để lấy mã!",
+          color: "success",
+        });
+        handleCountDownResend();
       } else {
         addToast({
-          title: "Mã OTP không đúng, vui lòng kiểm tra lại email!",
+          title: data.error || "Không thể gửi mã xác thực. Vui lòng thử lại sau!",
+          color: "danger",
         });
       }
-
-      setInputOTP("");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmitEmail}
         className="mx-auto mt-16 max-w-md space-y-2 rounded-2xl border border-gray-700 bg-inherit p-6 text-inherit shadow-lg"
       >
         <h2 className="mb-12 text-center text-2xl font-semibold">Tạo tài khoản Nhân viên HNB</h2>
@@ -91,14 +208,20 @@ export default function EmailSignupForm({ onNext }: { onNext: (email: string) =>
           label="Nhập địa chỉ email"
           name="email"
           type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={emailInput}
+          onChange={(e) => setEmailInput(e.target.value)}
           placeholder="troll@hnb.com"
           variant="faded"
           labelPlacement="outside"
           isRequired
           className="text-black"
         />
+
+        {isVerified && (
+          <p className="flex items-center gap-1 text-sm text-green-500">
+            <CheckIcon /> Đã xác thực
+          </p>
+        )}
 
         <Button
           type="submit"
@@ -126,7 +249,7 @@ export default function EmailSignupForm({ onNext }: { onNext: (email: string) =>
               <ModalBody className="space-y-4">
                 <p>
                   Vui lòng nhập mã xác thực đã được gửi đến địa chỉ email:{" "}
-                  <strong>{CommonUtils.getHiddenEmail(email)}</strong>:
+                  <strong>{CommonUtils.getHiddenEmail(emailInput)}</strong>:
                 </p>
 
                 <InputOtp
@@ -142,7 +265,17 @@ export default function EmailSignupForm({ onNext }: { onNext: (email: string) =>
                   <Button onPress={onClose} variant="light">
                     Hủy
                   </Button>
-                  <Button color="secondary">Gửi lại (00:60)</Button>
+                  <Button
+                    onPress={handleResend}
+                    isDisabled={!canResend}
+                    isLoading={loading}
+                    color="primary"
+                    startContent={canResend && !loading && <SendIcon size={16} />}
+                    className="lg:w-48"
+                  >
+                    Gửi lại{" "}
+                    {!canResend && !loading && `(00:${String(resendCounter).padStart(2, "0")})`}
+                  </Button>
                 </div>
               </ModalBody>
             </>

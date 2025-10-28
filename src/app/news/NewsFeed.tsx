@@ -51,7 +51,7 @@ export default function NewsFeed({
                     transition={{ duration: 0.25, ease: "easeInOut" }}
                     className="overflow-hidden whitespace-nowrap"
                   >
-                    Tạo bài viết mới
+                    Đăng bản tin
                   </motion.span>
                 )}
               </AnimatePresence>

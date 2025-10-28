@@ -1,4 +1,14 @@
-import { Body, Container, Head, Heading, Html, Link, Section, Text } from "@react-email/components";
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Section,
+  Text,
+  Font,
+} from "@react-email/components";
 import { AcmeLogo } from "../logo/logo";
 
 interface PlaidVerifyIdentityEmailProps {
@@ -7,19 +17,33 @@ interface PlaidVerifyIdentityEmailProps {
 
 export const PlaidVerifyIdentityEmail = ({ validationCode }: PlaidVerifyIdentityEmailProps) => (
   <Html>
-    <Head />
+    <Head>
+      <Font
+        fontFamily="Montserrat"
+        fallbackFontFamily="Arial"
+        webFont={{
+          url: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap",
+          format: "woff2",
+        }}
+      />
+    </Head>
+
     <Body style={main}>
       <Container style={container}>
         <Container style={{ margin: "0 auto" }}>
           <AcmeLogo />
         </Container>
+
         <Text style={tertiary}>Xác thực tài khoản HNB Hub</Text>
+
         <Heading style={secondary}>
           Nhập mã xác thực sau để xác thực địa chỉ email của bạn liên kết với HNB Hub:
         </Heading>
+
         <Section style={codeContainer}>
           <Text style={code}>{validationCode}</Text>
         </Section>
+
         <Text style={paragraph}>Không phải email này?</Text>
         <Text style={paragraph}>
           Liên hệ{" "}
@@ -29,6 +53,7 @@ export const PlaidVerifyIdentityEmail = ({ validationCode }: PlaidVerifyIdentity
           nếu bạn không yêu cầu gửi mã này.
         </Text>
       </Container>
+
       <Text style={footer}>Phát triển bởi phòng IT của HNB.</Text>
     </Body>
   </Html>
@@ -40,9 +65,11 @@ PlaidVerifyIdentityEmail.PreviewProps = {
 
 export default PlaidVerifyIdentityEmail;
 
+// =================== STYLES ===================
+
 const main = {
   backgroundColor: "#ffffff",
-  fontFamily: "HelveticaNeue,Helvetica,Arial,sans-serif",
+  fontFamily: "Montserrat, Arial, sans-serif",
 };
 
 const container = {
@@ -60,7 +87,7 @@ const tertiary = {
   color: "#0a85ea",
   fontSize: "11px",
   fontWeight: 700,
-  fontFamily: "HelveticaNeue,Helvetica,Arial,sans-serif",
+  fontFamily: "Montserrat, Arial, sans-serif",
   height: "16px",
   letterSpacing: "0",
   lineHeight: "16px",
@@ -72,7 +99,7 @@ const tertiary = {
 const secondary = {
   color: "#000",
   display: "inline-block",
-  fontFamily: "HelveticaNeue-Medium,Helvetica,Arial,sans-serif",
+  fontFamily: "Montserrat, Arial, sans-serif",
   fontSize: "20px",
   fontWeight: 500,
   lineHeight: "24px",
@@ -91,7 +118,7 @@ const codeContainer = {
 
 const code = {
   color: "#000",
-  fontFamily: "HelveticaNeue-Bold",
+  fontFamily: "Montserrat, Arial, sans-serif",
   fontSize: "32px",
   fontWeight: 700,
   letterSpacing: "6px",
@@ -106,7 +133,7 @@ const code = {
 const paragraph = {
   color: "#444",
   fontSize: "15px",
-  fontFamily: "HelveticaNeue,Helvetica,Arial,sans-serif",
+  fontFamily: "Montserrat, Arial, sans-serif",
   letterSpacing: "0",
   lineHeight: "23px",
   padding: "0 40px",
@@ -117,6 +144,7 @@ const paragraph = {
 const link = {
   color: "#444",
   textDecoration: "underline",
+  fontFamily: "Montserrat, Arial, sans-serif",
 };
 
 const footer = {
@@ -127,7 +155,7 @@ const footer = {
   lineHeight: "23px",
   margin: "0",
   marginTop: "20px",
-  fontFamily: "HelveticaNeue,Helvetica,Arial,sans-serif",
+  fontFamily: "Montserrat, Arial, sans-serif",
   textAlign: "center" as const,
   textTransform: "uppercase" as const,
 };

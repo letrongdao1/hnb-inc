@@ -1,17 +1,18 @@
 "use client";
 
 import { ArrowLeftIcon, CheckIcon, EyeFilledIcon, EyeSlashFilledIcon } from "@/components/svg";
+import { CommonUtils } from "@/utils/common.utils";
 import { addToast, Button, Form, Input } from "@heroui/react";
 import { useState } from "react";
 
 export default function PasswordSignupForm({
   email,
-  setEmail,
+  setStep,
   onSubmit,
   loading,
 }: {
-  email: string;
-  setEmail: React.Dispatch<React.SetStateAction<string | null>>;
+  email: string | null;
+  setStep: React.Dispatch<React.SetStateAction<1 | 2>>;
   onSubmit: (password: string, confirmPassword: string) => void;
   loading: boolean;
 }) {
@@ -24,8 +25,8 @@ export default function PasswordSignupForm({
   const handleBack = () => {
     setPassword("");
     setConfirmPassword("");
-    setEmail(null);
     setIsVisible(false);
+    setStep(1);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -57,10 +58,7 @@ export default function PasswordSignupForm({
         <div className="space-y-2">
           <h2 className="text-center text-lg font-bold sm:text-xl">Tạo mật khẩu</h2>
           <p className="text-center text-xs text-gray-400 sm:text-sm">
-            cho{" "}
-            <strong>
-              {email.split("@")[0].substring(0, 3)}***@{email.split("@")[1]}
-            </strong>
+            cho <strong>{CommonUtils.getHiddenEmail(email || "")}</strong>
           </p>
         </div>
       </div>

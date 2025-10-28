@@ -10,7 +10,9 @@ export default function Loader({ margin = 20 }: { margin?: number }) {
       variant="gradient"
       labelColor="foreground"
       color="default"
-      className={`mt-[${margin}vh]`}
+      style={{
+        marginTop: `${margin}vh`,
+      }}
     />
   );
 }

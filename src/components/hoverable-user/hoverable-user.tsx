@@ -27,7 +27,7 @@ export default function HoverableUser({ user }: { user: Partial<UserInfo> | null
   const LoadingSkeleton = () => (
     <div className="w-56 space-y-1 overflow-hidden py-2">
       <Skeleton className="w-3/5 rounded-lg">
-        <div className="h-5 w-3/5 rounded-lg bg-black" />
+        <div className="h-5 w-3/5 rounded-lg" />
       </Skeleton>
       <Skeleton className="w-4/5 rounded-lg">
         <div className="h-3 w-4/5 rounded-lg bg-gray-500" />
@@ -73,7 +73,7 @@ export default function HoverableUser({ user }: { user: Partial<UserInfo> | null
         ) : !userData ? (
           <EmptyComponent />
         ) : (
-          <div className="flex w-56 flex-col items-stretch gap-2 p-1 text-black">
+          <div className="flex w-56 flex-col items-stretch gap-2 p-1">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Avatar src={userData.avatar} alt="avatar" isBordered size="sm" />

@@ -1,8 +1,9 @@
 "use client";
 
+import BankAccountManagement from "@/components/profile/BankAccountManagement";
 import PersonalInfo from "@/components/profile/PersonalInfo";
 import QRManagement from "@/components/profile/QRManagement";
-import { EditIcon, QRIcon, UserIcon } from "@/components/svg";
+import { BankCardIcon, EditIcon, QRIcon, UserIcon } from "@/components/svg";
 import { UserInfo } from "@/interfaces/user";
 import { useUser } from "@/providers/user.providers";
 import { Avatar, Button, Divider } from "@heroui/react";
@@ -23,10 +24,10 @@ export default function UserProfilePage() {
       element: <PersonalInfo user={user} />,
     },
     {
-      label: "QR nhận tiền",
-      key: "qr",
-      icon: <QRIcon />,
-      element: <QRManagement />,
+      label: "Tài khoản nhận tiền",
+      key: "bank",
+      icon: <BankCardIcon />,
+      element: <BankAccountManagement user={user} />,
     },
   ];
 
@@ -65,8 +66,8 @@ export default function UserProfilePage() {
 
       <Divider />
 
-      <div className="flex items-stretch justify-between gap-1 px-1 py-4">
-        <div className="flex min-h-40 shrink flex-col items-stretch gap-2 md:min-w-xs">
+      <div className="flex w-full flex-col items-stretch justify-between gap-4 px-1 py-4 md:flex-row md:gap-1">
+        <div className="flex shrink flex-row items-stretch gap-2 md:min-h-40 md:min-w-xs md:flex-col">
           {tabItems.map((item) => {
             const isActive = item.key === activeKey;
 
@@ -74,7 +75,7 @@ export default function UserProfilePage() {
               <button
                 key={item.key}
                 onClick={() => handleTabChange(item.key)}
-                className={`flex items-center justify-start gap-2 rounded-md ${isActive && "border"} p-2 px-2 duration-200 hover:brightness-75`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md md:flex-none md:justify-start ${isActive && "border"} p-2 px-2 duration-200 hover:brightness-75`}
               >
                 {item.icon}
                 <p className={`hidden md:inline`}>{item.label}</p>
@@ -83,7 +84,7 @@ export default function UserProfilePage() {
           })}
         </div>
 
-        <div className="mx-auto flex min-h-40 flex-1 flex-col items-center border-l md:flex-1/2">
+        <div className="mx-auto flex min-h-40 w-full flex-1 flex-col items-center md:flex-1/2 md:border-l">
           {currentElement}
         </div>
       </div>

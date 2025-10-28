@@ -1,9 +1,9 @@
 "use client";
 
 import { UserInfo } from "@/interfaces/user";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Input, Button, Spacer, DatePicker, Select, SelectItem, addToast } from "@heroui/react";
-import { EditIcon } from "../svg";
+import { CheckIcon, EditIcon } from "../svg";
 import { parseDate } from "@internationalized/date";
 import { updateUserAccountInfo } from "@/app/profile/page";
 import { useUser } from "@/providers/user.providers";
@@ -23,7 +23,19 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
   const [dob, setDob] = useState(user?.dob ?? "");
   const [isLoading, setIsLoading] = useState(false);
 
+  const isChanged = useMemo(() => {
+    if (user && (displayName != user.display_name || phone != user.phone || dob != user.dob))
+      return true;
+
+    return false;
+  }, [user, displayName, phone, dob]);
+
   const handleSubmit = async () => {
+    if (!isChanged) {
+      setIsEditing(false);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const updateData = {
@@ -62,7 +74,14 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
   };
 
   return (
-    <div className="flex w-full max-w-2xl flex-col gap-4 rounded-xl p-6 shadow-sm">
+    <div className="flex w-full md:max-w-2xl flex-col gap-4 rounded-xl p-6 shadow-sm">
+      <Input label="Email" value={email} isDisabled />
+
+      <Select label="Giới tính" selectedKeys={[gender]} isDisabled>
+        <SelectItem key="M">Nam</SelectItem>
+        <SelectItem key="F">Nữ</SelectItem>
+      </Select>
+
       <Input
         label="Tên hiển thị"
         placeholder="Tên hiển thị"
@@ -78,13 +97,6 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         onChange={(e) => setPhone(e.target.value)}
         isReadOnly={!isEditing}
       />
-
-      <Input label="Email" value={email} isReadOnly />
-
-      <Select label="Giới tính" selectedKeys={[gender]} isDisabled>
-        <SelectItem key="M">Nam</SelectItem>
-        <SelectItem key="F">Nữ</SelectItem>
-      </Select>
 
       <DatePicker
         label="Ngày sinh"
@@ -103,8 +115,7 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         }}
         isLoading={isLoading}
         fullWidth
-        startContent={!isEditing && <EditIcon />}
-        className={`${isEditing ? "text-white" : "text-black"}`}
+        startContent={isEditing ? <CheckIcon /> : <EditIcon />}
       >
         {isEditing ? "Lưu thay đổi" : "Cập nhật"}
       </Button>

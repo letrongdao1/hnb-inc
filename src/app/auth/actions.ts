@@ -80,30 +80,6 @@ export async function checkSession() {
   }
 }
 
-export async function sendVerificationCode(props: { email: string; code: string }) {
-  const resend = new Resend(process.env.RESEND_API_KEY!);
-
-  return await resend.emails
-    .send({
-      from: "HNB Inc <no-reply@hnb-inc.site>",
-      to: props.email,
-      subject: "[HNB] MÃ XÁC THỰC ĐĂNG KÝ TÀI KHOẢN HNB HUB",
-      react: VerifyEmailTemplate({ validationCode: props.code }),
-    })
-    .then((res) => {
-      console.log({ data: res.data, error: res.error });
-      return {
-        status: res.error ? STATUS_CODE.ERROR : STATUS_CODE.OK,
-      };
-    })
-    .catch((err) => {
-      console.log(err);
-      return {
-        status: STATUS_CODE.ERROR,
-      };
-    });
-}
-
 export async function signup(formData: FormData) {
   const supabase = await createClient();
 

@@ -43,7 +43,7 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   return (
     <Modal isOpen={open} onOpenChange={onOpenChange} {...modalProps}>
-      <ModalContent className="text-black">
+      <ModalContent>
         <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
         <ModalBody>
           <div className="flex w-full flex-col items-start justify-start gap-2">

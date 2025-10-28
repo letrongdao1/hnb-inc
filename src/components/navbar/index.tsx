@@ -150,7 +150,7 @@ export default function Navbar() {
                   >
                     {item.children && item.children.length
                       ? item.children.map((childItem, index) => (
-                          <DropdownItem key={index} className="text-black">
+                          <DropdownItem key={index}>
                             <Link
                               onClick={() => router.push(childItem.href)}
                               className="flex items-center gap-2 text-inherit"
@@ -187,7 +187,6 @@ export default function Navbar() {
               <DropdownSection title="Tài khoản">
                 <DropdownItem
                   key="profile"
-                  className="text-black"
                   color="default"
                   startContent={<UserIcon />}
                   onClick={() => router.push("/profile")}
