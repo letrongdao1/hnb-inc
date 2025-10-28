@@ -42,7 +42,7 @@ export default function ConfirmModal({
   loading,
 }: ConfirmModalProps) {
   return (
-    <Modal isOpen={open} onOpenChange={onOpenChange} {...modalProps}>
+    <Modal isOpen={open} onOpenChange={onOpenChange} placement="center" {...modalProps}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
         <ModalBody>

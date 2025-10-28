@@ -10,11 +10,17 @@ import {
   Autocomplete,
   AutocompleteItem,
   useDisclosure,
+  Chip,
 } from "@heroui/react";
 import { ArrowLeftIcon, CheckIcon, DeleteIcon, PlusIcon } from "../svg";
 import { Bank, BankAccount } from "@/interfaces/common";
 import { useLoading } from "@/hooks/useLoading";
-import { createNewBankAccount, deleteBankAccount, getUserBankAccounts } from "@/app/profile/page";
+import {
+  createNewBankAccount,
+  deleteBankAccount,
+  getUserBankAccounts,
+  updateSelectAccount,
+} from "@/app/profile/page";
 import Loader from "../loader";
 import { STATUS_CODE } from "@/constants/enums";
 import EmptyComponent from "../empty/empty";
@@ -27,12 +33,24 @@ interface PersonalInfoProps {
 export default function BankAccountManagement({ user }: PersonalInfoProps) {
   const { loading, setLoading } = useLoading();
 
-  const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const {
+    isOpen: isOpenUpdateSelect,
+    onOpen: onOpenUpdateSelect,
+    onOpenChange: onOpenChangeUpdateSelect,
+    onClose: onCloseUpdateSelect,
+  } = useDisclosure();
+  const {
+    isOpen: isOpenDelete,
+    onOpen: onOpenDelete,
+    onOpenChange: onOpenChangeDelete,
+    onClose: onCloseDelete,
+  } = useDisclosure();
 
   const [accountList, setAccountList] = useState<BankAccount[]>([]);
   const [bankList, setBankList] = useState<Bank[]>([]);
   const [isAddingAccount, setIsAddingAccount] = useState<boolean>(false);
-  const [deletedAccount, setDeletedAccount] = useState<string>();
+  const [selectedAccount, setSelectedAccount] = useState<string>();
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const fetchUserBankAccount = useCallback(async () => {
     setLoading(true);
@@ -61,11 +79,11 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
     fetchUserBankAccount();
   }, [fetchUserBankAccount]);
 
-  const handleDeleteAccount = async () => {
-    if (!deletedAccount) return;
-    setLoading(true);
+  const handleSelectBankAccount = async () => {
+    if (!selectedAccount) return;
+    setIsUpdating(true);
 
-    await deleteBankAccount(deletedAccount)
+    await updateSelectAccount(selectedAccount)
       .then((res) => {
         if (res.status === STATUS_CODE.OK) {
           addToast({
@@ -81,8 +99,29 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
         }
       })
       .finally(() => {
-        setLoading(false);
-        onClose();
+        setIsUpdating(false);
+        onCloseUpdateSelect();
+      });
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!selectedAccount) return;
+    setIsUpdating(true);
+
+    await deleteBankAccount(selectedAccount)
+      .then((res) => {
+        if (res.status === STATUS_CODE.OK) {
+          fetchUserBankAccount();
+        } else {
+          addToast({
+            title: res.message,
+            color: "danger",
+          });
+        }
+      })
+      .finally(() => {
+        setIsUpdating(false);
+        onCloseDelete();
       });
   };
 
@@ -119,13 +158,13 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
           ) : (
             <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2">
               {accountList.map((account) => (
-                <div key={account.id} className="flex items-stretch gap-2 rounded-md p-2">
+                <div key={account.id} className="flex w-full items-stretch gap-2 rounded-md p-2">
                   <Image
                     src={account.bank_logo}
                     alt={account.bank_short_name}
                     className="aspect-square w-16 rounded-full border bg-white object-contain"
                   />
-                  <div className="space-y-0">
+                  <div className="flex-1 space-y-0">
                     <p className="line-clamp-1 text-xs font-light opacity-60">
                       {account.bank_name}
                     </p>
@@ -133,33 +172,65 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
                     <p className="text-sm font-semibold opacity-75">{account.account_number}</p>
                   </div>
 
-                  <Button
-                    isIconOnly
-                    startContent={<DeleteIcon size={16} />}
-                    isLoading={loading}
-                    variant="faded"
-                    color="danger"
-                    onPress={() => {
-                      setDeletedAccount(account.id);
-                      onOpen();
-                    }}
-                  />
+                  <div className="flex flex-col items-end justify-between gap-2">
+                    <Button
+                      isIconOnly
+                      startContent={<DeleteIcon size={16} />}
+                      isLoading={loading}
+                      variant="faded"
+                      color="danger"
+                      size="sm"
+                      onPress={() => {
+                        setSelectedAccount(account.id);
+                        onOpenDelete();
+                      }}
+                    />
+
+                    {account.is_selected ? (
+                      <Chip color="success" startContent={<CheckIcon size={18} />} variant="shadow">
+                        Đang sử dụng
+                      </Chip>
+                    ) : (
+                      <Chip
+                        onClick={() => {
+                          setSelectedAccount(account.id);
+                          onOpenUpdateSelect();
+                        }}
+                        className="cursor-pointer duration-200 hover:brightness-75"
+                      >
+                        Chọn
+                      </Chip>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
           <ConfirmModal
-            open={isOpen}
-            onOpenChange={onOpenChange}
-            onClose={onClose}
+            open={isOpenUpdateSelect}
+            onOpenChange={onOpenChangeUpdateSelect}
+            onClose={onCloseUpdateSelect}
+            title="Chọn tài khoản sử dụng"
+            description="Tài khoản này sẽ được sử dụng cho mục đích giao dịch trên hệ thống của bạn."
+            onConfirm={handleSelectBankAccount}
+            okButtonProps={{
+              color: "primary",
+            }}
+            loading={isUpdating}
+          />
+
+          <ConfirmModal
+            open={isOpenDelete}
+            onOpenChange={onOpenChangeDelete}
+            onClose={onCloseDelete}
             title="Xóa tài khoản ngân hàng"
             extra="Thao tác này không thể được hoàn tác"
             onConfirm={handleDeleteAccount}
             okButtonProps={{
               color: "danger",
             }}
-            loading={loading}
+            loading={isUpdating}
           />
         </>
       )}

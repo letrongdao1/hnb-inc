@@ -104,105 +104,104 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
     }
   };
   return (
-    <div className="m-auto flex h-full w-full flex-col items-center justify-center px-4 text-white">
-      <div className="flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md bg-sky-950 py-8 lg:w-[40em] lg:gap-16">
-        <div className="flex flex-col items-stretch gap-2">
-          <button
-            onClick={handleUploadClick}
-            className="text-large relative mx-auto mb-4 h-28 w-28 cursor-pointer rounded-full bg-white duration-200 hover:brightness-75 lg:h-40 lg:w-40"
-          >
-            <Avatar
-              isBordered
-              color="default"
-              src={currentAvatarUrl || IMAGE_PLACEHOLDER}
-              alt="avatar"
-              className="text-large h-full w-full"
-            />
-
-            <span className="absolute right-1/2 -bottom-4 flex translate-x-1/2 items-center rounded-full border border-gray-900 bg-white px-2">
-              <PlusIcon fill="#000" />{" "}
-              <p className="text-xs whitespace-nowrap text-black">Nhấn để upload</p>
-            </span>
-          </button>
-          <input
-            ref={uploadRef}
-            type="file"
-            hidden
-            accept=".jpg,.jpeg,.png"
-            max={1}
-            onChange={handleUpload}
+    <div className="flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md border py-8 lg:w-[40em] lg:gap-16">
+      <div className="flex flex-col items-stretch gap-2">
+        <button
+          onClick={handleUploadClick}
+          className="text-large relative mx-auto mb-4 h-28 w-28 cursor-pointer rounded-full bg-white duration-200 hover:brightness-75 lg:h-40 lg:w-40"
+        >
+          <Avatar
+            isBordered
+            color="default"
+            src={currentAvatarUrl || IMAGE_PLACEHOLDER}
+            alt="avatar"
+            className="text-large h-full w-full"
           />
 
-          <div className="mx-auto grid grid-cols-6 items-center justify-center gap-2">
-            {defaultAvatars.map((ava, index) => (
-              <Avatar
-                key={index}
-                src={ava}
-                alt=""
-                isBordered={ava === currentAvatarUrl}
-                onClick={() => setCurrentAvatarUrl(ava)}
-                className={`cursor-pointer ${ava !== currentAvatarUrl && "brightness-75 hover:brightness-100"} duration-200`}
-              />
-            ))}
-          </div>
-          <p className="text-center text-sm italic">Chọn hoăc upload avatar cho riêng bạn!</p>
+          <span className="absolute right-1/2 -bottom-4 flex translate-x-1/2 items-center rounded-full border border-gray-900 bg-white px-2">
+            <PlusIcon fill="#000" />{" "}
+            <p className="text-xs whitespace-nowrap text-black">Nhấn để upload</p>
+          </span>
+        </button>
+        <input
+          ref={uploadRef}
+          type="file"
+          hidden
+          accept=".jpg,.jpeg,.png"
+          max={1}
+          onChange={handleUpload}
+        />
+
+        <div className="mx-auto grid grid-cols-6 items-center justify-center gap-2">
+          {defaultAvatars.map((ava, index) => (
+            <Avatar
+              key={index}
+              src={ava}
+              alt=""
+              isBordered={ava === currentAvatarUrl}
+              onClick={() => setCurrentAvatarUrl(ava)}
+              className={`cursor-pointer ${ava !== currentAvatarUrl && "brightness-50 hover:brightness-100"} duration-200`}
+            />
+          ))}
+        </div>
+        <p className="text-center text-sm italic">Chọn hoăc upload avatar cho riêng bạn!</p>
+      </div>
+
+      <div className="mx-auto flex w-full max-w-[400px] flex-col items-stretch px-1">
+        <div className="mb-4 flex w-full items-stretch justify-center overflow-hidden rounded-2xl border-2">
+          <button
+            onClick={() => setCurrentGender("M")}
+            className={`flex flex-1 cursor-pointer items-center justify-center border-r p-2 ${currentGender === "M" ? "bg-[#1945D1]" : "opacity-75"} duration-200`}
+          >
+            <MaleIcon fill={`${currentGender === "M" ? "#FFFFFF" : "#1945D1"}`} />
+          </button>
+          <button
+            onClick={() => setCurrentGender("F")}
+            className={`flex flex-1 cursor-pointer items-center justify-center p-2 ${currentGender === "F" ? "bg-[#DE2AD3]" : "opacity-75"} duration-200`}
+          >
+            <FemaleIcon fill={`${currentGender === "F" ? "#FFFFFF" : "#DE2AD3"}`} />
+          </button>
         </div>
 
-        <div className="mx-auto flex w-full max-w-[400px] flex-col items-stretch px-1">
-          <div className="mb-4 flex w-full items-stretch justify-center overflow-hidden rounded-2xl border-2">
-            <button
-              onClick={() => setCurrentGender("M")}
-              className={`flex flex-1 cursor-pointer items-center justify-center border-r p-2 ${currentGender === "M" ? "bg-[#1945D1]" : "opacity-75"} duration-200`}
-            >
-              <MaleIcon fill={`${currentGender === "M" ? "#FFFFFF" : "#1945D1"}`} />
-            </button>
-            <button
-              onClick={() => setCurrentGender("F")}
-              className={`flex flex-1 cursor-pointer items-center justify-center p-2 ${currentGender === "F" ? "bg-[#DE2AD3]" : "opacity-75"} duration-200`}
-            >
-              <FemaleIcon fill={`${currentGender === "F" ? "#FFFFFF" : "#DE2AD3"}`} />
-            </button>
+        <Form onSubmit={handleSubmit} className="flex flex-col items-stretch">
+          <div className="flex flex-col items-stretch gap-2">
+            <Input
+              isRequired
+              label="Tên hiển thị"
+              placeholder="Nhập tên của bạn..."
+              type="text"
+              name="display_name"
+              autoComplete="off"
+              maxLength={50}
+            />
+
+            <DatePicker isRequired label="Sinh nhật" name="dob" showMonthAndYearPickers />
+
+            <Input
+              isRequired
+              label="Số điện thoại"
+              placeholder="Nhập số điện thoại..."
+              type="text"
+              minLength={10}
+              maxLength={11}
+              name="phone"
+              autoComplete="off"
+            />
           </div>
 
-          <Form onSubmit={handleSubmit} className="flex flex-col items-stretch">
-            <div className="flex flex-col items-stretch gap-2">
-              <Input
-                isRequired
-                label="Tên hiển thị"
-                placeholder="Nhập tên của bạn..."
-                type="text"
-                name="display_name"
-                autoComplete="off"
-                maxLength={50}
-              />
-
-              <DatePicker isRequired label="Sinh nhật" name="dob" showMonthAndYearPickers />
-
-              <Input
-                isRequired
-                label="Số điện thoại"
-                placeholder="090..."
-                type="text"
-                minLength={10}
-                maxLength={11}
-                name="phone"
-                autoComplete="off"
-              />
-            </div>
-
-            <div className="mt-8 flex w-full justify-end">
-              <Button
-                type="submit"
-                color="success"
-                endContent={<ArrowRightIcon />}
-                isLoading={loading}
-                className="font-semibold"
-              >
-                Hoàn tất
-              </Button>
-            </div>
-          </Form>
-        </div>
+          <div className="mt-8 flex w-full justify-end">
+            <Button
+              type="submit"
+              color="success"
+              endContent={<ArrowRightIcon />}
+              isLoading={loading}
+              className="font-semibold"
+              fullWidth
+            >
+              Hoàn tất
+            </Button>
+          </div>
+        </Form>
       </div>
     </div>
   );

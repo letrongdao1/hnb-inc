@@ -19,21 +19,34 @@ import {
   addToast,
   Accordion,
   AccordionItem,
+  Switch,
 } from "@heroui/react";
 import "./index.scss";
 import { useCallback, useMemo, useState } from "react";
-import { ArrowDownSLineIcon, LogoutIcon, OfficeIcon, UserGroupIcon, UserIcon } from "../svg";
+import {
+  ArrowDownSLineIcon,
+  LogoutIcon,
+  MoonIcon,
+  OfficeIcon,
+  PaleteIcon,
+  SunIcon,
+  UserGroupIcon,
+  UserIcon,
+} from "../svg";
 import { createClient } from "@/lib/supabase/client";
 import LogoComponent from "../logo/logo";
 import { SYSTEM_MESSAGE } from "@/constants/enums";
 import { useUser } from "@/providers/user.providers";
 import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { motion, AnimatePresence } from "framer-motion";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
 export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
   const { user } = useUser();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -184,15 +197,67 @@ export default function Navbar() {
               </Button>
             </DropdownTrigger>
             <DropdownMenu aria-label="Dropdown menu with description" variant="faded">
-              <DropdownSection title="Tài khoản">
+              <DropdownSection title="Tài khoản" showDivider>
                 <DropdownItem
                   key="profile"
                   color="default"
                   startContent={<UserIcon />}
                   onClick={() => router.push("/profile")}
                 >
-                  Xem hồ sơ
+                  Quản lý tài khoản
                 </DropdownItem>
+              </DropdownSection>
+              <DropdownSection title="Hệ thống" showDivider>
+                <DropdownItem
+                  key="theme"
+                  color="default"
+                  startContent={<PaleteIcon />}
+                  className="flex items-center"
+                  onPress={() => {
+                    console.log({ theme });
+                    setTheme(theme === "dark" ? "light" : "dark");
+                  }}
+                  isReadOnly
+                >
+                  <div className="flex items-center justify-between">
+                    <p>Giao diện</p>
+                    <Button
+                      isIconOnly
+                      variant="shadow"
+                      radius="full"
+                      size="sm"
+                      aria-label="Toggle theme"
+                      onPress={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="relative overflow-hidden bg-transparent"
+                    >
+                      <AnimatePresence mode="wait" initial={false}>
+                        {theme === "light" ? (
+                          <motion.div
+                            key="sun"
+                            initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                            exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <SunIcon className="h-5 w-5 text-yellow-500" />
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key="moon"
+                            initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                            animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                            exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <MoonIcon className="h-5 w-5 text-white" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </Button>
+                  </div>
+                </DropdownItem>
+              </DropdownSection>
+              <DropdownSection title="">
                 <DropdownItem
                   key="logout"
                   className="text-danger"

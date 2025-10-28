@@ -74,13 +74,15 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
   };
 
   return (
-    <div className="flex w-full md:max-w-2xl flex-col gap-4 rounded-xl p-6 shadow-sm">
-      <Input label="Email" value={email} isDisabled />
+    <div className="flex w-full flex-col items-stretch gap-2 rounded-xl p-6 shadow-sm md:max-w-2xl">
+      <div className="flex flex-col items-stretch gap-2 sm:flex-row">
+        <Input label="Email" value={email} isDisabled className="flex-2" />
 
-      <Select label="Giới tính" selectedKeys={[gender]} isDisabled>
-        <SelectItem key="M">Nam</SelectItem>
-        <SelectItem key="F">Nữ</SelectItem>
-      </Select>
+        <Select label="Giới tính" selectedKeys={[gender]} isDisabled className="flex-1">
+          <SelectItem key="M">Nam</SelectItem>
+          <SelectItem key="F">Nữ</SelectItem>
+        </Select>
+      </div>
 
       <Input
         label="Tên hiển thị"
@@ -103,6 +105,7 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         value={dob ? parseDate(dob) : undefined}
         onChange={(date) => setDob(date?.toString() ?? "")}
         isReadOnly={!isEditing}
+        showMonthAndYearPickers
       />
 
       <Spacer y={1} />
@@ -115,7 +118,7 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         }}
         isLoading={isLoading}
         fullWidth
-        startContent={isEditing ? <CheckIcon /> : <EditIcon />}
+        startContent={isLoading ? null : isEditing ? <CheckIcon /> : <EditIcon />}
       >
         {isEditing ? "Lưu thay đổi" : "Cập nhật"}
       </Button>

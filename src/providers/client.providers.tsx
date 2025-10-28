@@ -6,7 +6,7 @@ import { ToastProvider } from "@heroui/toast";
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={true}>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <HeroUIProvider>
         {children}
         <ToastProvider placement="top-right" maxVisibleToasts={3} toastProps={{ timeout: 5000 }} />

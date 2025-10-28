@@ -27,5 +27,6 @@ export interface BankAccount {
   bank_name: string;
   bank_short_name: string;
   bank_logo: string;
+  is_selected: boolean;
   created_at?: string;
 }
