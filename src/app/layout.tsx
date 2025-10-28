@@ -33,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       className={`${montserrat.variable} ${alfaSlabOne.variable}`}
       suppressHydrationWarning
     >
-      <body className="font-sans dark text-foreground bg-background">
+      <body className="font-sans text-foreground bg-background">
         <ClientProviders>
           <ClientLayout user={userData}>{children}</ClientLayout>
         </ClientProviders>

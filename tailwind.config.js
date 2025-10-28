@@ -1,6 +1,5 @@
 import { heroui } from "@heroui/react";
 
-// tailwind.config.js
 module.exports = {
   darkMode: "class",
   content: [

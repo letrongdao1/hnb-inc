@@ -12,11 +12,6 @@
   font-style: normal;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -24,30 +19,24 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #cccccc;
-  }
-
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #888 #141414;
-  }
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  scrollbar-width: thin;
+  scrollbar-color: #595959 #ffffff;
 }
 
-@media (prefers-color-scheme: light) {
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: #595959 #ffffff;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #cccccc;
+  scrollbar-color: #888 #141414;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Montserrat", sans-serif;
-  /* caret-color: #9c9c9c; */
+  caret-color: #9c9c9c;
 }
 
 .font-alfa {

@@ -55,9 +55,10 @@ export async function getUserBankAccounts() {
   const { data, error } = await supabase
     .from("bank_accounts")
     .select(
-      "id, account_number, account_owner, bank_code, bank_name, bank_short_name, bank_logo, created_at"
+      "id, account_number, account_owner, bank_code, bank_name, bank_short_name, bank_logo, is_selected, created_at"
     )
     .eq("user", userId)
+    .order("is_selected", { ascending: false })
     .order("created_at", { ascending: false });
 
   if (data) {
@@ -96,14 +97,63 @@ export async function createNewBankAccount(data: Partial<BankAccount>) {
       message: "Tài khoản đã tồn tại trên hệ thống. Vui lòng sử dụng tài khoản khác!",
     };
 
+  const { data: userAccounts } = await supabase
+    .from("bank_accounts")
+    .select()
+    .eq("user", userId)
+    .limit(1);
+
+  console.log({ userAccounts });
+
   const { error } = await supabase.from("bank_accounts").insert({
     ...data,
     user: userId,
+    is_selected: !userAccounts || userAccounts.length === 0,
   });
 
   return {
     status: error ? STATUS_CODE.ERROR : STATUS_CODE.CREATED,
     message: error ? "Thêm tài khoản lỗi. Vui lòng thử lại sau!" : "Thêm tài khoản thành công.",
+  };
+}
+
+export async function updateSelectAccount(id: string) {
+  if (!id)
+    return {
+      status: STATUS_CODE.ERROR,
+      message: "Không tìm thấy tài khoản!",
+    };
+
+  const supabase = await createClient();
+
+  const { data: checkSelected } = await supabase
+    .from("bank_accounts")
+    .select()
+    .eq("is_selected", true)
+    .limit(1)
+    .maybeSingle();
+
+  const parsedCurrentlySelected = CommonUtils.getSingleDataFromUnknown(checkSelected);
+
+  if (parsedCurrentlySelected) {
+    const cjecl = await supabase
+      .from("bank_accounts")
+      .update({ is_selected: false })
+      .eq("id", parsedCurrentlySelected.id)
+      .select();
+  }
+
+  const { data, error } = await supabase
+    .from("bank_accounts")
+    .update({ is_selected: true })
+    .eq("id", id)
+    .select();
+
+  return {
+    status: error ? STATUS_CODE.ERROR : STATUS_CODE.OK,
+    message: error
+      ? "Chọn tài khoản sử dụng không thành công. Vui lòng thử lại sau!"
+      : "Đã thay đổi tài khoản sử dụng.",
   };
 }
 
