@@ -6,6 +6,7 @@ import { PostInfo } from "@/interfaces/news";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_CODE } from "@/constants/enums";
 import { CommonUtils } from "@/utils/common.utils";
+import { getPublicUserList } from "@/app/auth/users";
 
 export async function generateMetadata() {
   return {
@@ -15,7 +16,11 @@ export async function generateMetadata() {
 }
 
 export default async function CreatePost() {
-  return <CreatePostForm />;
+  const supabase = await createClient();
+
+  const tagUsers = await getPublicUserList(supabase);
+
+  return <CreatePostForm tagUsers={tagUsers} />;
 }
 
 export async function uploadPostImage(file: File) {

@@ -6,6 +6,7 @@ export const CommonUtils = {
     return [title, mainTitle].filter(Boolean).join(" | ");
   },
   getSingleDataFromUnknown: (data: any) => {
+    if (!data) return data;
     if (typeof data === "object") return data;
     else if (Array.isArray(data) && data.length) return data[0];
   },
@@ -66,6 +67,11 @@ export const CommonUtils = {
       return [emailParts[0].slice(0, 2), "*****", "@", emailParts[1]].join("");
     }
   },
+  getHiddenNumber: (num: string | number) => {
+    if (!num) return "";
+
+    return String(num).slice(0, 3) + "***********";
+  },
   generateRandomCode: (length: number = 6, prefix: string = "") => {
     const digits = "0123456789";
     let result = prefix;
@@ -74,5 +80,16 @@ export const CommonUtils = {
       result += digits[randomIndex];
     }
     return result;
+  },
+  parseMentions: (text: string) => {
+    const regex = /@\[(.*?)\]\(id:(.*?)\)/g;
+    const mentions: { id: string; display: string }[] = [];
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      mentions.push({ display: match[1], id: match[2] });
+    }
+
+    return mentions;
   },
 };

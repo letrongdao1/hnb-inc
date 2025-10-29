@@ -45,8 +45,10 @@ export default function HoverableUser({ user }: { user: Partial<UserInfo> | null
       offset={10}
       isOpen={isTooltipOpen}
       onOpenChange={(isOpen) => {
+        if (isYou) return;
+
         if (isOpen) {
-          if (isYou) setIsTooltipOpen(isOpen);
+          setIsTooltipOpen(isOpen);
           setIsLoading(true);
           getCurrentUserInfo()
             .then((res) => {

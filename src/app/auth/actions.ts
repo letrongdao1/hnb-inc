@@ -4,8 +4,6 @@ import { ROLE, STATUS_CODE } from "@/constants/enums";
 import { UserInfo } from "@/interfaces/user";
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
-import { Resend } from "resend";
-import VerifyEmailTemplate from "@/components/email-templates/VerifyEmail";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();

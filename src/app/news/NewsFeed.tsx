@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { PostResponse } from "./page";
 import { PlusIcon } from "@/components/svg";
 import SinglePost from "./SinglePost";
-import { PageTitle } from "@/components/text/text";
+import { PageTitle } from "@/components/ui/text/text";
 import EmptyComponent from "@/components/empty/empty";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@heroui/react";

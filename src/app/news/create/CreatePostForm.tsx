@@ -1,10 +1,18 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
-import { PageTitle } from "@/components/text/text";
-import { addToast, Button, DatePicker, Image, Input, Switch, useDisclosure } from "@heroui/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PageTitle } from "@/components/ui/text/text";
+import {
+  addToast,
+  Avatar,
+  Button,
+  DatePicker,
+  Image,
+  Input,
+  Switch,
+  useDisclosure,
+} from "@heroui/react";
 import { ArrowLeftIcon, DeleteDocumentIcon, PlusIcon } from "@/components/svg";
-import RichTextEditor from "@/components/rich-text/RichTextEditor";
 import dayjs from "dayjs";
 import FIRE_ICON from "@/assets/icons/fire-svgrepo-com.svg";
 import { PostInfo } from "@/interfaces/news";
@@ -13,17 +21,37 @@ import { createNewPost, uploadPostImage } from "./page";
 import { STATUS_CODE } from "@/constants/enums";
 import { useRouter } from "next/navigation";
 import { CommonUtils } from "@/utils/common.utils";
-import ConfirmModal from "@/components/modal/ConfirmModal";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 import { now, getLocalTimeZone, today, ZonedDateTime } from "@internationalized/date";
-import { SUPABASE_DATE_FORMAT } from "@/constants/constants";
 import SwitchCard from "@/components/ui/SwitchCard";
+import { MentionsInput, Mention } from "react-mentions";
+import { Theme, SuggestionMode } from "emoji-picker-react";
+import { RoleInfo } from "@/interfaces/user";
+import mentionInputStyle from "@/styles/mentionInputStyle";
+import { useTheme } from "next-themes";
+import dynamic from "next/dynamic";
+
+const EmojiPicker = dynamic(
+  () => {
+    return import("emoji-picker-react");
+  },
+  { ssr: false }
+);
+
+interface TagUsersProps {
+  roles: RoleInfo[];
+  id: any;
+  display_name: any;
+  avatar: any;
+}
 
 const DEFAULT_TITLE = `Bản tin ngày ${dayjs().format("DD/MM/YYYY")}`;
 
-export default function CreatePostForm() {
+export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[] }) {
   const { user } = useUser();
   const router = useRouter();
+  const { theme } = useTheme();
 
   const {
     isOpen: isOpenConfirm,
@@ -36,6 +64,7 @@ export default function CreatePostForm() {
 
   const [title, setTitle] = useState(DEFAULT_TITLE);
   const [content, setContent] = useState("");
+  const [showEmoji, setShowEmoji] = useState(false);
   const [activeAt, setActiveAt] = useState<ZonedDateTime>(now(getLocalTimeZone()));
   const [isHot, setIsHot] = useState<boolean>(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -43,6 +72,23 @@ export default function CreatePostForm() {
   const imageURL = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : ""), [imageFile]);
 
   const uploadRef = useRef<HTMLInputElement>(null);
+  const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setShowEmoji(false);
+      }
+    }
+
+    if (showEmoji) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmoji]);
 
   const handleUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
@@ -60,8 +106,6 @@ export default function CreatePostForm() {
         color: "warning",
       });
     };
-
-    console.log(content.length);
 
     if (!title) return warning("Vui lòng nhập tiêu đề cho bản tin!");
     else if (!content) return warning("Vui lòng nhập nội dung cho bản tin!");
@@ -118,6 +162,10 @@ export default function CreatePostForm() {
 
       onCloseConfirm();
     });
+  };
+
+  const handleAddEmoji = (emojiData: any) => {
+    setContent((prev) => prev + emojiData.emoji);
   };
 
   return (
@@ -182,8 +230,65 @@ export default function CreatePostForm() {
         )}
       </div>
 
-      <div className="flex items-center justify-center">
-        <RichTextEditor setContent={setContent} placeholder="Nhập nội dung bản tin..." />
+      <div className="flex flex-col items-start justify-center gap-2">
+        <MentionsInput
+          value={content}
+          onChange={(_, newValue) => setContent(newValue)}
+          // className="min-h-[100px] w-full rounded-lg border p-2"
+          placeholder="Nhập nội dung bài viết"
+          style={mentionInputStyle}
+          a11ySuggestionsListLabel={"Tag"}
+          className="emoji-text w-full"
+        >
+          <Mention
+            trigger="@"
+            data={tagUsers.map((user) => ({
+              id: user.id,
+              display: user.display_name,
+              avatar: user.avatar,
+            }))}
+            renderSuggestion={(suggestion: any) => {
+              return (
+                <div className="flex items-center gap-2">
+                  <Avatar src={suggestion.avatar} />
+                  <span>{suggestion.display}</span>
+                </div>
+              );
+            }}
+            markup="@[__display__](id:__id__)"
+            displayTransform={(id, display) => `@${display}`}
+            style={{
+              backgroundColor: "#196AC2",
+            }}
+          />
+        </MentionsInput>
+
+        <div className="relative ml-auto inline-block">
+          <button
+            onClick={() => setShowEmoji((prev) => !prev)}
+            className="cursor-pointer rounded-md border p-2 duration-200 hover:scale-110"
+          >
+            😀 <p className="hidden text-sm md:inline">Biểu cảm</p>
+          </button>
+
+          {showEmoji && (
+            <div ref={pickerRef} className="absolute top-4 right-full z-50 mb-2 -translate-y-1/2">
+              <EmojiPicker
+                width={300}
+                theme={(theme as Theme) || Theme.LIGHT}
+                onEmojiClick={handleAddEmoji}
+                previewConfig={{
+                  showPreview: false,
+                }}
+                skinTonesDisabled
+                suggestedEmojisMode={SuggestionMode.FREQUENT}
+                style={{
+                  paddingRight: 8,
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex w-full flex-col items-start justify-start gap-4 sm:flex-row sm:items-center md:gap-16">

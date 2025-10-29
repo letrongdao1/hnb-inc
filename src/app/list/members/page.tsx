@@ -42,7 +42,7 @@ export default async function Members() {
         userData.map(async (data) => {
           return {
             ...data,
-            roles: await getUserRolesByUserID(data.id) || [],
+            roles: await getUserRolesByUserID(supabase, data.id) || [],
           };
         })
       );

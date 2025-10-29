@@ -6,6 +6,7 @@ import { PostInfo } from "@/interfaces/news";
 import { Badge, Card, CardBody, CardFooter, CardHeader, Divider, Image } from "@heroui/react";
 import { usePathname, useRouter } from "next/navigation";
 import FIRE_ICON from "@/assets/icons/fire-svgrepo-com.svg";
+import { renderContentWithMentions } from "./[slug]/PostInfo";
 
 export default function SinglePost({ post, isFirst }: { post: PostInfo; isFirst?: boolean }) {
   const router = useRouter();
@@ -64,7 +65,7 @@ export default function SinglePost({ post, isFirst }: { post: PostInfo; isFirst?
           <CardBody className={`flex flex-col justify-center p-6 ${isFirst ? "md:w-1/2" : ""}`}>
             <h1
               className={`text-foreground mb-3 line-clamp-3 font-bold group-hover:brightness-90 ${
-                isFirst ? "text-4xl leading-tight md:text-5xl" : "text-2xl"
+                isFirst ? "text-4xl leading-tight md:text-5xl" : "text-2xl md:min-h-24"
               }`}
             >
               {post.title}
@@ -74,20 +75,21 @@ export default function SinglePost({ post, isFirst }: { post: PostInfo; isFirst?
 
             {post.content && (
               <div
-                className={`text-default-600 line-clamp-3 ${
-                  isFirst ? "text-lg md:line-clamp-4" : "text-sm"
+                className={`text-default-600 line-clamp-3 opacity-50 ${
+                  isFirst ? "text-lg md:line-clamp-4" : "text-sm md:min-h-16"
                 }`}
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
+              >
+                {renderContentWithMentions(post.content)}
+              </div>
             )}
           </CardBody>
 
           {/* Footer */}
           {!isFirst && (
             <CardFooter className="text-default-400 mb-4 ml-auto flex items-center justify-between gap-2 text-xs">
-              <p className="hidden items-center gap-2 sm:flex">
+              {/* <p className="hidden items-center gap-2 sm:flex">
                 Đăng bởi <HoverableUser user={post.user} />
-              </p>
+              </p> */}
               <time dateTime={post.active_at} className="ml-auto">
                 {new Date(post.active_at).toLocaleDateString("vi", {
                   month: "long",
