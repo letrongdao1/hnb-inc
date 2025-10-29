@@ -1,3 +1,5 @@
+import { ROLE } from "@/constants/enums";
+
 export interface UserInfo {
   id: string;
   email: string;
@@ -13,6 +15,6 @@ export interface UserInfo {
 
 export interface RoleInfo {
   id: string;
-  name: string;
+  name: ROLE;
   status: boolean;
 }

@@ -24,7 +24,8 @@ import {
 import Loader from "../loader";
 import { STATUS_CODE } from "@/constants/enums";
 import EmptyComponent from "../empty/empty";
-import ConfirmModal from "../modal/ConfirmModal";
+import ConfirmModal from "../ui/modal/ConfirmModal";
+import { CommonUtils } from "@/utils/common.utils";
 
 interface PersonalInfoProps {
   user: UserInfo | null;
@@ -169,7 +170,9 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
                       {account.bank_name}
                     </p>
                     <p className="text-lg font-semibold uppercase">{account.account_owner}</p>
-                    <p className="text-sm font-semibold opacity-75">{account.account_number}</p>
+                    <p className="text-sm font-semibold opacity-75">
+                      {CommonUtils.getHiddenNumber(account.account_number)}
+                    </p>
                   </div>
 
                   <div className="flex flex-col items-end justify-between gap-2">
@@ -184,6 +187,7 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
                         setSelectedAccount(account.id);
                         onOpenDelete();
                       }}
+                      className={`${account.is_selected && "invisible"}`}
                     />
 
                     {account.is_selected ? (
@@ -211,11 +215,11 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
             open={isOpenUpdateSelect}
             onOpenChange={onOpenChangeUpdateSelect}
             onClose={onCloseUpdateSelect}
-            title="Chọn tài khoản sử dụng"
-            description="Tài khoản này sẽ được sử dụng cho mục đích giao dịch trên hệ thống của bạn."
+            title="Xác nhận thay đổi tài khoản sử dụng"
+            description="Tài khoản này sẽ được chọn dể sử dụng cho mục đích giao dịch trên hệ thống của bạn."
             onConfirm={handleSelectBankAccount}
             okButtonProps={{
-              color: "primary",
+              color: "success",
             }}
             loading={isUpdating}
           />

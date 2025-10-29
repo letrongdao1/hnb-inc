@@ -1,5 +1,3 @@
-import { UserInfo } from "./user";
-
 export interface PostInfo {
   id: string;
   user: {

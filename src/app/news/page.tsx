@@ -4,12 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import React from "react";
 import NewsFeed from "./NewsFeed";
 import { PostInfo } from "@/interfaces/news";
-import { getUserRolesByUserID } from "../auth/users";
+import { checkPermission } from "../auth/users";
 import { ROLE } from "@/constants/enums";
-import { RoleInfo } from "@/interfaces/user";
 import { PaginationProps } from "@/interfaces/common";
 import { DEFAULT_PAGE_SIZE } from "@/constants/constants";
 import { CommonUtils } from "@/utils/common.utils";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 export type PostResponse = PostInfo[];
 
@@ -23,23 +23,19 @@ export async function generateMetadata() {
 }
 
 export default async function NewsPage() {
-  const roleData: RoleInfo = (await getUserRolesByUserID())?.[0];
+  const supabase = await createClient();
 
-  const canCreate = CREATE_POST_ENABLED_ROLES.some((role) => roleData.name === role);
-
-  const posts = await getPosts({ pageIndex: 1, pageSize: DEFAULT_PAGE_SIZE });
+  const posts = await getPosts(supabase, { pageIndex: 1, pageSize: DEFAULT_PAGE_SIZE });
+  const canCreate = await checkPermission(supabase, CREATE_POST_ENABLED_ROLES);
 
   return <NewsFeed posts={posts} canCreate={canCreate} />;
 }
 
-export async function getPosts({ pageIndex, pageSize }: PaginationProps) {
-  const supabase = await createClient();
-
+export async function getPosts(supabase: SupabaseClient, { pageIndex, pageSize }: PaginationProps) {
   const from = (pageIndex - 1) * pageSize;
   const to = from - 1 + pageSize;
 
   const NOW = new Date(Date.now()).toISOString();
-  const EXPIRED_AFTER = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); //7 days
 
   const { data: postData, error } = await supabase
     .from("posts")
@@ -47,23 +43,18 @@ export async function getPosts({ pageIndex, pageSize }: PaginationProps) {
     .range(from, to)
     .eq("status", 1)
     .lte("active_at", NOW)
-    .gte("active_at", EXPIRED_AFTER)
-    .order("is_hot", { ascending: false })
-    .order("active_at", { ascending: false });
+    .order("active_at", { ascending: false })
+    .order("is_hot", { ascending: false });
 
-  if (error) {
+  if (error || !postData) {
     console.log({ error });
     return [];
   }
 
-  const posts: PostResponse = postData
-    ? await Promise.all(
-        postData.map((post) => ({
-          ...post,
-          user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
-        }))
-      )
-    : [];
+  const posts: PostResponse = postData.map((post) => ({
+    ...post,
+    user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
+  }));
 
   return posts;
 }

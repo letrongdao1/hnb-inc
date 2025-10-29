@@ -1,11 +1,11 @@
 "use client";
 
-import NotFoundPage from "@/app/not-found";
 import EmptyComponent from "@/components/empty/empty";
 import HoverableUser from "@/components/hoverable-user/hoverable-user";
-import { PageTitle } from "@/components/text/text";
-import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon";
+import { ArrowLeftIcon } from "@/components/svg";
+import { PageTitle } from "@/components/ui/text/text";
 import type { PostInfo } from "@/interfaces/news";
+import { CommonUtils } from "@/utils/common.utils";
 import {
   Button,
   Card,
@@ -39,6 +39,8 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
         }
       />
     );
+
+  // const mentions = CommonUtils.parseMentions(post.content);
 
   return (
     <motion.div
@@ -103,8 +105,9 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
                 className="prose prose-neutral dark:prose-invert min-h-64 max-w-none text-start leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: post.content }}
-              />
+              >
+                {renderContentWithMentions(post.content)}
+              </motion.div>
             )}
           </CardBody>
 
@@ -116,3 +119,18 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
     </motion.div>
   );
 }
+
+export const renderContentWithMentions = (content: string) => {
+  return content.split(/(@\[.*?\]\(id:.*?\))/g).map((part, i) => {
+    const match = part.match(/@\[(.*?)\]\(id:(.*?)\)/);
+    if (match) {
+      const [, display, id] = match;
+      return (
+        <p key={i} className="inline font-semibold text-sky-600 hover:underline">
+          @{display}
+        </p>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
