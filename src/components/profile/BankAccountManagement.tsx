@@ -11,21 +11,17 @@ import {
   AutocompleteItem,
   useDisclosure,
   Chip,
+  Spinner,
 } from "@heroui/react";
 import { ArrowLeftIcon, CheckIcon, DeleteIcon, PlusIcon } from "../svg";
 import { Bank, BankAccount } from "@/interfaces/common";
 import { useLoading } from "@/hooks/useLoading";
-import {
-  createNewBankAccount,
-  deleteBankAccount,
-  getUserBankAccounts,
-  updateSelectAccount,
-} from "@/app/profile/page";
 import Loader from "../loader";
 import { STATUS_CODE } from "@/constants/enums";
 import EmptyComponent from "../empty/empty";
 import ConfirmModal from "../ui/modal/ConfirmModal";
 import { CommonUtils } from "@/utils/common.utils";
+import { MAX_BANK_ACCOUNT_CAPACITY } from "@/constants/constants";
 
 interface PersonalInfoProps {
   user: UserInfo | null;
@@ -56,9 +52,10 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
   const fetchUserBankAccount = useCallback(async () => {
     setLoading(true);
 
-    await getUserBankAccounts()
-      .then((response) => {
-        if (response.data) setAccountList(response.data);
+    await fetch("api/profile/accounts/user")
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.data) setAccountList(result.data);
       })
       .finally(() => setLoading(false));
   }, [setLoading]);
@@ -67,11 +64,10 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
     setLoading(true);
     await fetch("/api/profile/banks")
       .then((res) => res.json())
-      .then((data) => {
-        if (!data) return;
-        console.log({ banks: data.data });
+      .then((result) => {
+        if (!result) return;
 
-        setBankList(data.data as Bank[]);
+        setBankList(result.data as Bank[]);
       })
       .finally(() => setLoading(false));
   }, [setLoading]);
@@ -84,17 +80,24 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
     if (!selectedAccount) return;
     setIsUpdating(true);
 
-    await updateSelectAccount(selectedAccount)
-      .then((res) => {
-        if (res.status === STATUS_CODE.OK) {
+    await fetch("/api/profile/accounts/user/select", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: selectedAccount }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.OK) {
           addToast({
-            title: res.message,
+            title: result.message,
             color: "success",
           });
           fetchUserBankAccount();
         } else {
           addToast({
-            title: res.message,
+            title: result.message,
             color: "danger",
           });
         }
@@ -109,13 +112,20 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
     if (!selectedAccount) return;
     setIsUpdating(true);
 
-    await deleteBankAccount(selectedAccount)
-      .then((res) => {
-        if (res.status === STATUS_CODE.OK) {
+    await fetch("/api/profile/accounts/user", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id: selectedAccount }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.OK) {
           fetchUserBankAccount();
         } else {
           addToast({
-            title: res.message,
+            title: result.message,
             color: "danger",
           });
         }
@@ -134,22 +144,27 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
           setIsAddingAccount={setIsAddingAccount}
           fetchUserBankAccount={fetchUserBankAccount}
           loading={loading}
-          setLoading={setLoading}
         />
       ) : (
         <>
           <div className="flex items-center justify-between gap-2 md:px-4">
             <h3 className="text-lg font-bold md:text-3xl">Danh sách tài khoản</h3>
-            <Button
-              onPress={async () => {
-                setIsAddingAccount(true);
-                await fetchBankList();
-              }}
-              color="success"
-              startContent={<PlusIcon size={16} />}
-            >
-              <p className="hidden lg:inline">Thêm tài khoản</p>
-            </Button>
+            {loading ? (
+              <Spinner size="sm" color="default" />
+            ) : accountList.length < MAX_BANK_ACCOUNT_CAPACITY ? (
+              <Button
+                onPress={async () => {
+                  setIsAddingAccount(true);
+                  await fetchBankList();
+                }}
+                color="success"
+                startContent={<PlusIcon size={16} />}
+              >
+                <p className="hidden lg:inline">Thêm tài khoản</p>
+              </Button>
+            ) : (
+              <p className="text-sm opacity-50">Đã đạt tối đa</p>
+            )}
           </div>
 
           {loading ? (
@@ -157,58 +172,68 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
           ) : accountList.length === 0 ? (
             <EmptyComponent title="Chưa có tài khoản" margin={2} />
           ) : (
-            <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2">
-              {accountList.map((account) => (
-                <div key={account.id} className="flex w-full items-stretch gap-2 rounded-md p-2">
-                  <Image
-                    src={account.bank_logo}
-                    alt={account.bank_short_name}
-                    className="aspect-square w-16 rounded-full border bg-white object-contain"
-                  />
-                  <div className="flex-1 space-y-0">
-                    <p className="line-clamp-1 text-xs font-light opacity-60">
-                      {account.bank_name}
-                    </p>
-                    <p className="text-lg font-semibold uppercase">{account.account_owner}</p>
-                    <p className="text-sm font-semibold opacity-75">
-                      {CommonUtils.getHiddenNumber(account.account_number)}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col items-end justify-between gap-2">
-                    <Button
-                      isIconOnly
-                      startContent={<DeleteIcon size={16} />}
-                      isLoading={loading}
-                      variant="faded"
-                      color="danger"
-                      size="sm"
-                      onPress={() => {
-                        setSelectedAccount(account.id);
-                        onOpenDelete();
-                      }}
-                      className={`${account.is_selected && "invisible"}`}
+            <>
+              <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2">
+                {accountList.map((account) => (
+                  <div key={account.id} className="flex w-full items-stretch gap-2 rounded-md p-2">
+                    <Image
+                      src={account.bank_logo}
+                      alt={account.bank_short_name}
+                      className="aspect-square w-16 rounded-full border bg-white object-contain"
                     />
+                    <div className="flex-1 space-y-0">
+                      <p className="line-clamp-1 text-xs font-light opacity-60">
+                        {account.bank_name}
+                      </p>
+                      <p className="text-lg font-semibold uppercase">{account.account_owner}</p>
+                      <p className="text-sm font-semibold opacity-75">
+                        {CommonUtils.getHiddenNumber(account.account_number)}
+                      </p>
+                    </div>
 
-                    {account.is_selected ? (
-                      <Chip color="success" startContent={<CheckIcon size={18} />} variant="shadow">
-                        Đang sử dụng
-                      </Chip>
-                    ) : (
-                      <Chip
-                        onClick={() => {
+                    <div className="flex flex-col items-end justify-between gap-2">
+                      <Button
+                        isIconOnly
+                        startContent={<DeleteIcon size={16} />}
+                        isLoading={loading}
+                        variant="faded"
+                        color="danger"
+                        size="sm"
+                        onPress={() => {
                           setSelectedAccount(account.id);
-                          onOpenUpdateSelect();
+                          onOpenDelete();
                         }}
-                        className="cursor-pointer duration-200 hover:brightness-75"
-                      >
-                        Chọn
-                      </Chip>
-                    )}
+                      />
+
+                      {account.is_selected ? (
+                        <Chip
+                          color="success"
+                          startContent={<CheckIcon size={18} />}
+                          variant="shadow"
+                        >
+                          Đang sử dụng
+                        </Chip>
+                      ) : (
+                        <Chip
+                          onClick={() => {
+                            setSelectedAccount(account.id);
+                            onOpenUpdateSelect();
+                          }}
+                          className="cursor-pointer duration-200 hover:brightness-75"
+                        >
+                          Chọn
+                        </Chip>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              {!!accountList.length && (
+                <p className="text-end text-sm opacity-50">
+                  Tổng số tài khoản hiện tại: {accountList.length} / {MAX_BANK_ACCOUNT_CAPACITY}
+                </p>
+              )}
+            </>
           )}
 
           <ConfirmModal
@@ -247,14 +272,13 @@ const AddAccount = ({
   setIsAddingAccount,
   fetchUserBankAccount,
   loading,
-  setLoading,
 }: {
   bankList: Bank[];
   setIsAddingAccount: React.Dispatch<React.SetStateAction<boolean>>;
   fetchUserBankAccount: () => Promise<void>;
   loading: boolean;
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
+  const [selectedBank, setSelectedBank] = useState<React.Key | null>();
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
   const handleCreateBankAccount = async (e: any) => {
@@ -262,7 +286,7 @@ const AddAccount = ({
     setIsCreating(true);
     const data: any = Object.fromEntries(new FormData(e.currentTarget));
 
-    const bank = bankList.find((b) => b.shortName === data.bank);
+    const bank = bankList.find((b) => b.id.toString() === selectedBank?.toString());
     if (!bank) return;
 
     const newAccount: Partial<BankAccount> = {
@@ -274,18 +298,25 @@ const AddAccount = ({
       bank_short_name: bank.shortName,
     };
 
-    await createNewBankAccount(newAccount)
-      .then((res) => {
-        if (res.status === STATUS_CODE.CREATED) {
+    await fetch("/api/profile/accounts/user", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newAccount),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.CREATED) {
           addToast({
-            title: res.message,
+            title: result.message,
             color: "success",
           });
           setIsAddingAccount(false);
           fetchUserBankAccount();
         } else {
           addToast({
-            title: res.message,
+            title: result.message,
             color: "danger",
           });
         }
@@ -320,11 +351,36 @@ const AddAccount = ({
             label="Ngân hàng"
             placeholder="Chọn ngân hàng"
             size="lg"
+            onSelectionChange={(value) => {
+              setSelectedBank(value);
+            }}
+            listboxProps={{
+              itemClasses: {
+                base: [
+                  "rounded-medium",
+                  "text-default-500",
+                  "transition-opacity",
+                  "data-[hover=true]:text-foreground",
+                  "dark:data-[hover=true]:bg-default-50",
+                  "data-[pressed=true]:opacity-70",
+                  "data-[hover=true]:bg-default-200",
+                  "data-[selectable=true]:focus:bg-default-100",
+                  "data-[focus-visible=true]:ring-default-500",
+                ],
+              },
+            }}
+            popoverProps={{
+              offset: 10,
+              classNames: {
+                base: "rounded-large",
+                content: "p-1 space-y-2 border-small border-default-100 bg-background",
+              },
+            }}
           >
             {bankList.map((bank) => (
               <AutocompleteItem
                 key={bank.id}
-                textValue={bank.shortName}
+                textValue={bank.shortName + " - " + bank.name}
                 startContent={
                   <Image
                     src={bank.logo}
@@ -332,7 +388,12 @@ const AddAccount = ({
                     className="aspect-square max-w-8 min-w-8 rounded-full border bg-white object-contain"
                   />
                 }
-                title={bank.name}
+                title={
+                  <p className="line-clamp-1 font-semibold">
+                    {bank.shortName}
+                    <span className="ml-2 text-xs font-light">{bank.name}</span>
+                  </p>
+                }
                 showDivider
               />
             ))}

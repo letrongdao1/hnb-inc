@@ -5,7 +5,6 @@ import React, { useMemo, useState } from "react";
 import { Input, Button, Spacer, DatePicker, Select, SelectItem, addToast } from "@heroui/react";
 import { CheckIcon, EditIcon } from "../svg";
 import { parseDate } from "@internationalized/date";
-import { updateUserAccountInfo } from "@/app/profile/page";
 import { useUser } from "@/providers/user.providers";
 
 interface PersonalInfoProps {
@@ -24,10 +23,7 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const isChanged = useMemo(() => {
-    if (user && (displayName != user.display_name || phone != user.phone || dob != user.dob))
-      return true;
-
-    return false;
+    return user && (displayName != user.display_name || phone != user.phone || dob != user.dob);
   }, [user, displayName, phone, dob]);
 
   const handleSubmit = async () => {
@@ -44,18 +40,24 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         dob,
       };
 
-      await updateUserAccountInfo(updateData)
-        .then((res) => {
-          if (res?.data) {
-            console.log({ data: res.data });
-            setUser(res.data);
+      await fetch("/api/profile/info", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updateData),
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.data) {
+            setUser(result.data);
             addToast({
-              title: res.message,
+              title: result.message,
               color: "success",
             });
           } else {
             addToast({
-              title: res?.message,
+              title: result.message,
               color: "danger",
             });
           }
