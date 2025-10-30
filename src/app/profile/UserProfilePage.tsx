@@ -16,33 +16,36 @@ interface UserProfilePageProps {
 export default function UserProfilePage() {
   const { user } = useUser();
 
-  const tabItems = [
-    {
-      label: "Thông tin tài khoản",
-      key: "account",
-      icon: <UserIcon />,
-      element: <PersonalInfo user={user} />,
-    },
-    {
-      label: "Tài khoản nhận tiền",
-      key: "bank",
-      icon: <BankCardIcon />,
-      element: <BankAccountManagement user={user} />,
-    },
-  ];
+  const tabItems = useMemo(
+    () => [
+      {
+        label: "Thông tin tài khoản",
+        key: "account",
+        icon: <UserIcon />,
+        element: <PersonalInfo user={user} />,
+      },
+      {
+        label: "Tài khoản nhận tiền",
+        key: "bank",
+        icon: <BankCardIcon />,
+        element: <BankAccountManagement user={user} />,
+      },
+    ],
+    [user]
+  );
 
   const [activeKey, setActiveKey] = useState<string>(tabItems[0].key);
+
+  const currentElement = useMemo(() => {
+    return tabItems.find((item) => item.key === activeKey)?.element || null;
+  }, [activeKey, tabItems]);
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
     if (hash && tabItems.some((item) => item.key === hash)) {
       setActiveKey(hash);
     }
-  }, []);
-
-  const currentElement = useMemo(() => {
-    return tabItems.find((item) => item.key === activeKey)?.element || null;
-  }, [activeKey]);
+  }, [tabItems]);
 
   const handleTabChange = (key: string) => {
     setActiveKey(key);
@@ -75,7 +78,7 @@ export default function UserProfilePage() {
               <button
                 key={item.key}
                 onClick={() => handleTabChange(item.key)}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-md md:flex-none md:justify-start ${isActive && "border"} p-2 px-2 duration-200 hover:brightness-75`}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md md:flex-none md:justify-start ${isActive ? "bg-default-300" : "cursor-pointer opacity-50 hover:opacity-100"} p-2 px-2 duration-200`}
               >
                 {item.icon}
                 <p className={`hidden md:inline`}>{item.label}</p>

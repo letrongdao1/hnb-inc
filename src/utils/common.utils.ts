@@ -92,4 +92,8 @@ export const CommonUtils = {
 
     return mentions;
   },
+  formatDate: (date: Date) => {
+    if (!date) return null;
+    else return date.toISOString().split("T")[0];
+  },
 };
