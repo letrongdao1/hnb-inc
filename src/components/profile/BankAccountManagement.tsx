@@ -22,6 +22,10 @@ import EmptyComponent from "../empty/empty";
 import ConfirmModal from "../ui/modal/ConfirmModal";
 import { CommonUtils } from "@/utils/common.utils";
 import { MAX_BANK_ACCOUNT_CAPACITY } from "@/constants/constants";
+import * as yup from "yup";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form";
+import { FieldErrorText } from "../ui/text/text";
 
 interface PersonalInfoProps {
   user: UserInfo | null;
@@ -158,6 +162,7 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
                   await fetchBankList();
                 }}
                 color="success"
+                variant="light"
                 startContent={<PlusIcon size={16} />}
               >
                 <p className="hidden lg:inline">Thêm tài khoản</p>
@@ -170,7 +175,22 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
           {loading ? (
             <Loader margin={10} />
           ) : accountList.length === 0 ? (
-            <EmptyComponent title="Chưa có tài khoản" margin={2} />
+            <EmptyComponent
+              title="Chưa có tài khoản"
+              description={
+                <Button
+                  onPress={async () => {
+                    setIsAddingAccount(true);
+                    await fetchBankList();
+                  }}
+                  color="success"
+                  startContent={<PlusIcon size={16} />}
+                >
+                  <p className="hidden not-italic lg:inline">Thêm tài khoản</p>
+                </Button>
+              }
+              margin={2}
+            />
           ) : (
             <>
               <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2">
@@ -267,6 +287,30 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
   );
 }
 
+/* ----------------------------- CREATE BANK ACCOUNT ----------------------------- */
+
+type CreateBankAccountFieldProps = yup.InferType<typeof schema>;
+
+const schema = yup
+  .object({
+    account_number: yup
+      .string()
+      .matches(/^\d+$/, "Vui lòng chỉ nhập ký tự số!")
+      .min(6, `Số tài khoản chứa tối thiểu 6 số`)
+      .max(19, `Số tài khoản chứa tối đa 19 số`)
+      .required("Vui lòng nhập số tài khoản")
+      .trim(),
+    account_owner: yup
+      .string()
+      .matches(/^[A-Za-z ]+$/, "Vui lòng nhập tiếng Việt không dấu, không chứa ký tự đặc biệt!")
+      .min(5, `Tên tài khoản chứa tối thiểu 5 ký tự`)
+      .max(50, `Tên tài khoản chứa tối thiểu 50 ký tự`)
+      .required("Vui lòng nhập tên tài khoản")
+      .trim()
+      .transform((value) => (value ? value.toUpperCase() : value)),
+  })
+  .required();
+
 const AddAccount = ({
   bankList,
   setIsAddingAccount,
@@ -281,10 +325,26 @@ const AddAccount = ({
   const [selectedBank, setSelectedBank] = useState<React.Key | null>();
   const [isCreating, setIsCreating] = useState<boolean>(false);
 
-  const handleCreateBankAccount = async (e: any) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<CreateBankAccountFieldProps>({ resolver: yupResolver(schema as any) });
+
+  const watcher = {
+    account_number: {
+      length: watch("account_number")?.trim().length,
+      isExceeded: watch("account_number")?.trim().length > 19,
+    },
+    account_owner: {
+      length: watch("account_owner")?.trim().length,
+      isExceeded: watch("account_owner")?.trim().length > 50,
+    },
+  };
+
+  const handleCreateBankAccount = async (data: CreateBankAccountFieldProps) => {
     setIsCreating(true);
-    const data: any = Object.fromEntries(new FormData(e.currentTarget));
 
     const bank = bankList.find((b) => b.id.toString() === selectedBank?.toString());
     if (!bank) return;
@@ -292,6 +352,7 @@ const AddAccount = ({
     const newAccount: Partial<BankAccount> = {
       account_number: data.account_number,
       account_owner: data.account_owner,
+      bank_id: bank.bin,
       bank_code: bank.code,
       bank_name: bank.name,
       bank_logo: bank.logo,
@@ -342,7 +403,7 @@ const AddAccount = ({
         <Loader margin={10} />
       ) : (
         <form
-          onSubmit={handleCreateBankAccount}
+          onSubmit={handleSubmit(handleCreateBankAccount)}
           className="flex flex-col items-stretch gap-4 md:px-16"
         >
           <Autocomplete
@@ -399,9 +460,39 @@ const AddAccount = ({
             ))}
           </Autocomplete>
 
-          <Input name="account_number" label="Số tài khoản" isRequired />
+          <div className="space-y-0.5">
+            <Input
+              {...register("account_number", { required: true })}
+              label={"Số tài khoản"}
+              isRequired
+              isInvalid={!!errors.account_number}
+              endContent={
+                <p
+                  className={`text-xs opacity-75 ${watcher.account_number.isExceeded && "text-red-500"}`}
+                >
+                  {watcher.account_number.length}/19
+                </p>
+              }
+            />
+            <FieldErrorText>{errors.account_number?.message}</FieldErrorText>
+          </div>
 
-          <Input name="account_owner" label="Tên chủ sở hữu" isRequired />
+          <div className="space-y-0.5">
+            <Input
+              {...register("account_owner", { required: true })}
+              label={"Tên tài khoản"}
+              isRequired
+              isInvalid={!!errors.account_owner}
+              endContent={
+                <p
+                  className={`text-xs opacity-75 ${watcher.account_owner.isExceeded && "text-red-500"}`}
+                >
+                  {watcher.account_owner.length}/19
+                </p>
+              }
+            />
+            <FieldErrorText>{errors.account_owner?.message}</FieldErrorText>
+          </div>
 
           <Button
             isLoading={isCreating}

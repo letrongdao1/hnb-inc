@@ -24,6 +24,7 @@ interface ConfirmModalProps {
   cancelText?: string;
   modalProps?: Partial<ModalProps>;
   okButtonProps?: ButtonProps;
+  cancelButtonProps?: ButtonProps;
   loading?: boolean;
 }
 
@@ -39,6 +40,7 @@ export default function ConfirmModal({
   cancelText = "Hủy",
   modalProps,
   okButtonProps,
+  cancelButtonProps,
   loading,
 }: ConfirmModalProps) {
   return (
@@ -52,7 +54,7 @@ export default function ConfirmModal({
           </div>
         </ModalBody>
         <ModalFooter>
-          <Button color="default" variant="light" onPress={onClose}>
+          <Button color="default" variant="light" onPress={onClose} {...cancelButtonProps}>
             {cancelText}
           </Button>
           <Button color="primary" onPress={onConfirm} isLoading={loading} {...okButtonProps}>

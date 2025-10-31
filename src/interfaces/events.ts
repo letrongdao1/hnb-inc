@@ -17,4 +17,16 @@ export interface Event {
   description: string;
   image?: string;
   created_at: string;
+  participants?: {
+    id: string;
+    display_name: string;
+    avatar: string;
+  }[];
+  is_joined?: boolean;
+}
+
+export interface EventParticipation {
+  user: string;
+  event: string;
+  created_at: string;
 }

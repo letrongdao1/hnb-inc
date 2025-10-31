@@ -112,7 +112,7 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
   const onSubmit = async (data: CreateEventFieldProps) => {
     const values = {
       ...data,
-      start_date: CommonUtils.formatDate(data.start_date),
+      start_date: CommonUtils.getDateString(data.start_date),
     };
     console.log({ values, images });
     setLoading(true);

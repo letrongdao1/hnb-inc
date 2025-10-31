@@ -3,9 +3,10 @@
 import { UserInfo } from "@/interfaces/user";
 import React, { useMemo, useState } from "react";
 import { Input, Button, Spacer, DatePicker, Select, SelectItem, addToast } from "@heroui/react";
-import { CheckIcon, EditIcon } from "../svg";
+import { CheckIcon, EditIcon, XIcon } from "../svg";
 import { parseDate } from "@internationalized/date";
 import { useUser } from "@/providers/user.providers";
+import { PHONE_NUMBER_REGEX } from "@/constants/regex";
 
 interface PersonalInfoProps {
   user: UserInfo | null;
@@ -27,9 +28,16 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
   }, [user, displayName, phone, dob]);
 
   const handleSubmit = async () => {
-    if (!isChanged) {
+    if (!isChanged || !user) {
       setIsEditing(false);
       return;
+    }
+
+    if (!PHONE_NUMBER_REGEX.test(phone)) {
+      return addToast({
+        title: "Số điện thoại không hợp lệ. Vui lòng nhập lại!",
+        color: "danger",
+      });
     }
 
     setIsLoading(true);
@@ -92,6 +100,7 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         value={displayName}
         onChange={(e) => setDisplayName(e.target.value)}
         isReadOnly={!isEditing}
+        maxLength={80}
       />
 
       <Input
@@ -112,18 +121,33 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
 
       <Spacer y={1} />
 
-      <Button
-        color={isEditing ? "primary" : "default"}
-        onPress={() => {
-          if (isEditing) handleSubmit();
-          else setIsEditing(true);
-        }}
-        isLoading={isLoading}
-        fullWidth
-        startContent={isLoading ? null : isEditing ? <CheckIcon /> : <EditIcon />}
-      >
-        {isEditing ? "Lưu thay đổi" : "Cập nhật"}
-      </Button>
+      <div className="flex items-stretch gap-2">
+        <Button
+          color={isEditing ? "success" : "primary"}
+          variant={isEditing ? "solid" : "flat"}
+          onPress={() => {
+            if (isEditing) handleSubmit();
+            else setIsEditing(true);
+          }}
+          isLoading={isLoading}
+          fullWidth
+          startContent={isLoading ? null : isEditing ? <CheckIcon /> : <EditIcon />}
+          className="flex-8"
+        >
+          {isEditing ? "Lưu thay đổi" : "Cập nhật"}
+        </Button>
+
+        {isEditing && (
+          <Button
+            isIconOnly
+            startContent={<XIcon size={16} />}
+            variant="bordered"
+            color="danger"
+            onPress={() => setIsEditing(false)}
+            className="flex-1"
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -62,7 +62,7 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
                   removeWrapper
                   src={post.image}
                   alt={post.title}
-                  className={`h-full w-full rounded-none object-cover`}
+                  className={`mx-auto max-h-[20vh] w-full rounded-2xl object-cover md:max-h-[30vh] md:max-w-2/3`}
                 />
               </motion.div>
             </CardHeader>
@@ -84,19 +84,6 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
               <div className="hidden md:inline" />
             </div>
 
-            <div className="ml-auto">
-              <p className="text-default-400 ml-auto flex items-center gap-2 text-xs">
-                Đăng bởi <HoverableUser user={post.user} />•
-                <time dateTime={post.active_at}>
-                  {new Date(post.active_at).toLocaleDateString("vi", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </time>
-              </p>
-            </div>
-
             <Divider className="my-4" />
 
             {post.content && (
@@ -111,8 +98,26 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
             )}
           </CardBody>
 
-          <CardFooter className="text-default-400 flex justify-end px-6 py-4 text-xs italic">
+          <CardFooter className="text-default-400 flex flex-col items-end gap-2 px-6 py-4 text-xs italic">
             <p>Thông tin đến HNB</p>
+
+            <Divider className="my-4" />
+
+            <div className="md:ml-auto">
+              <p className="text-default-400 ml-auto flex flex-col items-center gap-2 text-xs md:flex-row">
+                <span className="flex items-center gap-2">
+                  Đăng bởi <HoverableUser user={post.user} />
+                </span>
+                •
+                <time dateTime={post.active_at}>
+                  {new Date(post.active_at).toLocaleDateString("vi", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </time>
+              </p>
+            </div>
           </CardFooter>
         </Card>
       </ScrollShadow>

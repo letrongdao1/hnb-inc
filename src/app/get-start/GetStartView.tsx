@@ -8,6 +8,7 @@ import { createUser, uploadAvatar } from "./page";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.providers";
+import { PHONE_NUMBER_REGEX } from "@/constants/regex";
 
 export default function GetStartView({ defaultAvatars }: { defaultAvatars: string[] }) {
   const router = useRouter();
@@ -41,6 +42,8 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.currentTarget));
+
     if (!currentGender) {
       return addToast({
         title: "Vui lòng chọn giới tính của bạn!",
@@ -48,11 +51,16 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
       });
     }
 
+    if (data.phone && !PHONE_NUMBER_REGEX.test(String(data.phone))) {
+      return addToast({
+        title: "Số điện thoại không hợp lệ. Vui lòng nhập lại!",
+        color: "danger",
+      });
+    }
+
     setLoading(true);
 
     try {
-      const data = Object.fromEntries(new FormData(e.currentTarget));
-
       let avatar: string = currentAvatarUrl;
       if (uploadedFile) {
         const uploadResponse = await uploadAvatar(uploadedFile);

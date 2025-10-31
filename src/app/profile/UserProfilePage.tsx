@@ -2,16 +2,10 @@
 
 import BankAccountManagement from "@/components/profile/BankAccountManagement";
 import PersonalInfo from "@/components/profile/PersonalInfo";
-import QRManagement from "@/components/profile/QRManagement";
-import { BankCardIcon, EditIcon, QRIcon, UserIcon } from "@/components/svg";
-import { UserInfo } from "@/interfaces/user";
+import { BankCardIcon, EditIcon, UserIcon } from "@/components/svg";
 import { useUser } from "@/providers/user.providers";
 import { Avatar, Button, Divider } from "@heroui/react";
 import React, { useEffect, useMemo, useState } from "react";
-
-interface UserProfilePageProps {
-  user: UserInfo | null;
-}
 
 export default function UserProfilePage() {
   const { user } = useUser();
@@ -57,14 +51,14 @@ export default function UserProfilePage() {
   return (
     <div className="flex w-full flex-col items-stretch justify-start gap-4 rounded-md">
       <div className="flex flex-col items-center justify-between gap-2 md:flex-row md:px-16">
-        <div className="flex flex-1 flex-col items-center gap-2 sm:gap-4 md:flex-row">
+        <div className="flex flex-1 flex-col items-center gap-2 sm:gap-8 md:flex-row">
           <Avatar src={user.avatar} alt="avatar" className="h-16 w-16 md:h-40 md:w-40" isBordered />
           <p className="text-2xl font-semibold md:text-4xl">{user.display_name}</p>
         </div>
 
-        <Button startContent={<EditIcon size={16} />} variant="flat" className="text-inherit">
+        {/* <Button startContent={<EditIcon size={16} />} variant="flat" className="text-inherit">
           <p className="text-xs md:text-sm">Cập nhật ảnh đại diện</p>
-        </Button>
+        </Button> */}
       </div>
 
       <Divider />

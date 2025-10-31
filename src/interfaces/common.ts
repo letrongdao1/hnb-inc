@@ -23,6 +23,7 @@ export interface BankAccount {
   user?: string;
   account_number: string;
   account_owner: string;
+  bank_id: string;
   bank_code: string;
   bank_name: string;
   bank_short_name: string;
