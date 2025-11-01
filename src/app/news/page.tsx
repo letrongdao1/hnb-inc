@@ -26,9 +26,8 @@ export default async function NewsPage() {
   const supabase = await createClient();
 
   const posts = await getPosts(supabase, { pageIndex: 1, pageSize: DEFAULT_PAGE_SIZE });
-  const canCreate = await checkPermission(supabase, CREATE_POST_ENABLED_ROLES);
 
-  return <NewsFeed posts={posts} canCreate={canCreate} />;
+  return <NewsFeed posts={posts} />;
 }
 
 export async function getPosts(supabase: SupabaseClient, { pageIndex, pageSize }: PaginationProps) {

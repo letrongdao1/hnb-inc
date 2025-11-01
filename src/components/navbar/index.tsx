@@ -19,7 +19,6 @@ import {
   addToast,
   Accordion,
   AccordionItem,
-  Switch,
 } from "@heroui/react";
 import "./index.scss";
 import { useCallback, useMemo, useState } from "react";
@@ -29,17 +28,19 @@ import {
   MoonIcon,
   OfficeIcon,
   PaleteIcon,
+  SettingIcon,
   SunIcon,
   UserGroupIcon,
   UserIcon,
 } from "../svg";
 import { createClient } from "@/lib/supabase/client";
 import LogoComponent from "../logo/logo";
-import { SYSTEM_MESSAGE } from "@/constants/enums";
+import { ROLE, SYSTEM_MESSAGE } from "@/constants/enums";
 import { useUser } from "@/providers/user.providers";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
+import { RoleUtils } from "@/utils/role.utils";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
@@ -100,6 +101,104 @@ export default function Navbar() {
       },
     ],
     [logout]
+  );
+
+  const userMenuItems = useMemo(
+    () =>
+      !user
+        ? []
+        : [
+            {
+              key: "management",
+              title: "Quản trị",
+              hidden: !RoleUtils.checkIsRole(user, ROLE.BOT),
+              children: [
+                {
+                  key: "hub-mmanagement",
+                  icon: <SettingIcon />,
+                  title: "Quản lý nội dung",
+                  onClick: () => router.push("/management/hub"),
+                },
+              ],
+            },
+            {
+              key: "account",
+              title: "Tài khoản",
+              children: [
+                {
+                  key: "profile",
+                  icon: <UserIcon />,
+                  title: "Quản lý tài khoản",
+                  onClick: () => router.push("/profile"),
+                },
+              ],
+            },
+            {
+              key: "system",
+              title: "Hệ thống",
+              children: [
+                {
+                  key: "theme",
+                  icon: <PaleteIcon />,
+                  title: (
+                    <div className="flex items-center justify-between">
+                      <p>Giao diện</p>
+                      <Button
+                        isIconOnly
+                        variant="shadow"
+                        radius="full"
+                        size="sm"
+                        aria-label="Toggle theme"
+                        onPress={() => setTheme(theme === "dark" ? "light" : "dark")}
+                        className="overflow-hidden bg-transparent"
+                      >
+                        <AnimatePresence mode="wait" initial={false}>
+                          {theme === "light" ? (
+                            <motion.div
+                              key="sun"
+                              initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                              exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <SunIcon className="h-5 w-5 text-yellow-500" />
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key="moon"
+                              initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
+                              animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                              exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <MoonIcon className="h-5 w-5 text-white" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </Button>
+                    </div>
+                  ),
+                  onClick: () => {},
+                  isReadOnly: true,
+                },
+              ],
+            },
+            {
+              key: "action",
+              title: "",
+              hideDivider: true,
+              children: [
+                {
+                  key: "logout",
+                  icon: <LogoutIcon />,
+                  title: "Đăng xuất",
+                  onClick: logout,
+                  danger: true,
+                },
+              ],
+            },
+          ],
+    [theme, setTheme, logout, router, user]
   );
 
   if (pageToHide.some((page) => page === pathname)) return null;
@@ -196,78 +295,32 @@ export default function Navbar() {
                 </p>
               </Button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Dropdown menu with description" variant="faded">
-              <DropdownSection title="Tài khoản" showDivider>
-                <DropdownItem
-                  key="profile"
-                  color="default"
-                  startContent={<UserIcon />}
-                  onClick={() => router.push("/profile")}
-                >
-                  Quản lý tài khoản
-                </DropdownItem>
-              </DropdownSection>
-              <DropdownSection title="Hệ thống" showDivider>
-                <DropdownItem
-                  key="theme"
-                  color="default"
-                  startContent={<PaleteIcon />}
-                  className="flex items-center"
-                  onPress={() => {
-                    console.log({ theme });
-                    setTheme(theme === "dark" ? "light" : "dark");
-                  }}
-                  isReadOnly
-                >
-                  <div className="flex items-center justify-between">
-                    <p>Giao diện</p>
-                    <Button
-                      isIconOnly
-                      variant="shadow"
-                      radius="full"
-                      size="sm"
-                      aria-label="Toggle theme"
-                      onPress={() => setTheme(theme === "dark" ? "light" : "dark")}
-                      className="relative overflow-hidden bg-transparent"
-                    >
-                      <AnimatePresence mode="wait" initial={false}>
-                        {theme === "light" ? (
-                          <motion.div
-                            key="sun"
-                            initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                            animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                            exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <SunIcon className="h-5 w-5 text-yellow-500" />
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key="moon"
-                            initial={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                            animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                            exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <MoonIcon className="h-5 w-5 text-white" />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Button>
-                  </div>
-                </DropdownItem>
-              </DropdownSection>
-              <DropdownSection title="">
-                <DropdownItem
-                  key="logout"
-                  className="text-danger"
-                  color="danger"
-                  startContent={<LogoutIcon />}
-                  onClick={logout}
-                >
-                  Đăng xuất
-                </DropdownItem>
-              </DropdownSection>
+            <DropdownMenu aria-label="User menu" variant="faded">
+              {userMenuItems &&
+                Array.isArray(userMenuItems) &&
+                (userMenuItems as any).map((menuItem: any) => (
+                  <DropdownSection
+                    key={menuItem.key}
+                    title={menuItem.title}
+                    showDivider={!Boolean(menuItem.hideDivider)}
+                    hidden={menuItem.hidden}
+                  >
+                    {menuItem &&
+                      menuItem.children &&
+                      Array.isArray(menuItem.children) &&
+                      menuItem.children.map((item: any) => (
+                        <DropdownItem
+                          key={item.key}
+                          color={item.danger ? "danger" : "default"}
+                          startContent={item.icon}
+                          onPress={item.onClick}
+                          isReadOnly={item.isReadOnly}
+                        >
+                          {item.title}
+                        </DropdownItem>
+                      ))}
+                  </DropdownSection>
+                ))}
             </DropdownMenu>
           </Dropdown>
         ) : (

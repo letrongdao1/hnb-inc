@@ -4,20 +4,23 @@ import { CSSProperties } from "react";
 
 export function PageTitle({
   children,
+  extra,
   style,
   className,
 }: {
   children: React.ReactNode;
+  extra?: string | React.ReactNode;
   style?: CSSProperties;
   className?: string;
 }) {
   return (
-    <p
-      className={`py-4 text-center text-xl font-bold text-inherit uppercase lg:py-8 lg:text-4xl ${className}`}
+    <div
+      className={`space-y-1 py-4 text-center text-inherit uppercase lg:py-8 ${className}`}
       style={style}
     >
-      {children}
-    </p>
+      <p className="text-xl font-bold lg:text-4xl">{children}</p>
+      <p className="text-center text-xs font-light normal-case lg:text-sm">{extra}</p>
+    </div>
   );
 }
 

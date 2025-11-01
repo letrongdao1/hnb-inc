@@ -2,11 +2,12 @@
 
 import Navbar from "@/components/navbar";
 import { UserInfo } from "@/interfaces/user";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 import Loader from "@/components/loader";
 import { UserProvider } from "@/providers/user.providers";
+import Footer from "@/components/footer";
 
 export default function ClientLayout({
   user,
@@ -16,6 +17,11 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [contentLoaded, setContentLoaded] = useState(false);
+
+  useEffect(() => {
+    setContentLoaded(false);
+  }, [pathname]);
 
   return (
     <UserProvider initialUser={user}>
@@ -31,11 +37,30 @@ export default function ClientLayout({
             transition={{ duration: 0.25, ease: "easeInOut" }}
           >
             <main className="flex w-full flex-1 flex-col items-center justify-start">
-              <Suspense fallback={<Loader />}>{children}</Suspense>
+              <Suspense fallback={<Loader />}>
+                <ContentWithReadySignal onReady={() => setContentLoaded(true)}>
+                  {children}
+                </ContentWithReadySignal>
+              </Suspense>
             </main>
           </motion.div>
         </AnimatePresence>
+
+        {contentLoaded && <Footer />}
       </div>
     </UserProvider>
   );
+}
+
+function ContentWithReadySignal({
+  children,
+  onReady,
+}: {
+  children: React.ReactNode;
+  onReady: () => void;
+}) {
+  useEffect(() => {
+    onReady();
+  }, [onReady]);
+  return <>{children}</>;
 }

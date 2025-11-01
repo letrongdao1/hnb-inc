@@ -1,4 +1,5 @@
 import { ROLE } from "@/constants/enums";
+import { UserInfo } from "@/interfaces/user";
 
 export const RoleUtils = {
   getVietSubRoleName: (roleName: ROLE) => {
@@ -37,6 +38,17 @@ export const RoleUtils = {
       case ROLE.STAFF:
       case ROLE.ATTACHMENT:
         return "";
+    }
+  },
+  checkIsRole: (user: UserInfo, role: ROLE | ROLE[]) => {
+    if (!user || !user.roles || !user.roles.length) return false;
+
+    if (Array.isArray(role)) {
+      const roleString = role.join(",");
+
+      return user.roles.some((r) => roleString.includes(r.name));
+    } else {
+      return user.roles.some((r) => role === r.name);
     }
   },
 };

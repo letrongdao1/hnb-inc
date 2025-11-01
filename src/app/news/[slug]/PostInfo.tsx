@@ -108,7 +108,6 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
                 <span className="flex items-center gap-2">
                   Đăng bởi <HoverableUser user={post.user} />
                 </span>
-                •
                 <time dateTime={post.active_at}>
                   {new Date(post.active_at).toLocaleDateString("vi", {
                     month: "long",

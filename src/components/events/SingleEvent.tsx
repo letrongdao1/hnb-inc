@@ -25,7 +25,7 @@ export default function SingleEvent({ event }: { event: Event }) {
   };
 
   return (
-    <div className="group relative w-full overflow-hidden rounded-lg px-8 pt-8 pb-4 border-2 border-default-400">
+    <div className="group border-default-400 relative w-full overflow-hidden rounded-lg border-2 p-4 md:p-8 md:pb-4">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat duration-200 group-hover:scale-110"
         style={{ backgroundImage: event.image ? `url(${event.image})` : "none" }}
@@ -35,7 +35,7 @@ export default function SingleEvent({ event }: { event: Event }) {
 
       <div className="relative z-10 space-y-2 text-white">
         <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
-          <p className="line-clamp-1 max-w-[20em] font-bold uppercase group-hover:underline md:text-2xl">
+          <p className="line-clamp-1 max-w-[20em] text-lg font-bold uppercase group-hover:underline md:text-2xl">
             {event.title}
           </p>
 
@@ -48,7 +48,7 @@ export default function SingleEvent({ event }: { event: Event }) {
         <div className="flex flex-wrap items-center justify-start gap-1 md:gap-2">
           <span className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm">
             <LocationIcon size={16} />
-            <p className="line-clamp-1 max-w-[20em]">{event.venue_name}</p>
+            <p className="line-clamp-1 max-w-[50em]">{event.venue_name}</p>
           </span>
 
           <span className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm">
@@ -76,7 +76,7 @@ export default function SingleEvent({ event }: { event: Event }) {
             <div className="flex items-center justify-start">
               {tagList.slice(0, MAX_TAG_SHOWN).map((tag) => (
                 <Chip key={tag} color="default" variant="light">
-                  <p className="text-xs font-light">#{tag}</p>
+                  <p className="text-xs font-light text-white">#{tag}</p>
                 </Chip>
               ))}
               {tagList.length > MAX_TAG_SHOWN && (
@@ -103,7 +103,7 @@ export default function SingleEvent({ event }: { event: Event }) {
           )}
 
           <div className="flex w-full items-center justify-between gap-1 md:ml-auto md:w-fit md:gap-4">
-            <Button variant="light" color="default" className="hover:underline">
+            <Button variant="light" color="default" className="text-white hover:underline">
               Xem chi tiết
             </Button>
             <Button
