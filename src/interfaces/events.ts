@@ -16,6 +16,7 @@ export interface Event {
   has_alcohol: boolean;
   description: string;
   image?: string;
+  is_ended: boolean;
   created_at: string;
   participants?: {
     id: string;

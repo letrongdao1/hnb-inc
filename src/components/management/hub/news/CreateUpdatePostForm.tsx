@@ -1,29 +1,31 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { PageTitle } from "@/components/ui/text/text";
+import { addToast, Avatar, Button, DatePicker, Image, Input, useDisclosure } from "@heroui/react";
 import {
-  addToast,
-  Avatar,
-  Button,
-  DatePicker,
-  Image,
-  Input,
-  Switch,
-  useDisclosure,
-} from "@heroui/react";
-import { ArrowLeftIcon, DeleteDocumentIcon, PlusIcon } from "@/components/svg";
+  ArrowLeftIcon,
+  CheckIcon,
+  CursorIcon,
+  DeleteIcon,
+  EditIcon,
+  HandIcon,
+  PlusIcon,
+} from "@/components/svg";
 import dayjs from "dayjs";
 import FIRE_ICON from "@/assets/icons/fire-svgrepo-com.svg";
 import { PostInfo } from "@/interfaces/news";
-import { useUser } from "@/providers/user.providers";
-import { createNewPost, uploadPostImage } from "./page";
 import { STATUS_CODE } from "@/constants/enums";
 import { useRouter } from "next/navigation";
 import { CommonUtils } from "@/utils/common.utils";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
-import { now, getLocalTimeZone, today, ZonedDateTime } from "@internationalized/date";
+import {
+  now,
+  getLocalTimeZone,
+  today,
+  ZonedDateTime,
+  parseAbsoluteToLocal,
+} from "@internationalized/date";
 import SwitchCard from "@/components/ui/SwitchCard";
 import { MentionsInput, Mention } from "react-mentions";
 import { Theme, SuggestionMode } from "emoji-picker-react";
@@ -31,6 +33,7 @@ import { RoleInfo } from "@/interfaces/user";
 import mentionInputStyle from "@/styles/mentionInputStyle";
 import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
+import ImageUploading, { ImageListType } from "react-images-uploading";
 
 const EmojiPicker = dynamic(
   () => {
@@ -48,8 +51,13 @@ interface TagUsersProps {
 
 const DEFAULT_TITLE = `Bản tin ngày ${dayjs().format("DD/MM/YYYY")}`;
 
-export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[] }) {
-  const { user } = useUser();
+export default function CreateUpdatePostForm({
+  fetchPostList,
+  editedPost,
+}: {
+  fetchPostList: () => Promise<void>;
+  editedPost?: PostInfo;
+}) {
   const router = useRouter();
   const { theme } = useTheme();
 
@@ -62,17 +70,32 @@ export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[]
 
   const { loading, withLoading } = useLoading();
 
-  const [title, setTitle] = useState(DEFAULT_TITLE);
-  const [content, setContent] = useState("");
+  const [tagUsers, setTagUsers] = useState<TagUsersProps[]>([]);
+
+  const [title, setTitle] = useState(editedPost ? editedPost.title : DEFAULT_TITLE);
+  const [content, setContent] = useState(editedPost ? editedPost.content : "");
+  const [activeAt, setActiveAt] = useState<ZonedDateTime>(
+    editedPost ? parseAbsoluteToLocal(editedPost.active_at) : now(getLocalTimeZone())
+  );
+  const [isHot, setIsHot] = useState<boolean>(editedPost?.is_hot ?? false);
+  const [images, setImages] = useState<ImageListType>([]);
   const [showEmoji, setShowEmoji] = useState(false);
-  const [activeAt, setActiveAt] = useState<ZonedDateTime>(now(getLocalTimeZone()));
-  const [isHot, setIsHot] = useState<boolean>(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
 
-  const imageURL = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : ""), [imageFile]);
-
-  const uploadRef = useRef<HTMLInputElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchTagUsers = () => {
+      fetch("/api/posts/tag-users")
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.status === STATUS_CODE.OK) {
+            setTagUsers(result.data);
+          }
+        });
+    };
+
+    fetchTagUsers();
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -90,12 +113,12 @@ export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[]
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmoji]);
 
-  const handleUploadChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const fileList = e.target.files;
+  const onChange = (imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
+    setImages(imageList);
+  };
 
-    if (!fileList || !fileList.length) return;
-
-    setImageFile(fileList[0]);
+  const handleAddEmoji = (emojiData: any) => {
+    setContent((prev) => prev + emojiData.emoji);
   };
 
   const handleValidate = () => {
@@ -119,70 +142,90 @@ export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[]
   };
 
   const handleCreateNewPost = async () => {
-    if (!user) return;
-
     withLoading(async () => {
-      let finalImage = "";
+      let image = "";
 
-      if (imageFile)
-        await uploadPostImage(imageFile).then((res) => {
-          if (res) {
-            if (res.status === STATUS_CODE.OK) {
-              finalImage = res.data;
+      if (images && images.length && images[0].data_url && images[0].file) {
+        await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileBase64: images[0].data_url,
+            fileName: images[0].file.name,
+          }),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (result.status === STATUS_CODE.OK) {
+              image = result.data || "";
             }
-          }
-        });
+          })
+          .catch((error) => {
+            return addToast({
+              title: "Tải ảnh lên thất bại!",
+              color: "danger",
+            });
+          });
+      }
 
       const newPost: Partial<PostInfo> = {
-        user: { id: user.id },
         title,
         slug: CommonUtils.generateSlug(title),
         content,
         description: "",
-        image: finalImage,
+        image: image,
         active_at: activeAt.toAbsoluteString(),
         is_hot: isHot,
       };
 
-      const response = await createNewPost(newPost);
+      await fetch("/api/posts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newPost),
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          console.log({ result });
+          if (result.status === STATUS_CODE.CREATED) {
+            addToast({
+              title: "Đăng bản tin thành công",
+              description: "Hệ thống sẽ tự động đăng bản tin lên Bảng tin HNB.",
+              color: "success",
+            });
+            fetchPostList();
+            router.push("/management/hub?tab=news");
+          } else {
+            addToast({
+              title: "Đăng bản tin lỗi",
+              color: "danger",
+            });
+          }
 
-      if (response.status === STATUS_CODE.CREATED) {
-        addToast({
-          title: "Tạo bản tin thành công",
-          description: "Hệ thống sẽ tự động đăng bản tin lên Bảng tin HNB.",
-          color: "success",
+          onCloseConfirm();
         });
-        router.replace("/news");
-      } else {
-        addToast({
-          title: "Tạo bản tin lỗi",
-          color: "danger",
-        });
-      }
-
-      onCloseConfirm();
     });
   };
 
-  const handleAddEmoji = (emojiData: any) => {
-    setContent((prev) => prev + emojiData.emoji);
-  };
-
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4 px-2">
       <div className="flex items-center justify-center gap-2">
         <div className="hidden flex-1 md:inline">
           <Button
+            isIconOnly
             variant="light"
-            onPress={() => router.replace("/news")}
+            onPress={() => router.back()}
             startContent={<ArrowLeftIcon />}
             className="w-fit border-none text-inherit"
-          >
-            Quay lại
-          </Button>
+          />
         </div>
         <div className="flex-1 text-center">
-          <PageTitle className="">Đăng bản tin</PageTitle>
+          <p className="text-xl font-bold uppercase md:text-2xl">
+            {editedPost ? "Cập nhật" : "Đăng"} bản tin
+          </p>
         </div>
         <div className="hidden flex-1 md:inline" />
       </div>
@@ -200,45 +243,75 @@ export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[]
         />
       </div>
 
-      <div className="flex w-full items-center justify-center space-y-2">
-        <input type="file" hidden ref={uploadRef} onChange={handleUploadChange} accept="image/*" />
-        {imageFile ? (
-          <div className="group relative w-56 duration-200">
-            <Image src={imageURL} alt="upload-image" />
-            <span
-              onClick={() => setImageFile(null)}
-              className="absolute top-1 right-1 z-50 hidden cursor-pointer rounded-full bg-white p-1 text-red-500 group-hover:flex hover:brightness-75"
-            >
-              <DeleteDocumentIcon />
-            </span>
-          </div>
-        ) : (
-          <div
-            onClick={() => {
-              if (uploadRef && uploadRef.current) {
-                uploadRef.current.click();
-              }
-            }}
-            className="flex h-16 w-full cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed px-4 duration-200 hover:opacity-75"
-          >
-            <PlusIcon />
-            <div className="inline items-center gap-2 sm:flex">
-              <em>Tải ảnh hoặc tệp GIF làm bìa của bản tin</em>{" "}
-              <p className="inline text-xs">(không bắt buộc)</p>
+      <div className="w-full">
+        <ImageUploading value={images} onChange={onChange} dataURLKey="data_url">
+          {({
+            imageList,
+            onImageUpload,
+            onImageRemoveAll,
+            onImageUpdate,
+            //   onImageRemove,
+            isDragging,
+            dragProps,
+          }) => (
+            <div className="mx-auto space-y-1">
+              <Button
+                {...dragProps}
+                onPress={onImageUpload}
+                variant="flat"
+                className={`h-56 w-full rounded-md border border-dashed bg-contain bg-center bg-no-repeat duration-200 ${(isDragging || !!imageList.length) && "border-solid"}`}
+                style={{
+                  backgroundImage: `url(${imageList?.[0]?.["data_url"]})`,
+                }}
+              >
+                <div className={`text-center ${!!imageList.length && "hidden"}`}>
+                  <p className="text-lg font-semibold">
+                    Ảnh bìa bản tin <span className="text-sm opacity-75">(không bắt buộc)</span>
+                  </p>
+                  <span
+                    className={`flex items-center gap-1 opacity-50 duration-200 ${isDragging && "opacity-100"}`}
+                  >
+                    {isDragging ? <HandIcon /> : <CursorIcon size={16} />}
+                    {isDragging ? "Thả vào đây để tải ảnh lên" : "Nhấn hoặc kéo thả để tải ảnh lên"}
+                  </span>
+                </div>
+              </Button>
+              <div
+                className={`flex flex-col items-stretch gap-1 md:flex-row ${!imageList.length && "hidden"}`}
+              >
+                <Button
+                  fullWidth
+                  color="secondary"
+                  variant="bordered"
+                  onPress={() => onImageUpdate(0)}
+                  startContent={<EditIcon />}
+                  className="flex-3 py-2"
+                >
+                  Thay đổi ảnh
+                </Button>
+                <Button
+                  isIconOnly
+                  fullWidth
+                  color="danger"
+                  variant="bordered"
+                  onPress={onImageRemoveAll}
+                  startContent={<DeleteIcon />}
+                  className="w-full flex-1 py-2"
+                />
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </ImageUploading>
       </div>
 
       <div className="flex flex-col items-start justify-center gap-2">
         <MentionsInput
           value={content}
           onChange={(_, newValue) => setContent(newValue)}
-          // className="min-h-[100px] w-full rounded-lg border p-2"
-          placeholder="Nhập nội dung bài viết"
+          className="emoji-text min-h-[100px] w-full rounded-lg border"
+          placeholder="Nhập nội dung bản tin..."
           style={mentionInputStyle}
           a11ySuggestionsListLabel={"Tag"}
-          className="emoji-text w-full"
         >
           <Mention
             trigger="@"
@@ -325,11 +398,12 @@ export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[]
       </div>
 
       <Button
-        color="primary"
+        color="success"
         onPress={() => {
           const validated = handleValidate();
           if (validated) onOpenConfirm();
         }}
+        startContent={!loading && <CheckIcon size={16} />}
         isLoading={loading}
       >
         Hoàn tất
@@ -340,10 +414,9 @@ export default function CreatePostForm({ tagUsers }: { tagUsers: TagUsersProps[]
         onOpenChange={onOpenChangeConfirm}
         onClose={onCloseConfirm}
         onConfirm={handleCreateNewPost}
-        title={"Xác nhận tạo bản tin"}
-        description={"Đảm bảo rằng thông tin của bản tin hoàn toàn chính xác trước khi tạo!"}
-        extra={"Thao tác này không thể hoàn tác."}
-        confirmText="Tạo bản tin"
+        title={"Xác nhận đăng bản tin"}
+        description={"Đảm bảo rằng thông tin của bản tin hoàn toàn chính xác trước khi đăng!"}
+        confirmText="Đăng bản tin"
         modalProps={{
           size: "lg",
           placement: "center",

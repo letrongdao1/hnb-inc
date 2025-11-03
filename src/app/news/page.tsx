@@ -13,8 +13,6 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 export type PostResponse = PostInfo[];
 
-const CREATE_POST_ENABLED_ROLES = [ROLE.BOT];
-
 export async function generateMetadata() {
   return {
     title: CommonUtils.formatMetaData("Bảng tin"),

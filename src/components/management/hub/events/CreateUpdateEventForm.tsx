@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FieldErrorText, PageTitle } from "@/components/ui/text/text";
-import { EventTag } from "@/interfaces/events";
+import { Event, EventTag } from "@/interfaces/events";
 import {
   addToast,
   Button,
@@ -24,6 +24,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import {
+  ArrowLeftIcon,
   BeerIcon,
   CheckIcon,
   CursorIcon,
@@ -38,6 +39,8 @@ import { CommonUtils } from "@/utils/common.utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { STATUS_CODE } from "@/constants/enums";
 import { useLoading } from "@/hooks/useLoading";
+import { useRouter } from "next/navigation";
+import { parseDate, parseTime } from "@internationalized/date";
 
 type CreateEventFieldProps = yup.InferType<typeof schema>;
 
@@ -71,14 +74,19 @@ const schema = yup
   })
   .required();
 
-export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
+export default function CreateUpdateEventForm({
+  fetchEventList,
+  editedEvent,
+}: {
+  fetchEventList: () => Promise<void>;
+  editedEvent?: Event;
+}) {
+  const router = useRouter();
   const { loading, setLoading } = useLoading();
-  const [images, setImages] = useState<ImageListType>([]);
 
-  const onChange = (imageList: ImageListType, addUpdateIndex: number[] | undefined) => {
-    console.log(imageList, addUpdateIndex);
-    setImages(imageList);
-  };
+  const [tags, setTags] = useState<EventTag[]>([]);
+
+  const [images, setImages] = useState<ImageListType>([]);
 
   const {
     control,
@@ -86,7 +94,21 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<CreateEventFieldProps>({ resolver: yupResolver(schema as any) });
+  } = useForm<CreateEventFieldProps>({
+    resolver: yupResolver(schema as any),
+    defaultValues: {
+      ...editedEvent,
+      start_date:
+        editedEvent && editedEvent.start_date
+          ? (parseDate(editedEvent.start_date) as any)
+          : undefined,
+      start_time:
+        editedEvent && editedEvent.start_time
+          ? (parseTime(editedEvent.start_time) as any)
+          : undefined,
+      tags: editedEvent && editedEvent.tags ? editedEvent.tags : "",
+    },
+  });
 
   const watcher = {
     title: {
@@ -109,12 +131,29 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
     },
   };
 
+  useEffect(() => {
+    const fetchTagList = async () => {
+      await fetch("/api/events/tags")
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.status === STATUS_CODE.OK) {
+            setTags(result.data);
+          }
+        });
+    };
+
+    fetchTagList();
+  }, []);
+
+  const onChange = (imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
+    setImages(imageList);
+  };
+
   const onSubmit = async (data: CreateEventFieldProps) => {
     const values = {
       ...data,
       start_date: CommonUtils.getDateString(data.start_date),
     };
-    console.log({ values, images });
     setLoading(true);
 
     let image: string = "";
@@ -160,6 +199,8 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
             color: "success",
           });
         }
+        fetchEventList();
+        router.push("/management/hub?tab=events");
       })
       .catch((err) => {
         addToast({
@@ -173,8 +214,24 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
   };
 
   return (
-    <div className="w-full space-y-4">
-      <PageTitle>Tạo sự kiện</PageTitle>
+    <div className="flex w-full flex-col gap-8 px-2">
+      <div className="flex items-center justify-center gap-2">
+        <div className="hidden flex-1 md:inline">
+          <Button
+            isIconOnly
+            variant="light"
+            onPress={() => router.back()}
+            startContent={<ArrowLeftIcon />}
+            className="w-fit border-none text-inherit"
+          />
+        </div>
+        <div className="flex-1 text-center">
+          <p className="text-xl font-bold uppercase md:text-2xl">
+            {editedEvent ? "Cập nhật" : "Tạo"} sự kiện
+          </p>
+        </div>
+        <div className="hidden flex-1 md:inline" />
+      </div>
 
       <div className="flex flex-col gap-2">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
@@ -230,15 +287,15 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
                       ? "Xem lỗi"
                       : watcher.venue_instruction.isProvided
                         ? "Xem link"
-                        : "Thêm link chỉ dẫn"}
+                        : "Link chỉ dẫn"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent>
                   <div className="w-64 space-y-1 px-1 py-2">
-                    <p className="text-small mb-1 font-bold">Nhập link chỉ dẫn:</p>
+                    <p className="text-small mb-1 font-bold">Link dẫn đường đến địa điểm:</p>
                     <Textarea
                       {...register("venue_instruction")}
-                      placeholder="Nhập hoặc dán link vào đây..."
+                      placeholder="Dán link Google Map vào đây..."
                       isInvalid={!!errors.venue_instruction}
                       className="text-tiny"
                       maxRows={4}
@@ -309,7 +366,7 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
                             field.value ? "text-amber-500 opacity-100" : "opacity-50"
                           }`}
                         />
-                        
+
                         <AnimatePresence>
                           {field.value && (
                             <>
@@ -378,7 +435,7 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
                   label={"Hashtag"}
                   selectionMode="multiple"
                   isInvalid={!!errors.tags}
-                  value={field.value as any}
+                  value={field.value}
                   onChange={field.onChange}
                   startContent={"#"}
                 >
@@ -431,10 +488,12 @@ export default function CreateEventForm({ tags }: { tags: EventTag[] }) {
                   variant="flat"
                   className={`h-56 w-full rounded-md border border-dashed bg-contain bg-center bg-no-repeat duration-200 ${(isDragging || !!imageList.length) && "border-solid"}`}
                   style={{
-                    backgroundImage: `url(${imageList?.[0]?.["data_url"]})`,
+                    backgroundImage: `url(${imageList?.[0]?.["data_url"] || (editedEvent && editedEvent.image)})`,
                   }}
                 >
-                  <div className={`text-center ${!!imageList.length && "hidden"}`}>
+                  <div
+                    className={`text-center ${(!!imageList.length || (editedEvent && editedEvent.image)) && "hidden"}`}
+                  >
                     <p className="text-lg font-semibold">
                       Ảnh nền sự kiện <span className="text-sm opacity-75">(không bắt buộc)</span>
                     </p>

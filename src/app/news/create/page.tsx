@@ -1,7 +1,7 @@
 "use server";
 
 import React from "react";
-import CreatePostForm from "./CreatePostForm";
+import CreatePostForm from "../../../components/management/hub/news/CreateUpdatePostForm";
 import { PostInfo } from "@/interfaces/news";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_CODE } from "@/constants/enums";
@@ -18,9 +18,7 @@ export async function generateMetadata() {
 export default async function CreatePost() {
   const supabase = await createClient();
 
-  const tagUsers = await getPublicUserList(supabase);
-
-  return <CreatePostForm tagUsers={tagUsers} />;
+  return <></>;
 }
 
 export async function uploadPostImage(file: File) {

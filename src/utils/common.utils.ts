@@ -53,9 +53,11 @@ export const CommonUtils = {
       .trim()
       .replace(/\s+/g, "-");
 
-    const shortTimestamp = Date.now().toString(36);
+    const randomNumId = Array.from(crypto.getRandomValues(new Uint8Array(20)))
+      .map((n) => (n % 10).toString())
+      .join("");
 
-    return `${base}-${shortTimestamp}`;
+    return `${base}-${randomNumId}`;
   },
   getHiddenEmail: (email: string) => {
     if (!email) return "";

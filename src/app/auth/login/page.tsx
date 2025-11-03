@@ -21,6 +21,9 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
+    router.prefetch("/");
+    router.prefetch("/auth/signup");
+
     const sessionEmail = sessionStorage.getItem("new-email");
     if (sessionEmail) {
       setForm((prev) => ({
@@ -28,7 +31,7 @@ export default function LoginPage() {
         email: sessionEmail,
       }));
     }
-  }, []);
+  }, [router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

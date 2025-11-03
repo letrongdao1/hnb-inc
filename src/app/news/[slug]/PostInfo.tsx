@@ -69,19 +69,8 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
           )}
 
           <CardBody className="flex flex-col items-stretch gap-4 p-6">
-            <div className="flex items-start justify-center gap-2">
-              <div className="hidden md:inline">
-                <Button
-                  variant="light"
-                  onPress={() => router.replace("/news")}
-                  startContent={<ArrowLeftIcon />}
-                  className="w-fit border-none text-inherit"
-                ></Button>
-              </div>
-              <div className="flex-1 text-center">
-                <PageTitle>{post.title}</PageTitle>
-              </div>
-              <div className="hidden md:inline" />
+            <div className="flex-1 text-center">
+              <PageTitle>{post.title}</PageTitle>
             </div>
 
             <Divider className="my-4" />
