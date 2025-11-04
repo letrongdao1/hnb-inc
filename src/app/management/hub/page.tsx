@@ -1,13 +1,15 @@
-import { CommonUtils } from "@/utils/common.utils";
-import HubManagementPage from "./HubManagementPage";
+"use client";
 
-export async function generateMetadata() {
-  return {
-    title: CommonUtils.formatMetaData("Quản lý nội dung"),
-    description: "Quản lý nội dung",
-  };
-}
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Loader from "@/components/loader";
 
-export default async function HubManagement() {
-  return <HubManagementPage />;
+export default function HubManagement() {
+  const router = useRouter();
+
+  useEffect(() => {
+    router.replace("/management/hub/news");
+  }, [router]);
+
+  return <Loader />;
 }

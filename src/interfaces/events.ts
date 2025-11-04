@@ -19,9 +19,13 @@ export interface Event {
   is_ended: boolean;
   created_at: string;
   participants?: {
-    id: string;
-    display_name: string;
-    avatar: string;
+    event: string;
+    user: {
+      id: string;
+      display_name: string;
+      avatar: string;
+    };
+    created_at: string;
   }[];
   is_joined?: boolean;
 }

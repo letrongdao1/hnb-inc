@@ -1,20 +1,12 @@
 "use client";
 import React from "react";
 import LogoComponent from "../logo/logo";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
 export default function Footer() {
-  const router = useRouter();
   const pathname = usePathname();
-
-  const navLinks = [
-    { name: "Trang chủ", href: "/" },
-    { name: "Bảng tin", href: "/news" },
-    { name: "Sự kiện", href: "/events" },
-    { name: "Về HNB", href: "/about" },
-  ];
 
   const socialIcons = [
     {
@@ -102,22 +94,11 @@ export default function Footer() {
       <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-2">
         <LogoComponent />
 
-        <nav className="w-full">
-          <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-base font-medium">
-            {navLinks.map((link) => (
-              <li key={link.name}>
-                <a
-                  onClick={() => router.push(link.href)}
-                  className="relative text-gray-600 transition-all duration-200 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-gray-900 after:transition-all after:duration-300 hover:text-gray-900 hover:after:w-full dark:text-gray-200 dark:after:bg-white dark:hover:text-white"
-                >
-                  {link.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <p className="text-center text-xs text-gray-500 dark:text-gray-400">
+          &copy; 2025 HNB Inc. All rights reserved.
+        </p>
 
-        <div className="mt-2 flex flex-wrap justify-center gap-4 text-sm">
+        <div className="flex flex-wrap justify-center gap-4 text-sm">
           {socialIcons.map((icon) => (
             <a
               key={icon.name}
@@ -131,10 +112,6 @@ export default function Footer() {
             </a>
           ))}
         </div>
-
-        <p className="mt-4 text-center text-xs text-gray-500 dark:text-gray-500">
-          &copy; 2025 HNB Inc. All rights reserved.
-        </p>
       </div>
     </footer>
   );

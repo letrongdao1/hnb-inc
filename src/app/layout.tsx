@@ -1,10 +1,11 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Alfa_Slab_One, Be_Vietnam_Pro, Montserrat } from "next/font/google";
+import { Alfa_Slab_One, Montserrat } from "next/font/google";
 import { ClientProviders } from "../providers/client.providers";
 import ClientLayout from "./client-layout";
 import { getCurrentUserInfo } from "./auth/actions";
-import { cache } from "react";
+import { cache, Suspense } from "react";
+import Loader from "@/components/loader";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -35,7 +36,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="text-foreground bg-background font-sans">
         <ClientProviders>
-          <ClientLayout user={userData}>{children}</ClientLayout>
+          <ClientLayout user={userData}>
+            <Suspense fallback={<Loader />}>{children}</Suspense>
+          </ClientLayout>
         </ClientProviders>
       </body>
     </html>

@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { PageTitle } from "@/components/ui/text/text";
 import { Event } from "@/interfaces/events";
 import SingleEvent from "@/components/events/SingleEvent";
-import Carousel from "@/components/ui/carousel/Carousel";
 
 export default function AllEventsPage({ events }: { events: Event[] }) {
   return (
@@ -16,8 +15,6 @@ export default function AllEventsPage({ events }: { events: Event[] }) {
           <SingleEvent key={event.id} event={event} />
         ))}
       </div>
-
-      <Carousel cards={[]} />
     </div>
   );
 }

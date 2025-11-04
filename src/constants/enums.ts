@@ -35,3 +35,8 @@ export enum STATUS_CODE {
 export enum SYSTEM_MESSAGE {
   SYSTEM_ERROR = "Lỗi hệ thống. Vui lòng liên hệ phòng IT để được hỗ trợ!",
 }
+
+export enum ANNOUNCEMENT_TYPE {
+  FEATURE_UNAVAILABLE = "FEATURE_UNAVAILABLE",
+  FEATURE_IN_MAINTENANCE = "FEATURE_IN_MAINTENANCE",
+}

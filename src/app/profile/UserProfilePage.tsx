@@ -3,12 +3,15 @@
 import BankAccountManagement from "@/components/profile/BankAccountManagement";
 import PersonalInfo from "@/components/profile/PersonalInfo";
 import { BankCardIcon, EditIcon, UserIcon } from "@/components/svg";
+import { ANNOUNCEMENT_TYPE } from "@/constants/enums";
+import { useAnnouncement } from "@/hooks/useAnnouncement";
 import { useUser } from "@/providers/user.providers";
 import { Avatar, Button, Divider } from "@heroui/react";
 import React, { useEffect, useMemo, useState } from "react";
 
 export default function UserProfilePage() {
   const { user } = useUser();
+  const { announce } = useAnnouncement();
 
   const tabItems = useMemo(
     () => [
@@ -46,6 +49,10 @@ export default function UserProfilePage() {
     window.history.replaceState(null, "", `#${key}`);
   };
 
+  const handleChangeAvatar = () => {
+    announce(ANNOUNCEMENT_TYPE.FEATURE_UNAVAILABLE);
+  };
+
   if (!user) return null;
 
   return (
@@ -56,9 +63,14 @@ export default function UserProfilePage() {
           <p className="text-2xl font-semibold md:text-4xl">{user.display_name}</p>
         </div>
 
-        {/* <Button startContent={<EditIcon size={16} />} variant="flat" className="text-inherit">
+        <Button
+          onPress={handleChangeAvatar}
+          startContent={<EditIcon size={16} />}
+          color="primary"
+          variant="flat"
+        >
           <p className="text-xs md:text-sm">Cập nhật ảnh đại diện</p>
-        </Button> */}
+        </Button>
       </div>
 
       <Divider />

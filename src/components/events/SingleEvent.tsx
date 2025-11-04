@@ -3,25 +3,104 @@
 import { Event } from "@/interfaces/events";
 import React, { useMemo, useState } from "react";
 import { CalendarIcon, CheckIcon, LocationIcon, StarIcon, UserIcon, XIcon } from "../svg";
-import { Avatar, AvatarGroup, Button, Chip, useDisclosure } from "@heroui/react";
+import { addToast, Avatar, AvatarGroup, Button, Chip, Tooltip, useDisclosure } from "@heroui/react";
 import ConfirmModal from "../ui/modal/ConfirmModal";
+import { useLoading } from "@/hooks/useLoading";
+import { ANNOUNCEMENT_TYPE, STATUS_CODE } from "@/constants/enums";
+import { useUser } from "@/providers/user.providers";
+import { useAnnouncement } from "@/hooks/useAnnouncement";
 
 const MAX_TAG_SHOWN = 2;
+const MAX_AVATAR_SHOWN = 5;
 
 export default function SingleEvent({ event }: { event: Event }) {
+  const { user } = useUser();
   const confirmNotJoin = useDisclosure();
+  const joinLoading = useLoading();
+  const { announce } = useAnnouncement();
 
+  const [participantList, setParticipantList] = useState<Event["participants"]>(
+    event.participants || []
+  );
   const [isJoinedStatus, setIsJoinedStatus] = useState<boolean>(Boolean(event.is_joined));
 
   const tagList = useMemo(() => (event.tags ? event.tags.split(",") : []), [event]);
 
+  const handleViewDetail = () => {
+    announce(ANNOUNCEMENT_TYPE.FEATURE_UNAVAILABLE);
+  };
+
   const handleJoin = async () => {
-    setIsJoinedStatus(true);
+    if (!user) return;
+
+    joinLoading.setLoading(true);
+
+    await fetch("/api/events/participation", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ eventId: event.id }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.OK) {
+          setParticipantList((prev) =>
+            prev
+              ? [
+                  ...prev,
+                  {
+                    event: event.id,
+                    created_at: new Date().toISOString(),
+                    user: {
+                      id: user.id,
+                      display_name: user.display_name,
+                      avatar: user.avatar,
+                    },
+                  },
+                ]
+              : prev
+          );
+          setIsJoinedStatus(true);
+          addToast({ title: result.message, color: "success" });
+        } else {
+          addToast({ title: result.message, color: "danger" });
+        }
+      })
+      .catch((error) => {
+        addToast({ title: error, color: "danger" });
+      })
+      .finally(() => {
+        joinLoading.setLoading(false);
+      });
   };
 
   const handleNotJoin = async () => {
-    setIsJoinedStatus(false);
-    confirmNotJoin.onClose();
+    joinLoading.setLoading(true);
+
+    await fetch("/api/events/participation", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ eventId: event.id }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.OK) {
+          setIsJoinedStatus(false);
+          setParticipantList((prev) => prev?.filter((p) => p.user.id !== user?.id));
+        } else {
+          addToast({ title: result.message, color: "danger" });
+        }
+      })
+      .catch((error) => {
+        addToast({ title: error, color: "danger" });
+      })
+      .finally(() => {
+        confirmNotJoin.onClose();
+        joinLoading.setLoading(false);
+      });
   };
 
   return (
@@ -87,30 +166,62 @@ export default function SingleEvent({ event }: { event: Event }) {
         </div>
 
         <div className="md;items-stretch flex flex-col items-center justify-between gap-2 md:mt-16 md:flex-row">
-          {event.participants && (
+          {participantList && (
             <AvatarGroup
               isBordered
-              max={5}
-              total={event.participants.length}
-              renderCount={(count) => (
-                <p className="text-small ms-2 font-semibold text-white">+{count}</p>
-              )}
+              max={MAX_AVATAR_SHOWN}
+              total={participantList.length}
+              renderCount={(count) =>
+                count > MAX_AVATAR_SHOWN ? (
+                  <p className="text-small ms-2 font-semibold text-white">
+                    +{count - MAX_AVATAR_SHOWN}
+                  </p>
+                ) : null
+              }
             >
-              {event.participants.map((user) => (
-                <Avatar key={user.id} src={user.avatar} alt="avatar" />
-              ))}
+              {participantList.map((participant) => {
+                const isYou = user && user.id === participant.user.id;
+                return (
+                  <Tooltip
+                    key={participant.user.id}
+                    content={
+                      isYou ? (
+                        `Bạn`
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm font-semibold">{participant.user.display_name}</p>
+                          <span className="min-w-fit font-light">sẽ tham gia</span>
+                        </div>
+                      )
+                    }
+                  >
+                    <Avatar
+                      src={participant.user.avatar}
+                      alt="avatar"
+                      color={participant.user.id === user?.id ? "primary" : "default"}
+                    />
+                  </Tooltip>
+                );
+              })}
             </AvatarGroup>
           )}
 
           <div className="flex w-full items-center justify-between gap-1 md:ml-auto md:w-fit md:gap-4">
-            <Button variant="light" color="default" className="text-white hover:underline">
+            <Button
+              onPress={handleViewDetail}
+              variant="light"
+              color="default"
+              className="text-white hover:underline"
+            >
               Xem chi tiết
             </Button>
             <Button
               variant={isJoinedStatus ? "light" : "solid"}
               color="success"
               className="font-semibold"
-              startContent={isJoinedStatus ? <CheckIcon /> : <StarIcon />}
+              startContent={
+                joinLoading.loading ? null : isJoinedStatus ? <CheckIcon /> : <StarIcon />
+              }
               onPress={() => {
                 if (isJoinedStatus) {
                   confirmNotJoin.onOpen();
@@ -118,6 +229,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                   handleJoin();
                 }
               }}
+              isLoading={joinLoading.loading}
             >
               {isJoinedStatus ? "Đã tham gia" : "Đăng ký tham gia"}
             </Button>
@@ -141,7 +253,8 @@ export default function SingleEvent({ event }: { event: Event }) {
               }}
               cancelButtonProps={{
                 color: "danger",
-                startContent: <XIcon size={16} />,
+                startContent: !joinLoading.loading && <XIcon size={16} />,
+                isLoading: joinLoading.loading,
               }}
             />
           </div>

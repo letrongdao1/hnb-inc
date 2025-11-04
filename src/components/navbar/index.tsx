@@ -76,6 +76,7 @@ export default function Navbar() {
         label: "Danh sách",
         href: "",
         type: "button",
+        hidden: true,
         children: [
           {
             label: "Thành viên HNB",
@@ -117,7 +118,7 @@ export default function Navbar() {
                   key: "hub-mmanagement",
                   icon: <SettingIcon />,
                   title: "Quản lý nội dung",
-                  onClick: () => router.push("/management/hub"),
+                  onClick: () => router.push("/management/hub/news"),
                 },
               ],
             },
@@ -239,7 +240,7 @@ export default function Navbar() {
               );
             else if (item.type === "button") {
               return (
-                <Dropdown key={index}>
+                <Dropdown key={index} hidden={item.hidden}>
                   <NavbarItem key={index}>
                     <DropdownTrigger>
                       <Button
@@ -248,6 +249,7 @@ export default function Navbar() {
                         endContent={<ArrowDownSLineIcon />}
                         radius="sm"
                         className="text-medium text-inherit hover:!bg-transparent hover:brightness-50"
+                        hidden={item.hidden}
                       >
                         {item.label}
                       </Button>
