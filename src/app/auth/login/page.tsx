@@ -67,7 +67,9 @@ export default function LoginPage() {
           case STATUS_CODE.OK: {
             if (response.data) {
               setUser(response.data);
-              router.replace("/");
+              const redirectPath = sessionStorage.getItem("redirectAfterLogin") || "/";
+              sessionStorage.removeItem("redirectAfterLogin");
+              router.replace(redirectPath);
             } else {
               router.push("/get-start");
             }

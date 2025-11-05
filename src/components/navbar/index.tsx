@@ -226,6 +226,8 @@ export default function Navbar() {
         {menuItems
           .filter((item) => !Boolean(item.hiddenOnMain))
           .map((item, index) => {
+            if (item.hidden) return null;
+
             if (item.type === "link")
               return (
                 <NavbarItem key={index} isActive={pathname === item.href}>
@@ -240,7 +242,7 @@ export default function Navbar() {
               );
             else if (item.type === "button") {
               return (
-                <Dropdown key={index} hidden={item.hidden}>
+                <Dropdown key={index}>
                   <NavbarItem key={index}>
                     <DropdownTrigger>
                       <Button
@@ -249,7 +251,6 @@ export default function Navbar() {
                         endContent={<ArrowDownSLineIcon />}
                         radius="sm"
                         className="text-medium text-inherit hover:!bg-transparent hover:brightness-50"
-                        hidden={item.hidden}
                       >
                         {item.label}
                       </Button>
@@ -341,6 +342,8 @@ export default function Navbar() {
 
       <NavbarMenu className="pt-8">
         {menuItems.map((item, index) => {
+          if (item.hidden) return null;
+
           if (item.type === "link")
             return (
               <NavbarMenuItem

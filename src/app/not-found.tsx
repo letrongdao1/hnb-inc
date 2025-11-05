@@ -14,7 +14,7 @@ export default function NotFoundPage() {
     <div className="m-auto flex w-full flex-col items-center justify-start gap-2 px-2 text-center">
       <Image src={DETECTIVE.src} alt="detective" className="mb-8 w-64 rounded-xl" />
       <p className="text-2xl">
-        KHÔNG TÌM THẤY TRANG <span className="ml-2 text-3xl font-bold">{pathname}</span>
+        KHÔNG TÌM THẤY TRANG <span className="ml-2 text-3xl font-bold line-clamp-1">{pathname}</span>
       </p>
       <p className="italic">
         &quot;Don&apos;t worry! We&apos;ve got our best man on the case.&quot;

@@ -1,3 +1,6 @@
+export const AUTH_NOT_REQUIRED_PATHS = ["/auth/login", "/auth/signup"];
+export const NAVBAR_NOT_REQUIRED_PATHS = ["/auth/login", "/auth/signup", "/get-start"];
+
 export const SUPABASE_DATE_FORMAT = "YYYY-MM-DD";
 
 export const GLOBAL_DATE_FORMAT = "DD/MM/YYYY";

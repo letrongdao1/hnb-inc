@@ -4,10 +4,12 @@ import Navbar from "@/components/navbar";
 import { UserInfo } from "@/interfaces/user";
 import { Suspense, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Loader from "@/components/loader";
 import { UserProvider } from "@/providers/user.providers";
 import Footer from "@/components/footer";
+import { createClient } from "@/lib/supabase/client";
+import { AUTH_NOT_REQUIRED_PATHS } from "@/constants/constants";
 
 export default function ClientLayout({
   user,
@@ -16,8 +18,28 @@ export default function ClientLayout({
   user: UserInfo | null;
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const pathname = usePathname();
+  const supabase = createClient();
+
   const [contentLoaded, setContentLoaded] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      const isUnAuthenticated = !AUTH_NOT_REQUIRED_PATHS.some((path) => pathname === path);
+
+      if (!user && isUnAuthenticated) {
+        sessionStorage.setItem("redirectAfterLogin", pathname);
+        router.replace("/auth/login");
+      }
+    }
+
+    checkAuth();
+  }, [pathname, router, supabase]);
 
   useEffect(() => {
     setContentLoaded(false);

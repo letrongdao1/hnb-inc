@@ -8,7 +8,7 @@ import { Metadata } from "next";
 import PostInfoPage from "./PostInfo";
 
 interface PostDetailProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function getPost(slug: string) {
@@ -23,7 +23,8 @@ export async function getPost(slug: string) {
 }
 
 export async function generateMetadata({ params }: PostDetailProps): Promise<Metadata> {
-  const post: PostInfo = await getPost(params.slug);
+  const { slug } = await params;
+  const post: PostInfo = await getPost(slug);
 
   if (!post) return { title: "Không tìm thấy bản tin" };
 
@@ -34,7 +35,8 @@ export async function generateMetadata({ params }: PostDetailProps): Promise<Met
 }
 
 export default async function PostDetailPage({ params }: PostDetailProps) {
-  const post: PostInfo = await getPost(params.slug);
+  const { slug } = await params;
+  const post: PostInfo = await getPost(slug);
 
   return <PostInfoPage post={post || null} />;
 }

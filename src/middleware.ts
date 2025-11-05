@@ -1,6 +1,7 @@
 import { updateSession } from "@/lib/supabase/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { AUTH_NOT_REQUIRED_PATHS } from "./constants/constants";
 
 export default async function middleware(request: NextRequest) {
   const response = await updateSession(request);
@@ -23,12 +24,12 @@ export default async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const unAuthPaths = ["/auth/login", "/auth/signup"];
-  const isAuthRequired = !unAuthPaths.some((path) => request.nextUrl.pathname.includes(path));
+  const isAuthRequired = !AUTH_NOT_REQUIRED_PATHS.some((path) =>
+    request.nextUrl.pathname.includes(path)
+  );
 
   if (isAuthRequired && !user) {
-    const loginUrl = new URL("/auth/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    console.log("Middleware: Không xác định được session đăng nhập!");
   }
 
   return response;

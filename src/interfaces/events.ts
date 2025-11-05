@@ -8,6 +8,7 @@ export interface EventTag {
 export interface Event {
   id: string;
   title: string;
+  slug: string;
   venue_name: string;
   venue_instruction?: string;
   start_date: string;
@@ -33,5 +34,19 @@ export interface Event {
 export interface EventParticipation {
   user: string;
   event: string;
+  created_at: string;
+}
+
+export interface EventCost {
+  id: string;
+  user: {
+    id: string;
+    display_name: string;
+    avatar: string;
+  };
+  event: string;
+  type: string;
+  amount: number;
+  note?: string;
   created_at: string;
 }

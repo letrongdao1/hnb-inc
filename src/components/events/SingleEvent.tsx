@@ -9,11 +9,14 @@ import { useLoading } from "@/hooks/useLoading";
 import { ANNOUNCEMENT_TYPE, STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.providers";
 import { useAnnouncement } from "@/hooks/useAnnouncement";
+import { usePathname, useRouter } from "next/navigation";
 
 const MAX_TAG_SHOWN = 2;
 const MAX_AVATAR_SHOWN = 5;
 
 export default function SingleEvent({ event }: { event: Event }) {
+  const router = useRouter();
+  const pathName = usePathname();
   const { user } = useUser();
   const confirmNotJoin = useDisclosure();
   const joinLoading = useLoading();
@@ -27,7 +30,7 @@ export default function SingleEvent({ event }: { event: Event }) {
   const tagList = useMemo(() => (event.tags ? event.tags.split(",") : []), [event]);
 
   const handleViewDetail = () => {
-    announce(ANNOUNCEMENT_TYPE.FEATURE_UNAVAILABLE);
+    router.push(`${pathName}/${event.slug}`);
   };
 
   const handleJoin = async () => {
@@ -165,7 +168,7 @@ export default function SingleEvent({ event }: { event: Event }) {
           )}
         </div>
 
-        <div className="md;items-stretch flex flex-col items-center justify-between gap-2 md:mt-16 md:flex-row">
+        <div className="md;items-stretch flex flex-col items-start justify-between gap-2 px-4 md:mt-16 md:flex-row md:items-center">
           {participantList && (
             <AvatarGroup
               isBordered

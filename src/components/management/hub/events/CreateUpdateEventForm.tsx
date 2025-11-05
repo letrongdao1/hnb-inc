@@ -189,7 +189,7 @@ export default function CreateUpdateEventForm({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...values, image }),
+      body: JSON.stringify({ ...values, image, slug: CommonUtils.generateSlug(values.title) }),
     })
       .then((res) => res.json())
       .then((result) => {

@@ -40,6 +40,17 @@ export const CommonUtils = {
       return phone;
     }
   },
+  formatMoneyVND(value: number | string): string {
+    if (value === null || value === undefined || value === "") return "";
+    const number = Number(value);
+    if (isNaN(number)) return "";
+
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+      maximumFractionDigits: 0,
+    }).format(number);
+  },
   generateSlug(title: string = "hnb"): string {
     const fromVietnamese = title
       .normalize("NFD")
