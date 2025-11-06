@@ -56,6 +56,7 @@ export default function EmailSignupForm({
 
   const handleSubmitEmail = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!emailInput) return;
 
     if (isVerified) {
@@ -78,6 +79,8 @@ export default function EmailSignupForm({
 
       if (response.status === STATUS_CODE.OK) {
         const otpResponse = await sendEmail();
+
+        if (!otpResponse) return;
 
         const data = await otpResponse.json();
 
@@ -200,7 +203,7 @@ export default function EmailSignupForm({
     <>
       <form
         onSubmit={handleSubmitEmail}
-        className="mx-auto mt-16 max-w-md space-y-2 rounded-2xl border border-gray-700 bg-inherit p-6 text-inherit shadow-lg"
+        className="mx-auto mt-16 max-w-md space-y-2 rounded-2xl border border-gray-700 p-6 shadow-lg"
       >
         <h2 className="mb-12 text-center text-2xl font-semibold">Tạo tài khoản Nhân viên HNB</h2>
 
@@ -210,11 +213,10 @@ export default function EmailSignupForm({
           type="email"
           value={emailInput}
           onChange={(e) => setEmailInput(e.target.value)}
-          placeholder="troll@hnb.com"
+          placeholder="staff@hnb.com"
           variant="faded"
           labelPlacement="outside"
           isRequired
-          className="text-black"
         />
 
         {isVerified && (
@@ -233,7 +235,7 @@ export default function EmailSignupForm({
           Tiếp tục
         </Button>
 
-        <p className="mx-auto text-center text-sm text-gray-500">
+        <p className="mx-auto mt-4 text-center text-sm">
           Đã có tài khoản?{" "}
           <a href="/auth/login" className="text-sky-600 hover:underline">
             Đăng nhập

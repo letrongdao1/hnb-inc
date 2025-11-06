@@ -1,9 +1,17 @@
 "use client";
 
 import { ArrowLeftIcon, CheckIcon, EyeFilledIcon, EyeSlashFilledIcon } from "@/components/svg";
+import StrongPasswordInput from "@/components/ui/password-input/StrongPasswordInput";
 import { CommonUtils } from "@/utils/common.utils";
 import { addToast, Button, Form, Input } from "@heroui/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+export interface PasswordValidationProps {
+  length: boolean;
+  number: boolean;
+  lowercase: boolean;
+  uppercase: boolean;
+}
 
 export default function PasswordSignupForm({
   email,
@@ -18,7 +26,17 @@ export default function PasswordSignupForm({
 }) {
   const [isVisible, setIsVisible] = useState(false);
   const [password, setPassword] = useState("");
+  const [validationState, setValidationState] = useState<PasswordValidationProps>({
+    length: false,
+    number: false,
+    lowercase: false,
+    uppercase: false,
+  });
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  const isPasswordInvalid = useMemo(() => {
+    return Object.values(validationState).some((v) => v === false);
+  }, [validationState]);
 
   const toggleVisibility = () => setIsVisible(!isVisible);
 
@@ -31,9 +49,9 @@ export default function PasswordSignupForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 6 || confirmPassword.length < 6) {
+    if (isPasswordInvalid) {
       addToast({
-        title: "Mật khẩu dài ít nhất 6 kí tự!",
+        title: "Mật khẩu không phù hợp. Vui lòng tạo mật khẩu theo yêu cầu!",
         color: "warning",
       });
     } else if (password !== confirmPassword) {
@@ -63,30 +81,11 @@ export default function PasswordSignupForm({
         </div>
       </div>
 
-      <Input
-        endContent={
-          <button
-            aria-label="toggle password visibility"
-            className="outline-transparent focus:outline-solid"
-            type="button"
-            onClick={toggleVisibility}
-          >
-            {isVisible ? (
-              <EyeSlashFilledIcon className="text-default-400 pointer-events-none text-2xl" />
-            ) : (
-              <EyeFilledIcon className="text-default-400 pointer-events-none text-2xl" />
-            )}
-          </button>
-        }
-        label="Mật khẩu"
-        placeholder="Mật khẩu"
-        type={isVisible ? "text" : "password"}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        variant="faded"
-        labelPlacement="outside"
-        isRequired
-        className="text-black"
+      <StrongPasswordInput
+        password={password}
+        setPassword={setPassword}
+        validationState={validationState}
+        setValidationState={setValidationState}
       />
 
       <Input
@@ -112,7 +111,6 @@ export default function PasswordSignupForm({
         variant="faded"
         labelPlacement="outside"
         isRequired
-        className="text-black"
       />
 
       <Button
