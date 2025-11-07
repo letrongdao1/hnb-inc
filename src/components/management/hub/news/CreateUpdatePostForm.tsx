@@ -61,12 +61,8 @@ export default function CreateUpdatePostForm({
   const router = useRouter();
   const { theme } = useTheme();
 
-  const {
-    isOpen: isOpenConfirm,
-    onOpen: onOpenConfirm,
-    onClose: onCloseConfirm,
-    onOpenChange: onOpenChangeConfirm,
-  } = useDisclosure();
+  const createConfirmModal = useDisclosure();
+  const updateConfirmModal = useDisclosure();
 
   const { loading, withLoading } = useLoading();
 
@@ -77,7 +73,10 @@ export default function CreateUpdatePostForm({
   const [activeAt, setActiveAt] = useState<ZonedDateTime>(
     editedPost ? parseAbsoluteToLocal(editedPost.active_at) : now(getLocalTimeZone())
   );
-  const [isHot, setIsHot] = useState<boolean>(editedPost?.is_hot ?? false);
+  const [isHot, setIsHot] = useState<boolean>(Boolean(editedPost?.is_hot) || false);
+  const [currentImage, setCurrentImage] = useState<string | undefined>(
+    editedPost?.image || undefined
+  );
   const [images, setImages] = useState<ImageListType>([]);
   const [showEmoji, setShowEmoji] = useState(false);
 
@@ -113,10 +112,6 @@ export default function CreateUpdatePostForm({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmoji]);
 
-  const onChange = (imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
-    setImages(imageList);
-  };
-
   const handleAddEmoji = (emojiData: any) => {
     setContent((prev) => prev + emojiData.emoji);
   };
@@ -134,8 +129,8 @@ export default function CreateUpdatePostForm({
     else if (!content) return warning("Vui lòng nhập nội dung cho bản tin!");
     else if (content.length >= 6000)
       return warning(
-        "Nội dung bản tin quá dài!",
-        "Nội dung chỉ nên chứa dưới 1000 từ. Vui lòng sử dụng câu từ chắt lọc, cô đọng!"
+        "Nội dung bản tin quá dài",
+        "Nội dung chỉ nên chứa khoảng dưới 1000 từ. Vui lòng sử dụng câu từ chắt lọc, cô đọng!"
       );
 
     return true;
@@ -205,7 +200,81 @@ export default function CreateUpdatePostForm({
             });
           }
 
-          onCloseConfirm();
+          createConfirmModal.onClose();
+        });
+    });
+  };
+
+  const handleUpdatePost = async () => {
+    if (!editedPost)
+      return addToast({
+        title: "Không tìm thấy bản tin!",
+        color: "danger",
+      });
+
+    withLoading(async () => {
+      let image = "";
+
+      if (images && images.length && images[0].data_url && images[0].file) {
+        await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileBase64: images[0].data_url,
+            fileName: images[0].file.name,
+          }),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (result.status === STATUS_CODE.OK) {
+              image = result.data || "";
+            }
+          })
+          .catch((error) => {
+            return addToast({
+              title: "Tải ảnh lên thất bại!",
+              description: error,
+              color: "danger",
+            });
+          });
+      }
+
+      const updatedPost: Partial<PostInfo> = {
+        id: editedPost.id,
+        slug: editedPost.slug,
+        title,
+        content,
+        image,
+        active_at: activeAt.toAbsoluteString(),
+        is_hot: isHot,
+      };
+
+      await fetch("/api/posts", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedPost),
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.status === STATUS_CODE.OK) {
+            addToast({
+              title: "Cập nhật bản tin thành công",
+              color: "success",
+            });
+            fetchPostList();
+            router.push("/management/hub?tab=news");
+          } else {
+            addToast({
+              title: "Cập nhật bản tin lỗi",
+              color: "danger",
+            });
+          }
+
+          updateConfirmModal.onClose();
         });
     });
   };
@@ -213,21 +282,24 @@ export default function CreateUpdatePostForm({
   return (
     <div className="flex w-full flex-col gap-4 px-2">
       <div className="flex items-center justify-center gap-2">
-        <div className="hidden flex-1 md:inline">
-          <Button
-            isIconOnly
-            variant="light"
-            onPress={() => router.back()}
-            startContent={<ArrowLeftIcon />}
-            className="w-fit border-none text-inherit"
-          />
-        </div>
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={() => router.back()}
+          startContent={<ArrowLeftIcon />}
+        />
         <div className="flex-1 text-center">
           <p className="text-xl font-bold uppercase md:text-2xl">
             {editedPost ? "Cập nhật" : "Đăng"} bản tin
           </p>
         </div>
-        <div className="hidden flex-1 md:inline" />
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={() => router.back()}
+          startContent={<ArrowLeftIcon />}
+          className="invisible"
+        />
       </div>
 
       <div className="space-y-2">
@@ -244,7 +316,13 @@ export default function CreateUpdatePostForm({
       </div>
 
       <div className="w-full">
-        <ImageUploading value={images} onChange={onChange} dataURLKey="data_url">
+        <ImageUploading
+          value={images}
+          onChange={(imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
+            setImages(imageList);
+          }}
+          dataURLKey="data_url"
+        >
           {({
             imageList,
             onImageUpload,
@@ -261,10 +339,12 @@ export default function CreateUpdatePostForm({
                 variant="flat"
                 className={`h-56 w-full rounded-md border border-dashed bg-contain bg-center bg-no-repeat duration-200 ${(isDragging || !!imageList.length) && "border-solid"}`}
                 style={{
-                  backgroundImage: `url(${imageList?.[0]?.["data_url"]})`,
+                  backgroundImage: `url(${imageList && !!imageList.length ? imageList?.[0]?.["data_url"] : currentImage})`,
                 }}
               >
-                <div className={`text-center ${!!imageList.length && "hidden"}`}>
+                <div
+                  className={`text-center ${(!!imageList.length || (editedPost && currentImage)) && "hidden"}`}
+                >
                   <p className="text-lg font-semibold">
                     Ảnh bìa bản tin <span className="text-sm opacity-75">(không bắt buộc)</span>
                   </p>
@@ -277,7 +357,7 @@ export default function CreateUpdatePostForm({
                 </div>
               </Button>
               <div
-                className={`flex flex-col items-stretch gap-1 md:flex-row ${!imageList.length && "hidden"}`}
+                className={`flex flex-col items-stretch gap-1 md:flex-row ${!!imageList.length && (editedPost && currentImage) && "hidden"}`}
               >
                 <Button
                   fullWidth
@@ -294,7 +374,12 @@ export default function CreateUpdatePostForm({
                   fullWidth
                   color="danger"
                   variant="bordered"
-                  onPress={onImageRemoveAll}
+                  onPress={() => {
+                    if (!!imageList.length) onImageRemoveAll();
+                    else {
+                      setCurrentImage(undefined);
+                    }
+                  }}
                   startContent={<DeleteIcon />}
                   className="w-full flex-1 py-2"
                 />
@@ -380,28 +465,41 @@ export default function CreateUpdatePostForm({
           switchClassName="flex items-center gap-2"
         />
 
-        <DatePicker
-          hideTimeZone
-          value={activeAt}
-          onChange={(value) => {
-            if (value) setActiveAt(value);
-          }}
-          label="Chọn thời điểm đăng bản tin"
-          variant="bordered"
-          labelPlacement="outside"
-          hourCycle={24}
-          isDateUnavailable={(date) => {
-            return date < today(getLocalTimeZone());
-          }}
-          className="max-w-[284px]"
-        />
+        <div className="flex items-end gap-2">
+          <DatePicker
+            hideTimeZone
+            value={activeAt}
+            onChange={(value) => {
+              if (value) setActiveAt(value);
+            }}
+            label="Chọn thời điểm đăng bản tin"
+            variant="bordered"
+            labelPlacement="outside"
+            hourCycle={24}
+            isDateUnavailable={(date) => {
+              return date < today(getLocalTimeZone());
+            }}
+            className="flex-1"
+          />
+
+          <Button
+            variant="light"
+            color="secondary"
+            onPress={() => setActiveAt(now(getLocalTimeZone()))}
+          >
+            Chọn bây giờ
+          </Button>
+        </div>
       </div>
 
       <Button
         color="success"
         onPress={() => {
           const validated = handleValidate();
-          if (validated) onOpenConfirm();
+          if (validated) {
+            if (editedPost) updateConfirmModal.onOpen();
+            else createConfirmModal.onOpen();
+          }
         }}
         startContent={!loading && <CheckIcon size={16} />}
         isLoading={loading}
@@ -410,13 +508,30 @@ export default function CreateUpdatePostForm({
       </Button>
 
       <ConfirmModal
-        open={isOpenConfirm}
-        onOpenChange={onOpenChangeConfirm}
-        onClose={onCloseConfirm}
+        open={createConfirmModal.isOpen}
+        onOpenChange={createConfirmModal.onOpenChange}
+        onClose={createConfirmModal.onClose}
         onConfirm={handleCreateNewPost}
         title={"Xác nhận đăng bản tin"}
         description={"Đảm bảo rằng thông tin của bản tin hoàn toàn chính xác trước khi đăng!"}
         confirmText="Đăng bản tin"
+        modalProps={{
+          size: "lg",
+          placement: "center",
+        }}
+        loading={loading}
+      />
+
+      <ConfirmModal
+        open={updateConfirmModal.isOpen}
+        onOpenChange={updateConfirmModal.onOpenChange}
+        onClose={updateConfirmModal.onClose}
+        onConfirm={handleUpdatePost}
+        title={"Xác nhận cập nhật bản tin"}
+        description={
+          "Đảm bảo rằng thông tin của bản tin hoàn toàn chính xác trước khi hoàn tất cập nhật!"
+        }
+        confirmText="Cập nhật bản tin"
         modalProps={{
           size: "lg",
           placement: "center",

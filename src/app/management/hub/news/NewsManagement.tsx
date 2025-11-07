@@ -57,7 +57,7 @@ export default function NewsManagement() {
     },
     {
       key: "edit",
-      label: "Sửa bản tin",
+      label: "Cập nhật bản tin",
       icon: <EditIcon size={16} />,
       color: "primary",
       onClick: (post: PostInfo) => {

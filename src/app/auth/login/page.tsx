@@ -92,7 +92,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] w-full flex-col items-center justify-center px-2">
+    <div className="my-auto flex w-full flex-col items-center justify-center px-2">
       <LogoComponent />
 
       <Form
@@ -101,18 +101,16 @@ export default function LoginPage() {
       >
         <h1 className="text-center text-2xl font-bold text-white">Đăng nhập</h1>
 
-        {/* Email */}
         <Input
           label="Email"
           name="email"
           type="email"
           value={form.email}
           onChange={handleChange}
-          placeholder="troll@hnb.com"
+          placeholder=""
           className="text-inherit"
         />
 
-        {/* Password */}
         <Input
           label="Mật khẩu"
           name="password"
@@ -132,7 +130,7 @@ export default function LoginPage() {
           color="primary"
           fullWidth
           isLoading={loading}
-          endContent={<LoginIcon width={16} height={16} />}
+          startContent={!loading && <LoginIcon size={16} />}
           type="submit"
         >
           Đăng nhập
@@ -140,8 +138,11 @@ export default function LoginPage() {
 
         <p className="mx-auto text-center text-sm text-gray-400">
           Chưa có tài khoản?{" "}
-          <Link href="/auth/signup" className="text-sky-500 hover:underline">
-            Đăng ký ngay
+          <Link
+            href="/auth/signup"
+            className="text-sky-500 underline duration-200 hover:brightness-90"
+          >
+            Đăng ký tài khoản HNB Hub
           </Link>
         </p>
       </Form>

@@ -51,7 +51,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center px-4">
+    <div className="my-auto flex w-full flex-col items-center justify-center px-2">
       {step === 1 ? (
         <EmailSignupForm
           email={email}

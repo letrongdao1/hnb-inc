@@ -2,17 +2,36 @@
 
 import { Event } from "@/interfaces/events";
 import React, { useMemo, useState } from "react";
-import { CalendarIcon, CheckIcon, LocationIcon, StarIcon, UserIcon, XIcon } from "../svg";
+import {
+  CalendarCheckIcon,
+  CalendarIcon,
+  CheckIcon,
+  LocationIcon,
+  StarIcon,
+  UserIcon,
+  XIcon,
+} from "../svg";
 import { addToast, Avatar, AvatarGroup, Button, Chip, Tooltip, useDisclosure } from "@heroui/react";
 import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
-import { ANNOUNCEMENT_TYPE, STATUS_CODE } from "@/constants/enums";
+import { STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.providers";
-import { useAnnouncement } from "@/hooks/useAnnouncement";
 import { usePathname, useRouter } from "next/navigation";
+import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
+import "@leenguyen/react-flip-clock-countdown/dist/index.css";
+import Countdown from "react-countdown";
 
 const MAX_TAG_SHOWN = 2;
 const MAX_AVATAR_SHOWN = 5;
+
+export const SpinningGlass = () => (
+  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" style={{ animationDuration: "8s" }}>
+    <path
+      fill="currentColor"
+      d="M6 2v6h.01L12 12l5.99-4H18V2H6zm0 20h12v-6h-.01L12 12l-5.99 4H6v6z"
+    />
+  </svg>
+);
 
 export default function SingleEvent({ event }: { event: Event }) {
   const router = useRouter();
@@ -20,7 +39,6 @@ export default function SingleEvent({ event }: { event: Event }) {
   const { user } = useUser();
   const confirmNotJoin = useDisclosure();
   const joinLoading = useLoading();
-  const { announce } = useAnnouncement();
 
   const [participantList, setParticipantList] = useState<Event["participants"]>(
     event.participants || []
@@ -28,6 +46,10 @@ export default function SingleEvent({ event }: { event: Event }) {
   const [isJoinedStatus, setIsJoinedStatus] = useState<boolean>(Boolean(event.is_joined));
 
   const tagList = useMemo(() => (event.tags ? event.tags.split(",") : []), [event]);
+
+  const isEventInProgress =
+    !event.is_ended &&
+    new Date() > new Date([event.start_date, event.start_time].filter(Boolean).join("T"));
 
   const handleViewDetail = () => {
     router.push(`${pathName}/${event.slug}`);
@@ -121,10 +143,57 @@ export default function SingleEvent({ event }: { event: Event }) {
             {event.title}
           </p>
 
-          <span className="text-tiny flex items-center gap-2 rounded-4xl bg-teal-600 px-3 py-1 md:text-sm">
-            <UserIcon size={16} />
-            Sắp diễn ra
-          </span>
+          {event.is_ended ? (
+            <Chip
+              size="sm"
+              color="success"
+              variant="shadow"
+              startContent={<CalendarCheckIcon size={16} />}
+            >
+              Đã kết thúc
+            </Chip>
+          ) : (
+            <Countdown
+              date={event.start_date}
+              renderer={({ days, completed }) =>
+                completed ? (
+                  <Chip size="sm" color="primary" variant="shadow" startContent={<SpinningGlass />}>
+                    Đang diễn ra
+                  </Chip>
+                ) : days > 0 ? (
+                  <FlipClockCountdown
+                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    renderMap={[true, true, false, false]}
+                    labels={["Ngày", "Giờ", "Phút", "Giây"]}
+                    digitBlockStyle={{ fontSize: 16, width: 20, height: 40 }}
+                    labelStyle={{ fontSize: 12 }}
+                    separatorStyle={{ size: 2 }}
+                  >
+                    <></>
+                  </FlipClockCountdown>
+                ) : (
+                  <FlipClockCountdown
+                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    showLabels={false}
+                    digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
+                    spacing={{
+                      clock: 2,
+                    }}
+                    separatorStyle={{ size: 2 }}
+                  >
+                    <Chip
+                      size="sm"
+                      color="primary"
+                      variant="shadow"
+                      startContent={<SpinningGlass />}
+                    >
+                      Đang diễn ra
+                    </Chip>
+                  </FlipClockCountdown>
+                )
+              }
+            />
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-start gap-1 md:gap-2">
@@ -168,7 +237,7 @@ export default function SingleEvent({ event }: { event: Event }) {
           )}
         </div>
 
-        <div className="md;items-stretch flex flex-col items-start justify-between gap-2 px-4 md:mt-16 md:flex-row md:items-center">
+        <div className="md;items-stretch flex flex-col items-start justify-between gap-2 px-2 md:mt-16 md:flex-row md:items-center">
           {participantList && (
             <AvatarGroup
               isBordered
@@ -223,7 +292,11 @@ export default function SingleEvent({ event }: { event: Event }) {
               color="success"
               className="font-semibold"
               startContent={
-                joinLoading.loading ? null : isJoinedStatus ? <CheckIcon /> : <StarIcon />
+                joinLoading.loading ? null : isJoinedStatus ? (
+                  <CheckIcon size={16} />
+                ) : (
+                  <StarIcon size={16} />
+                )
               }
               onPress={() => {
                 if (isJoinedStatus) {
@@ -232,6 +305,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                   handleJoin();
                 }
               }}
+              hidden={isEventInProgress}
               isLoading={joinLoading.loading}
             >
               {isJoinedStatus ? "Đã tham gia" : "Đăng ký tham gia"}

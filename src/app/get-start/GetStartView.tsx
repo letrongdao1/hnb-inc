@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import IMAGE_PLACEHOLDER from "@/assets/icons/image-placeholder.svg";
 import { addToast, Avatar, Button, DatePicker, Form, Input } from "@heroui/react";
-import { ArrowRightIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
+import { ArrowRightIcon, CheckIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
 import { createUser, uploadAvatar } from "./page";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";
@@ -24,15 +24,15 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const MAX_FILE_SIZE = 500 * 1024;
+    const MAX_FILE_SIZE = 1024 * 1024;
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > MAX_FILE_SIZE) {
       return addToast({
-        title: "Kích thước file quá lớn!",
-        description: `Vui lòng tải file có kích thước tối đa ${MAX_FILE_SIZE / 1024}KB`,
-        color: "danger",
+        title: "Kích thước ảnh quá lớn!",
+        description: `Vui lòng chọn ảnh có kích thước tối đa ${Number((MAX_FILE_SIZE / 1024 / 1024).toFixed(1))}MB`,
+        color: "warning",
       });
     }
 
@@ -112,7 +112,7 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
     }
   };
   return (
-    <div className="flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md border py-8 lg:w-[40em] lg:gap-16">
+    <div className="light:border-gray-200 flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md border py-8 lg:w-[40em] lg:gap-16 dark:border-gray-600">
       <div className="flex flex-col items-stretch gap-2">
         <button
           onClick={handleUploadClick}
@@ -201,10 +201,9 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
             <Button
               type="submit"
               color="success"
-              endContent={<ArrowRightIcon />}
-              isLoading={loading}
-              className="font-semibold"
               fullWidth
+              startContent={!loading && <CheckIcon size={16} />}
+              isLoading={loading}
             >
               Hoàn tất
             </Button>

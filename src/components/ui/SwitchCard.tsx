@@ -26,9 +26,9 @@ export default function SwitchCard({
       </div>
 
       <Switch
-        checked={checked}
-        onChange={(e) => {
-          setChecked(e.target.checked);
+        isSelected={checked}
+        onValueChange={(isSelected) => {
+          setChecked(isSelected);
         }}
         {...switchProps}
         className={switchClassName}

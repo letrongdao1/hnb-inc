@@ -216,21 +216,24 @@ export default function CreateUpdateEventForm({
   return (
     <div className="flex w-full flex-col gap-8 px-2">
       <div className="flex items-center justify-center gap-2">
-        <div className="hidden flex-1 md:inline">
-          <Button
-            isIconOnly
-            variant="light"
-            onPress={() => router.back()}
-            startContent={<ArrowLeftIcon />}
-            className="w-fit border-none text-inherit"
-          />
-        </div>
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={() => router.back()}
+          startContent={<ArrowLeftIcon />}
+        />
         <div className="flex-1 text-center">
           <p className="text-xl font-bold uppercase md:text-2xl">
             {editedEvent ? "Cập nhật" : "Tạo"} sự kiện
           </p>
         </div>
-        <div className="hidden flex-1 md:inline" />
+        <Button
+          isIconOnly
+          variant="light"
+          onPress={() => router.back()}
+          startContent={<ArrowLeftIcon />}
+          className="invisible"
+        />
       </div>
 
       <div className="flex flex-col gap-2">

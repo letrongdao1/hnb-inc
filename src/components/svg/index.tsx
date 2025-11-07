@@ -1,4 +1,4 @@
-interface SVGProps {
+export interface SVGProps {
   fill?: string;
   size?: number;
   height?: number;

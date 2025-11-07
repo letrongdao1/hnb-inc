@@ -6,22 +6,11 @@ import { NextRequest, NextResponse } from "next/server";
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = await getCurrentUserId();
-
-    if (!userId) {
-      return NextResponse.json({
-        status: STATUS_CODE.INVALID_CREDENTIALS,
-        message: "Không tìm thấy ID người dùng. Vui lòng thử lại sau!",
-      });
-    }
 
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
 
-    const { error } = await supabase
-      .from("events")
-      .update({ is_ended: true })
-      .eq("id", eventId);
+    const { error } = await supabase.from("events").update({ is_ended: true }).eq("id", eventId);
 
     if (error) {
       console.log({ error });

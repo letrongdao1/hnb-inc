@@ -2,8 +2,10 @@
 
 import EmptyComponent from "@/components/empty/empty";
 import EventCostList from "@/components/events/EventCostList";
+import { SpinningGlass } from "@/components/events/SingleEvent";
 import {
   ArrowLeftIcon,
+  CalendarCheckIcon,
   CalendarIcon,
   LocationIcon,
   MoneyCashIcon,
@@ -21,9 +23,11 @@ import {
   Image,
   ScrollShadow,
 } from "@heroui/react";
+import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Countdown from "react-countdown";
 
 export default function EventInfoPage({ event }: { event: Event }) {
   const router = useRouter();
@@ -61,13 +65,65 @@ export default function EventInfoPage({ event }: { event: Event }) {
       transition={{ duration: 0.6, ease: "easeOut" }}
       className="mx-auto flex w-full items-start justify-center p-4"
     >
-      <ScrollShadow className="w-full">
-        <div className="flex w-full flex-col items-stretch justify-start gap-4">
+      <ScrollShadow className="w-full space-y-8">
+        <div className="flex w-full flex-col items-center justify-start gap-4">
           <div className="line-clamp-2 text-center text-lg font-bold tracking-wider wrap-anywhere md:text-3xl">
             {event.title}
           </div>
 
-          <div className="flex flex-wrap items-stretch justify-start gap-2">
+          {event.is_ended ? (
+            <Chip
+              size="sm"
+              color="success"
+              variant="shadow"
+              startContent={<CalendarCheckIcon size={16} />}
+            >
+              Đã kết thúc
+            </Chip>
+          ) : (
+            <Countdown
+              date={event.start_date}
+              renderer={({ days, completed }) =>
+                completed ? (
+                  <Chip size="lg" color="primary" variant="shadow" startContent={<SpinningGlass />}>
+                    Đang diễn ra
+                  </Chip>
+                ) : days > 0 ? (
+                  <FlipClockCountdown
+                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    renderMap={[true, true, false, false]}
+                    labels={["Ngày", "Giờ", "Phút", "Giây"]}
+                    digitBlockStyle={{ fontSize: 24, width: 24, height: 40 }}
+                    labelStyle={{ fontSize: 12 }}
+                    separatorStyle={{ size: 2 }}
+                  >
+                    <></>
+                  </FlipClockCountdown>
+                ) : (
+                  <FlipClockCountdown
+                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    showLabels={false}
+                    digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
+                    spacing={{
+                      clock: 2,
+                    }}
+                    separatorStyle={{ size: 2 }}
+                  >
+                    <Chip
+                      size="lg"
+                      color="primary"
+                      variant="shadow"
+                      startContent={<SpinningGlass />}
+                    >
+                      Đang diễn ra
+                    </Chip>
+                  </FlipClockCountdown>
+                )
+              }
+            />
+          )}
+
+          <div className="flex flex-wrap items-stretch justify-center gap-2">
             <Chip radius="sm" startContent={<CalendarIcon size={16} />} variant="bordered">
               <p className="line-clamp-1">
                 <time dateTime={event.start_date}>
@@ -129,14 +185,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
             }
           >
             {!event.participants || !event.participants.length ? (
-              <EmptyComponent
-                title={
-                  <span className="py-16 text-sm font-light opacity-70">
-                    Chưa có thành viên tham gia
-                  </span>
-                }
-                isShowImage={false}
-              />
+              <EmptyComponent title={"Chưa có thành viên tham gia"} />
             ) : (
               <div className="flex w-full flex-wrap items-stretch justify-start gap-3 py-2">
                 {event.participants.map((participant, index) => {

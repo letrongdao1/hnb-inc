@@ -14,12 +14,10 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownTrigger,
-  Image,
   Pagination,
   Tooltip,
   useDisclosure,
 } from "@heroui/react";
-import FIRE_ICON from "@/assets/icons/fire-svgrepo-com.svg";
 import {
   BeerIcon,
   CalendarCheckIcon,
@@ -67,7 +65,7 @@ export default function EventsManagement() {
     },
     {
       key: "edit",
-      label: "Sửa sự kiện",
+      label: "Cập nhật sự kiện",
       icon: <EditIcon size={16} />,
       color: "primary",
       onClick: (event: Event) => {
@@ -134,7 +132,7 @@ export default function EventsManagement() {
   };
 
   const handleEndEvent = async (eventId: string) => {
-    deleteLoading.setLoading(true);
+    endNowLoading.setLoading(true);
 
     await fetch(`/api/events/end?eventId=${eventId}`, {
       method: "PATCH",
@@ -142,7 +140,7 @@ export default function EventsManagement() {
       .then((res) => res.json())
       .then((result) => {
         if (result.status === STATUS_CODE.OK) {
-          seEventList((prev) => prev.filter((event) => event.id !== eventId));
+          fetchEventList();
           addToast({
             title: result.message,
             description: "Cảm ơn bạn đã dành thời gian cho sự kiện!",
@@ -153,8 +151,8 @@ export default function EventsManagement() {
         }
       })
       .finally(() => {
-        deleteLoading.setLoading(false);
-        deleteModal.onClose();
+        endNowLoading.setLoading(false);
+        endNowModal.onClose();
       });
   };
 

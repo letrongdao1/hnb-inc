@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getCurrentUserId, getCurrentUserInfo } from "@/app/auth/actions";
+import { getCurrentUserId } from "@/app/auth/actions";
 import { STATUS_CODE } from "@/constants/enums";
 import { Event } from "@/interfaces/events";
 import { DEFAULT_PAGE_SIZE } from "@/constants/constants";
@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       .from("events")
       .select("*", { count: "exact" })
       .range(from, to)
+      .order("is_ended", { ascending: true })
       .order("start_date", { ascending: false });
 
     if (error || !data) {

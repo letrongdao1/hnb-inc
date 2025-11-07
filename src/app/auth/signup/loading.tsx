@@ -1,5 +1,5 @@
 import Loader from "@/components/loader";
 
-export default function LoadingCreatePost() {
+export default function LoadingSignup() {
   return <Loader />;
 }

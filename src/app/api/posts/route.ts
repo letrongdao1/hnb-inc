@@ -85,6 +85,42 @@ export async function POST(req: NextRequest) {
   }
 }
 
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json({
+        status: STATUS_CODE.INVALID_CREDENTIALS,
+        message: "Không tìm thấy ID người dùng. Vui lòng thử lại sau!",
+      });
+    };
+
+    const data: Partial<PostInfo> = await request.json();
+
+    const { error } = await supabase.from("posts").update(data).eq("id", data.id);
+
+    if (error) {
+      console.log({ error });
+      return NextResponse.json({
+        status: STATUS_CODE.ERROR,
+        message: "Cập nhật bản tin thất bại. Vui lòng thử lại sau!",
+      });
+    }
+
+    return NextResponse.json({
+      status: STATUS_CODE.OK,
+      message: "Cập nhật bản tin thành công.",
+    });
+  } catch {
+    return NextResponse.json({
+      status: STATUS_CODE.INTERNAL_SERVER_ERROR,
+      message: "Lỗi không xác định. Vui lòng thử lại sau!",
+    });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

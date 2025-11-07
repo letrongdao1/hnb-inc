@@ -15,6 +15,7 @@ import {
   ModalHeader,
   useDisclosure,
 } from "@heroui/react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 const RESEND_DELAY = 60;
@@ -228,22 +229,25 @@ export default function EmailSignupForm({
         <Button
           type="submit"
           fullWidth
-          endContent={<ArrowRightIcon width={16} height={16} />}
           color="primary"
+          endContent={!loading && <ArrowRightIcon width={16} height={16} />}
           isLoading={loading}
         >
           Tiếp tục
         </Button>
 
-        <p className="mx-auto mt-4 text-center text-sm">
+        <p className="mx-auto text-center text-sm text-gray-400">
           Đã có tài khoản?{" "}
-          <a href="/auth/login" className="text-sky-600 hover:underline">
+          <Link
+            href="/auth/login"
+            className="text-sky-500 underline duration-200 hover:brightness-90"
+          >
             Đăng nhập
-          </a>
+          </Link>
         </p>
       </form>
 
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false}>
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} isDismissable={false} placement="center">
         <ModalContent>
           {(onClose) => (
             <>
@@ -264,7 +268,7 @@ export default function EmailSignupForm({
                 />
 
                 <div className="flex w-full items-center justify-end gap-4">
-                  <Button onPress={onClose} variant="light">
+                  <Button onPress={onClose} variant="light" isDisabled={loading}>
                     Hủy
                   </Button>
                   <Button

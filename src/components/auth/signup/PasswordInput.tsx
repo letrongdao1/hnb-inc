@@ -67,7 +67,7 @@ export default function PasswordSignupForm({
   return (
     <Form
       onSubmit={handleSubmit}
-      className="mx-auto mt-10 w-full space-y-4 rounded-2xl border border-gray-700 bg-gray-900 p-6 text-gray-100 shadow-lg sm:w-96"
+      className="m-auto w-full space-y-4 rounded-2xl border border-gray-700 p-6 shadow-lg md:w-2/3 lg:w-1/2"
     >
       <div className="relative mb-8 flex w-full items-center justify-center">
         <div className="absolute top-1/2 left-0 -translate-y-1/2">
@@ -89,6 +89,14 @@ export default function PasswordSignupForm({
       />
 
       <Input
+        label="Xác nhận mật khẩu"
+        placeholder="Xác nhận mật khẩu"
+        type={isVisible ? "text" : "password"}
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        variant="faded"
+        labelPlacement="outside"
+        isRequired
         endContent={
           <button
             aria-label="toggle password visibility"
@@ -103,14 +111,6 @@ export default function PasswordSignupForm({
             )}
           </button>
         }
-        label="Xác nhận mật khẩu"
-        placeholder="Xác nhận mật khẩu"
-        type={isVisible ? "text" : "password"}
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        variant="faded"
-        labelPlacement="outside"
-        isRequired
       />
 
       <Button
@@ -118,7 +118,7 @@ export default function PasswordSignupForm({
         color="primary"
         fullWidth
         isLoading={loading}
-        startContent={<CheckIcon width={16} height={16} />}
+        startContent={!loading && <CheckIcon size={16} />}
       >
         Hoàn tất
       </Button>

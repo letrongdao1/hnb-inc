@@ -57,8 +57,9 @@ export default function ClientLayout({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="flex flex-1 items-stretch"
           >
-            <main className="flex w-full flex-1 flex-col items-center justify-start">
+            <main className="flex w-full flex-col items-center justify-start">
               <Suspense fallback={<Loader />}>
                 <ContentWithReadySignal onReady={() => setContentLoaded(true)}>
                   {children}
