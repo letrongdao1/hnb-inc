@@ -21,6 +21,12 @@ const alfaSlabOne = Alfa_Slab_One({
 export const metadata: Metadata = {
   title: "HNB Hub",
   description: "A hub for HNB Inc.",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    viewportFit: "cover",
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

@@ -99,7 +99,7 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         className="flex w-full max-w-md flex-col items-stretch space-y-2 rounded-2xl p-4 shadow-lg"
       >
-        <h1 className="text-center text-2xl font-bold text-white">Đăng nhập</h1>
+        <h1 className="text-center text-2xl font-bold">Đăng nhập</h1>
 
         <Input
           label="Email"
@@ -108,7 +108,6 @@ export default function LoginPage() {
           value={form.email}
           onChange={handleChange}
           placeholder=""
-          className="text-inherit"
         />
 
         <Input
@@ -123,7 +122,6 @@ export default function LoginPage() {
             }
           }}
           placeholder=""
-          className="text-inherit"
         />
 
         <Button
