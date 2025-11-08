@@ -1,17 +1,29 @@
 "use client";
 
 import BankAccountManagement from "@/components/profile/BankAccountManagement";
+import ChangeAvatar from "@/components/profile/ChangeAvatar";
 import PersonalInfo from "@/components/profile/PersonalInfo";
 import { BankCardIcon, EditIcon, UserIcon } from "@/components/svg";
 import { ANNOUNCEMENT_TYPE } from "@/constants/enums";
 import { useAnnouncement } from "@/hooks/useAnnouncement";
 import { useUser } from "@/providers/user.providers";
-import { Avatar, Button, Divider } from "@heroui/react";
+import {
+  Avatar,
+  Button,
+  Divider,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  useDisclosure,
+} from "@heroui/react";
 import React, { useEffect, useMemo, useState } from "react";
 
 export default function UserProfilePage() {
   const { user } = useUser();
   const { announce } = useAnnouncement();
+  const changeAvatarModal = useDisclosure();
 
   const tabItems = useMemo(
     () => [
@@ -49,10 +61,6 @@ export default function UserProfilePage() {
     window.history.replaceState(null, "", `#${key}`);
   };
 
-  const handleChangeAvatar = () => {
-    announce(ANNOUNCEMENT_TYPE.FEATURE_UNAVAILABLE);
-  };
-
   if (!user) return null;
 
   return (
@@ -64,13 +72,32 @@ export default function UserProfilePage() {
         </div>
 
         <Button
-          onPress={handleChangeAvatar}
+          onPress={() => {
+            changeAvatarModal.onOpen();
+          }}
           startContent={<EditIcon size={16} />}
           color="primary"
           variant="flat"
         >
           <p className="text-xs md:text-sm">Cập nhật ảnh đại diện</p>
         </Button>
+
+        <Modal
+          placement="center"
+          isOpen={changeAvatarModal.isOpen}
+          onOpenChange={changeAvatarModal.onOpenChange}
+        >
+          <ModalContent>
+            {() => (
+              <>
+                <ModalHeader className="flex flex-col gap-1">Cập nhật ảnh đại diện</ModalHeader>
+                <ModalBody>
+                  <ChangeAvatar onClose={changeAvatarModal.onClose} />
+                </ModalBody>
+              </>
+            )}
+          </ModalContent>
+        </Modal>
       </div>
 
       <Divider />

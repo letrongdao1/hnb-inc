@@ -57,3 +57,55 @@ export async function POST(req: Request) {
     });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createClient();
+
+    const { fileUrl } = await req.json();
+
+    if (!fileUrl) {
+      return NextResponse.json({ error: "Không tìm thấy file url!" }, { status: 400 });
+    }
+
+    const match = fileUrl.match(/\/object\/public\/([^/]+)\/(.+)$/);
+
+    if (!match) {
+      return NextResponse.json({ error: "File URL không hợp lệ" }, { status: 400 });
+    }
+
+    const folder = "upload";
+    const bucketName = match[1];
+    const filePath = match[2];
+    const fileName = filePath.split("/").pop();
+
+    const { data: files, error: listError } = await supabase.storage
+      .from(bucketName)
+      .list(folder, { search: fileName });
+
+    if (listError) {
+      console.error("List error:", listError);
+      return NextResponse.json({ error: listError.message }, { status: 500 });
+    }
+
+    const exists = files?.some((f) => f.name === fileName);
+
+    if (!exists) {
+      return NextResponse.json({
+        message: `File "${fileName}" not found in ${folder}/`,
+        skipped: true,
+      });
+    }
+
+    const { data, error } = await supabase.storage.from(bucketName).remove([filePath]);
+
+    if (error) {
+      console.error("Delete error:", error);
+    }
+
+    return NextResponse.json({ message: "File deleted successfully", data });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

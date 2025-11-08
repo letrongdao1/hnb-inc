@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import IMAGE_PLACEHOLDER from "@/assets/icons/image-placeholder.svg";
 import { addToast, Avatar, Button, DatePicker, Form, Input } from "@heroui/react";
-import { ArrowRightIcon, CheckIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
+import { CheckIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
 import { createUser, uploadAvatar } from "./page";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";
@@ -111,6 +111,7 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
       uploadRef.current.click();
     }
   };
+
   return (
     <div className="light:border-gray-200 flex min-h-[50vh] w-full flex-col items-stretch justify-center gap-4 rounded-md border py-8 lg:w-[40em] lg:gap-16 dark:border-gray-600">
       <div className="flex flex-col items-stretch gap-2">
@@ -152,7 +153,7 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
             />
           ))}
         </div>
-        <p className="text-center text-sm italic">Chọn hoăc upload avatar cho riêng bạn!</p>
+        <p className="text-center text-sm italic">Chọn hoặc upload avatar cho riêng bạn!</p>
       </div>
 
       <div className="mx-auto flex w-full max-w-[400px] flex-col items-stretch px-1">

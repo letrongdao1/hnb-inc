@@ -145,10 +145,6 @@ export default function CreateUpdateEventForm({
     fetchTagList();
   }, []);
 
-  const onChange = (imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
-    setImages(imageList);
-  };
-
   const onSubmit = async (data: CreateEventFieldProps) => {
     const values = {
       ...data,
@@ -474,7 +470,13 @@ export default function CreateUpdateEventForm({
             <FieldErrorText>{errors.description?.message}</FieldErrorText>
           </div>
 
-          <ImageUploading value={images} onChange={onChange} dataURLKey="data_url">
+          <ImageUploading
+            value={images}
+            onChange={(imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
+              setImages(imageList);
+            }}
+            dataURLKey="data_url"
+          >
             {({
               imageList,
               onImageUpload,
