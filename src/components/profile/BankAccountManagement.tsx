@@ -487,7 +487,7 @@ const AddAccount = ({
                 <p
                   className={`text-xs opacity-75 ${watcher.account_owner.isExceeded && "text-red-500"}`}
                 >
-                  {watcher.account_owner.length}/19
+                  {watcher.account_owner.length}/50
                 </p>
               }
             />
