@@ -19,13 +19,17 @@ import {
   addToast,
   Accordion,
   AccordionItem,
+  Spinner,
 } from "@heroui/react";
 import "./index.scss";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ArrowDownSLineIcon,
+  CalendarIcon,
+  CompanyIcon,
   LogoutIcon,
   MoonIcon,
+  NewsPaperIcon,
   OfficeIcon,
   PaleteIcon,
   SettingIcon,
@@ -71,8 +75,8 @@ export default function Navbar() {
 
   const menuItems = useMemo(
     () => [
-      { label: "Bảng tin", href: "/news", type: "link" },
-      { label: "Sự kiện", href: "/events", type: "link" },
+      { label: "Bảng tin", icon: <NewsPaperIcon size={16} />, href: "/news", type: "link" },
+      { label: "Sự kiện", icon: <CalendarIcon size={16} />, href: "/events", type: "link" },
       {
         label: "Danh sách",
         href: "",
@@ -83,17 +87,17 @@ export default function Navbar() {
             label: "Thành viên HNB",
             href: "/list/members",
             type: "link",
-            icon: <UserGroupIcon />,
+            icon: <UserGroupIcon size={16} />,
           },
           {
             label: "Trụ sở & văn phòng",
             href: "/list/venues",
             type: "link",
-            icon: <OfficeIcon />,
+            icon: <OfficeIcon size={16} />,
           },
         ],
       },
-      { label: "Về HNB", href: "/about", type: "link" },
+      { label: "Về HNB", icon: <CompanyIcon size={16} />, href: "/about", type: "link" },
       {
         label: "Đăng xuất",
         href: "#",
@@ -192,7 +196,7 @@ export default function Navbar() {
               children: [
                 {
                   key: "logout",
-                  icon: <LogoutIcon />,
+                  icon: loading ? <Spinner size="sm" variant="simple" /> : <LogoutIcon />,
                   title: "Đăng xuất",
                   onClick: logout,
                   danger: true,
@@ -200,8 +204,14 @@ export default function Navbar() {
               ],
             },
           ],
-    [theme, setTheme, logout, router, user]
+    [theme, setTheme, logout, router, user, loading]
   );
+
+  useEffect(() => {
+    menuItems.map((item) => {
+      router.prefetch(item.href);
+    });
+  }, [router]);
 
   if (pageToHide.some((page) => page === pathname)) return null;
 
@@ -232,13 +242,15 @@ export default function Navbar() {
             if (item.type === "link")
               return (
                 <NavbarItem key={index} isActive={pathname === item.href}>
-                  <Link
-                    color="foreground"
-                    onClick={() => router.push(item.href)}
-                    className="cursor-pointer"
+                  <Button
+                    variant={pathname === item.href ? "shadow" : "light"}
+                    startContent={item.icon}
+                    radius="sm"
+                    onPress={() => router.push(item.href)}
+                    className={`cursor-pointer ${pathname === item.href}`}
                   >
                     {item.label}
-                  </Link>
+                  </Button>
                 </NavbarItem>
               );
             else if (item.type === "button") {

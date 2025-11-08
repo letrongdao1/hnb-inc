@@ -83,7 +83,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
             </Chip>
           ) : (
             <Countdown
-              date={event.start_date}
+              date={event.start_at}
               renderer={({ days, completed }) =>
                 completed ? (
                   <Chip size="lg" color="primary" variant="shadow" startContent={<SpinningGlass />}>
@@ -91,7 +91,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
                   </Chip>
                 ) : days > 0 ? (
                   <FlipClockCountdown
-                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    to={event.start_at}
                     renderMap={[true, true, false, false]}
                     labels={["Ngày", "Giờ", "Phút", "Giây"]}
                     digitBlockStyle={{ fontSize: 24, width: 24, height: 40 }}
@@ -102,7 +102,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
                   </FlipClockCountdown>
                 ) : (
                   <FlipClockCountdown
-                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    to={event.start_at}
                     showLabels={false}
                     digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
                     spacing={{
@@ -127,23 +127,20 @@ export default function EventInfoPage({ event }: { event: Event }) {
           <div className="flex flex-wrap items-stretch justify-center gap-2">
             <Chip radius="sm" startContent={<CalendarIcon size={16} />} variant="bordered">
               <p className="line-clamp-1">
-                <time dateTime={event.start_date}>
-                  {new Date(event.start_date).toLocaleDateString("vi", {
+                <time dateTime={event.start_at}>
+                  {new Date(event.start_at).toLocaleDateString("vi", {
                     weekday: "long",
                     day: "numeric",
                     month: "long",
                     year: "numeric",
                   })}
+                  &ensp;
+                  {new Date(event.start_at).toLocaleTimeString("en", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
                 </time>
-                {event.start_time && (
-                  <time dateTime={event.start_time} className="ml-1">
-                    {new Date(`1970-01-01T${event.start_time}`).toLocaleTimeString("en-US", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}
-                  </time>
-                )}
               </p>
             </Chip>
 

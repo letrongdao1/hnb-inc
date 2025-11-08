@@ -118,4 +118,37 @@ export const CommonUtils = {
       d1.getDate() === d2.getDate()
     );
   },
+  getTimeComparedToNow(timestamp: string | Date): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+
+    const diffMs = now.getTime() - date.getTime();
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+    const diffWeek = Math.floor(diffDay / 7);
+    const diffMonth =
+      now.getMonth() - date.getMonth() + 12 * (now.getFullYear() - date.getFullYear());
+
+    // Within today
+    if (diffDay === 0) {
+      if (diffHour > 0) return `${diffHour} giờ trước`;
+      if (diffMin > 0) return `${diffMin} phút trước`;
+      return `Vừa xong`;
+    }
+
+    // Days ago
+    if (diffDay < 7) return `${diffDay} ngày trước`;
+
+    // Weeks ago
+    if (diffWeek < 4) return `${diffWeek} tuần trước`;
+
+    // Months ago
+    if (diffMonth < 12) return `${diffMonth} tháng trước`;
+
+    // Over a year ago
+    const diffYear = Math.floor(diffMonth / 12);
+    return `${diffYear} năm trước`;
+  },
 };

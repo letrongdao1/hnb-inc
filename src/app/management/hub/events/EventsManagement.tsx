@@ -210,8 +210,8 @@ export default function EventsManagement() {
       ) : (
         eventList.map((event, index) => {
           const isDateHidden =
-            index > 0 && CommonUtils.compareDate(eventList[index - 1].start_date, event.start_date);
-          const isOngoing = !event.is_ended && new Date(event.start_date) < new Date(Date.now());
+            index > 0 && CommonUtils.compareDate(eventList[index - 1].start_at, event.start_at);
+          const isOngoing = !event.is_ended && new Date(event.start_at) < new Date(Date.now());
           return (
             <div key={event.id} className={`flex w-full items-stretch justify-start px-2 py-4`}>
               <Tooltip content={"Ngày sự kiện diễn ra"}>
@@ -219,12 +219,12 @@ export default function EventsManagement() {
                   className={`border-default-300 hidden items-center gap-2 border-b px-2 sm:flex ${isDateHidden && "invisible"}`}
                 >
                   <p className="w-full text-xl font-semibold">
-                    {getDateDetails(event.start_date).date}
+                    {getDateDetails(event.start_at).date}
                   </p>
                   <div className="text-tiny flex items-center text-nowrap">
-                    {getDateDetails(event.start_date).month}
+                    {getDateDetails(event.start_at).month}
                     <span className="hidden lg:inline">
-                      ,&ensp;{VIETNAMESE_WEEK_DAYS[getDateDetails(event.start_date).weekDate]}
+                      ,&ensp;{VIETNAMESE_WEEK_DAYS[getDateDetails(event.start_at).weekDate]}
                     </span>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ export default function EventsManagement() {
                     </Tooltip>
                   ) : (
                     <Countdown
-                      date={event.start_date}
+                      date={event.start_at}
                       renderer={({ days, hours, minutes, seconds, completed }) =>
                         completed ? (
                           <Tooltip content={"Sự kiện đang diễn ra."}>

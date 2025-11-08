@@ -7,7 +7,6 @@ import {
   addToast,
   Button,
   Checkbox,
-  DateInput,
   DatePicker,
   Image,
   Input,
@@ -15,9 +14,9 @@ import {
   PopoverContent,
   PopoverTrigger,
   Select,
+  Selection,
   SelectItem,
   Textarea,
-  TimeInput,
 } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -40,7 +39,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { STATUS_CODE } from "@/constants/enums";
 import { useLoading } from "@/hooks/useLoading";
 import { useRouter } from "next/navigation";
-import { parseDate, parseTime } from "@internationalized/date";
+import { getLocalTimeZone, parseAbsoluteToLocal, today } from "@internationalized/date";
 import imageCompression from "browser-image-compression";
 import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
 
@@ -69,9 +68,7 @@ const schema = yup
       .max(INPUT_MAX_LENGTH.venue_name, `Chỉ chứa tối đa ${INPUT_MAX_LENGTH.venue_name} ký tự`)
       .required("Vui lòng nhập địa điểm sự kiện"),
     venue_instruction: yup.string().url("URL không hợp lệ").nullable(),
-    start_date: yup.date().required("Vui lòng chọn ngày bắt đầu"),
-    start_time: yup.string().required("Vui lòng chọn giờ bắt đầu"),
-    tags: yup.string(),
+    start_at: yup.string().required("Vui lòng chọn thời gian bắt đầu"),
     has_alcohol: yup.bool(),
   })
   .required();
@@ -87,6 +84,9 @@ export default function CreateUpdateEventForm({
   const { loading, setLoading } = useLoading();
 
   const [tags, setTags] = useState<EventTag[]>([]);
+  const [selectedTags, setSelectedTags] = useState<Selection>(
+    new Set(editedEvent ? editedEvent.tags?.split(",") : [])
+  );
 
   const [images, setImages] = useState<ImageListType>([]);
   const [currentImage, setCurrentImage] = useState<string | undefined>(
@@ -103,15 +103,10 @@ export default function CreateUpdateEventForm({
     resolver: yupResolver(schema as any),
     defaultValues: {
       ...editedEvent,
-      start_date:
-        editedEvent && editedEvent.start_date
-          ? (parseDate(editedEvent.start_date) as any)
+      start_at:
+        editedEvent && editedEvent.start_at
+          ? (parseAbsoluteToLocal(editedEvent.start_at) as any)
           : undefined,
-      start_time:
-        editedEvent && editedEvent.start_time
-          ? (parseTime(editedEvent.start_time) as any)
-          : undefined,
-      tags: editedEvent && editedEvent.tags ? editedEvent.tags : "",
     },
   });
 
@@ -173,10 +168,6 @@ export default function CreateUpdateEventForm({
   };
 
   const hanldeCreateEvent = async (data: CreateEventFieldProps) => {
-    const values = {
-      ...data,
-      start_date: CommonUtils.getDateString(data.start_date),
-    };
     setLoading(true);
 
     let image: string = "";
@@ -207,12 +198,19 @@ export default function CreateUpdateEventForm({
         });
     }
 
+    const values = {
+      ...data,
+      image,
+      slug: CommonUtils.generateSlug(data.title),
+      tags: Array.from(selectedTags).join(","),
+    };
+
     await fetch("/api/events", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ...values, image, slug: CommonUtils.generateSlug(values.title) }),
+      body: JSON.stringify(values),
     })
       .then((res) => res.json())
       .then((result) => {
@@ -223,7 +221,7 @@ export default function CreateUpdateEventForm({
           });
         }
         fetchEventList();
-        router.push("/management/hub?tab=events");
+        router.push("/management/hub/events");
       })
       .catch((err) => {
         addToast({
@@ -235,6 +233,7 @@ export default function CreateUpdateEventForm({
         setLoading(false);
       });
   };
+
   const hanldeUpdateEvent = async (data: CreateEventFieldProps) => {
     if (!editedEvent) {
       return addToast({
@@ -274,11 +273,10 @@ export default function CreateUpdateEventForm({
     setLoading(true);
 
     const values = {
-      id: editedEvent.id,
-      slug: editedEvent.slug,
       ...data,
       image,
-      start_date: CommonUtils.getDateString(data.start_date),
+      start_at: data.start_at.split("[")?.[0],
+      tags: Array.from(selectedTags).join(","),
     };
 
     await fetch("/api/events", {
@@ -295,11 +293,16 @@ export default function CreateUpdateEventForm({
             title: result.message,
             color: "success",
           });
+          fetchEventList();
+          router.push("/management/hub/events");
+        } else {
+          addToast({
+            title: "Lỗi cập nhật sự kiện",
+            color: "danger",
+          });
         }
-        fetchEventList();
-        router.push("/management/hub?tab=events");
       })
-      .catch((err) => {
+      .catch(() => {
         addToast({
           title: "Lỗi cập nhật sự kiện",
           color: "danger",
@@ -333,7 +336,10 @@ export default function CreateUpdateEventForm({
         />
       </div>
 
-      <form onSubmit={handleSubmit(hanldeCreateEvent)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(editedEvent ? hanldeUpdateEvent : hanldeCreateEvent)}
+        className="space-y-4"
+      >
         <div className="space-y-2">
           <p className="text-sm font-light">Thông tin chính</p>
 
@@ -435,41 +441,25 @@ export default function CreateUpdateEventForm({
             <FieldErrorText>{errors.venue_name?.message}</FieldErrorText>
           </div>
 
-          <div className="flex flex-col items-stretch gap-2 md:flex-row">
-            <div className="flex-1 space-y-0.5">
-              <Controller
-                control={control}
-                name="start_date"
-                render={({ field }) => (
-                  <DatePicker
-                    label={"Ngày bắt đầu"}
-                    isRequired
-                    isInvalid={!!errors.start_date}
-                    value={field.value as any}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
+          <div className="space-y-0.5">
+            <Controller
+              control={control}
+              name="start_at"
+              render={({ field }) => (
+                <DatePicker
+                  label={"Thời gian bắt đầu"}
+                  isRequired
+                  isInvalid={!!errors.start_at}
+                  value={field.value as any}
+                  onChange={field.onChange}
+                  hideTimeZone
+                  granularity={"minute"}
+                  minValue={today(getLocalTimeZone())}
+                />
+              )}
+            />
 
-              <FieldErrorText>{errors.start_date?.message}</FieldErrorText>
-            </div>
-            <div className="flex-1 space-y-0.5">
-              <Controller
-                control={control}
-                name="start_time"
-                render={({ field }) => (
-                  <TimeInput
-                    label={"Giờ bắt đầu (ước tính)"}
-                    isInvalid={!!errors.start_time}
-                    isRequired
-                    value={field.value as any}
-                    onChange={field.onChange}
-                  />
-                )}
-              />
-
-              <FieldErrorText>{errors.start_time?.message}</FieldErrorText>
-            </div>
+            <FieldErrorText>{errors.start_at?.message}</FieldErrorText>
           </div>
         </div>
 
@@ -512,7 +502,9 @@ export default function CreateUpdateEventForm({
                     </span>
                   </div>
                 </Button>
-                <div className={`flex flex-col items-stretch gap-1 md:flex-row`}>
+                <div
+                  className={`flex flex-col items-stretch gap-1 md:flex-row ${!imageList.length && !currentImage && "hidden"}`}
+                >
                   <Button
                     fullWidth
                     color="secondary"
@@ -542,28 +534,19 @@ export default function CreateUpdateEventForm({
             )}
           </ImageUploading>
 
-          <div className="space-y-0.5">
-            <Controller
-              control={control}
-              name="tags"
-              render={({ field }) => (
-                <Select
-                  label={"Hashtag"}
-                  selectionMode="multiple"
-                  isInvalid={!!errors.tags}
-                  value={field.value}
-                  onChange={field.onChange}
-                  startContent={"#"}
-                >
-                  {tags.map((tag) => (
-                    <SelectItem key={tag.tag_name}>{tag.tag_name}</SelectItem>
-                  ))}
-                </Select>
-              )}
-            />
-
-            <FieldErrorText>{errors.tags?.message}</FieldErrorText>
-          </div>
+          <Select
+            label={"Hashtag"}
+            selectionMode="multiple"
+            selectedKeys={selectedTags}
+            onSelectionChange={setSelectedTags}
+            startContent={"#"}
+          >
+            {tags.map((tag) => (
+              <SelectItem key={tag.tag_name} startContent="#">
+                {tag.tag_name}
+              </SelectItem>
+            ))}
+          </Select>
 
           <div className="flex flex-1 items-center justify-start space-y-0.5 py-2">
             <Controller
@@ -644,7 +627,7 @@ export default function CreateUpdateEventForm({
               )}
             />
 
-            <FieldErrorText>{errors.start_time?.message}</FieldErrorText>
+            <FieldErrorText>{errors.has_alcohol?.message}</FieldErrorText>
           </div>
         </div>
 

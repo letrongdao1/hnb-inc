@@ -11,19 +11,19 @@ export interface Event {
   slug: string;
   venue_name: string;
   venue_instruction?: string;
-  start_date: string;
-  start_time?: string;
+  start_at: string;
   tags?: string;
   has_alcohol: boolean;
   description: string;
   image?: string;
   is_ended: boolean;
   is_cost_split: boolean;
-  will_pay_user: {
+  will_pay_user?: {
     id: string;
     display_name: string;
     avatar: string;
   };
+  is_will_pay_user?: boolean;
   created_at: string;
   participants?: {
     event: string;

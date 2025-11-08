@@ -58,8 +58,10 @@ export function NotificationProvider({
           const newNotification = payload.new as Notification;
           addToast({
             title: newNotification.title,
-            description: newNotification.description,
-          })
+            description: <p className="wrap-anywhere">{newNotification.description}</p>,
+            color: "primary",
+            variant: "flat",
+          });
           setNotifications((prev) => [newNotification, ...prev]);
         }
       )
@@ -71,12 +73,20 @@ export function NotificationProvider({
   }, [userId]);
 
   const markAsRead = async (id: string) => {
-    const { error } = await supabase.from("notifications").update({ read: true }).eq("id", id);
+    const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id);
 
     if (!error) {
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
     }
   };
+
+  // const markAsReadAll = async () => {
+  //   const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+
+  //   if (!error) {
+  //     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+  //   }
+  // };
 
   const clearAll = async () => {
     const { error } = await supabase.from("notifications").delete().eq("user", userId);

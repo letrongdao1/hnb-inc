@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       })
       .range(from, to)
       .order("is_ended", { ascending: true })
-      .order("start_date", { ascending: false });
+      .order("start_at", { ascending: true });
 
     if (error || !data) {
       console.error("Error fetching events:", error);
@@ -94,6 +94,8 @@ export async function PATCH(request: NextRequest) {
 
     const data: Partial<Event> = await request.json();
 
+    delete data["is_will_pay_user"];
+
     const { error } = await supabase.from("events").update(data).eq("id", data.id);
 
     if (error) {
@@ -107,6 +109,43 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({
       status: STATUS_CODE.OK,
       message: "Cập nhật sự kiện thành công.",
+    });
+  } catch {
+    return NextResponse.json({
+      status: STATUS_CODE.INTERNAL_SERVER_ERROR,
+      message: "Lỗi không xác định. Vui lòng thử lại sau!",
+    });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json({
+        status: STATUS_CODE.INVALID_CREDENTIALS,
+        message: "Không tìm thấy ID người dùng. Vui lòng thử lại sau!",
+      });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const eventId = searchParams.get("eventId");
+
+    const { error } = await supabase.from("events").delete().eq("id", eventId);
+
+    if (error) {
+      console.log({ error });
+      return NextResponse.json({
+        status: STATUS_CODE.ERROR,
+        message: "Xóa sự kiện thất bại. Vui lòng thử lại sau!",
+      });
+    }
+
+    return NextResponse.json({
+      status: STATUS_CODE.OK,
+      message: "Xóa sự kiện thành công.",
     });
   } catch {
     return NextResponse.json({

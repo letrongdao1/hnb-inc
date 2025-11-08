@@ -47,9 +47,7 @@ export default function SingleEvent({ event }: { event: Event }) {
 
   const tagList = useMemo(() => (event.tags ? event.tags.split(",") : []), [event]);
 
-  const isEventInProgress =
-    !event.is_ended &&
-    new Date() > new Date([event.start_date, event.start_time].filter(Boolean).join("T"));
+  const isEventInProgress = !event.is_ended && new Date() > new Date(event.start_at);
 
   const handleViewDetail = () => {
     router.push(`${pathName}/${event.slug}`);
@@ -154,7 +152,7 @@ export default function SingleEvent({ event }: { event: Event }) {
             </Chip>
           ) : (
             <Countdown
-              date={event.start_date}
+              date={event.start_at}
               renderer={({ days, completed }) =>
                 completed ? (
                   <Chip size="sm" color="primary" variant="shadow" startContent={<SpinningGlass />}>
@@ -162,7 +160,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                   </Chip>
                 ) : days > 0 ? (
                   <FlipClockCountdown
-                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    to={event.start_at}
                     renderMap={[true, true, false, false]}
                     labels={["Ngày", "Giờ", "Phút", "Giây"]}
                     digitBlockStyle={{ fontSize: 16, width: 20, height: 40 }}
@@ -173,7 +171,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                   </FlipClockCountdown>
                 ) : (
                   <FlipClockCountdown
-                    to={`${[event.start_date, event.start_time].filter(Boolean).join("T")}`}
+                    to={event.start_at}
                     showLabels={false}
                     digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
                     spacing={{
@@ -204,23 +202,20 @@ export default function SingleEvent({ event }: { event: Event }) {
 
           <span className="flex items-center gap-1 px-3 py-1 text-xs md:text-sm">
             <CalendarIcon size={16} />
-            <time dateTime={event.start_date}>
-              {new Date(event.start_date).toLocaleDateString("vi", {
+            <time dateTime={event.start_at}>
+              {new Date(event.start_at).toLocaleDateString("vi", {
                 weekday: "long",
                 day: "numeric",
                 month: "long",
                 year: "numeric",
               })}
+              &ensp;
+              {new Date(event.start_at).toLocaleTimeString("en", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })}
             </time>
-            {event.start_time && (
-              <time dateTime={event.start_time}>
-                {new Date(`1970-01-01T${event.start_time}`).toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
-              </time>
-            )}
           </span>
 
           {tagList.length && (
@@ -307,7 +302,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                   handleJoin();
                 }
               }}
-              hidden={isEventInProgress}
+              hidden={isEventInProgress || event.is_ended}
               isLoading={joinLoading.loading}
             >
               {isJoinedStatus ? "Đã tham gia" : "Đăng ký tham gia"}

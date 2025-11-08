@@ -27,12 +27,13 @@ export async function getEventList(supabase: SupabaseClient): Promise<Event[]> {
   const { data: eventData, error } = await supabase
     .from("events")
     .select("*, will_pay_user:events_will_pay_user_fkey(id, display_name, avatar)")
-    .order("created_at", { ascending: false });
+    .order("is_ended", { ascending: true })
+    .order("start_at", { ascending: true });
 
   if (error || !eventData) {
     console.log(error);
     return [];
-  };
+  }
 
   const extendedEventData = await Promise.all(
     eventData.map(async (event) => {
