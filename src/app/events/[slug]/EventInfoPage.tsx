@@ -12,7 +12,7 @@ import {
   UserGroupIcon,
 } from "@/components/svg";
 import { Event } from "@/interfaces/events";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import {
   Accordion,
   AccordionItem,

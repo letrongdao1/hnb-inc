@@ -41,6 +41,8 @@ import { STATUS_CODE } from "@/constants/enums";
 import { useLoading } from "@/hooks/useLoading";
 import { useRouter } from "next/navigation";
 import { parseDate, parseTime } from "@internationalized/date";
+import imageCompression from "browser-image-compression";
+import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
 
 type CreateEventFieldProps = yup.InferType<typeof schema>;
 
@@ -68,7 +70,7 @@ const schema = yup
       .required("Vui lòng nhập địa điểm sự kiện"),
     venue_instruction: yup.string().url("URL không hợp lệ").nullable(),
     start_date: yup.date().required("Vui lòng chọn ngày bắt đầu"),
-    start_time: yup.string(),
+    start_time: yup.string().required("Vui lòng chọn giờ bắt đầu"),
     tags: yup.string(),
     has_alcohol: yup.bool(),
   })
@@ -87,6 +89,9 @@ export default function CreateUpdateEventForm({
   const [tags, setTags] = useState<EventTag[]>([]);
 
   const [images, setImages] = useState<ImageListType>([]);
+  const [currentImage, setCurrentImage] = useState<string | undefined>(
+    editedEvent?.image || undefined
+  );
 
   const {
     control,
@@ -145,7 +150,29 @@ export default function CreateUpdateEventForm({
     fetchTagList();
   }, []);
 
-  const onSubmit = async (data: CreateEventFieldProps) => {
+  const handleUploadChange = async (
+    imageList: ImageListType,
+    _addUpdateIndex: number[] | undefined
+  ) => {
+    if (!imageList || !imageList.length) return;
+
+    const parsedImageList = await Promise.all(
+      imageList.map(async (img) => {
+        if (!img.file) return img;
+
+        const compressedFile = await imageCompression(img.file, IMAGE_COMPRESS_OPTIONS);
+        const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
+        return {
+          data_url: base64,
+          file: compressedFile,
+        };
+      })
+    );
+
+    setImages(parsedImageList);
+  };
+
+  const hanldeCreateEvent = async (data: CreateEventFieldProps) => {
     const values = {
       ...data,
       start_date: CommonUtils.getDateString(data.start_date),
@@ -208,9 +235,83 @@ export default function CreateUpdateEventForm({
         setLoading(false);
       });
   };
+  const hanldeUpdateEvent = async (data: CreateEventFieldProps) => {
+    if (!editedEvent) {
+      return addToast({
+        title: "Không tìm thấy sự kiện!",
+        color: "danger",
+      });
+    }
+
+    let image: string = "";
+
+    if (images && images.length && images[0].data_url && images[0].file) {
+      await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          fileBase64: images[0].data_url,
+          fileName: images[0].file.name,
+        }),
+      })
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.status === STATUS_CODE.OK) {
+            image = result.data || "";
+          }
+        })
+        .catch((error) => {
+          console.log({ error });
+          return addToast({
+            title: "Tải ảnh lên thất bại!",
+            color: "danger",
+          });
+        });
+    }
+
+    setLoading(true);
+
+    const values = {
+      id: editedEvent.id,
+      slug: editedEvent.slug,
+      ...data,
+      image,
+      start_date: CommonUtils.getDateString(data.start_date),
+    };
+
+    await fetch("/api/events", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.OK) {
+          addToast({
+            title: result.message,
+            color: "success",
+          });
+        }
+        fetchEventList();
+        router.push("/management/hub?tab=events");
+      })
+      .catch((err) => {
+        addToast({
+          title: "Lỗi cập nhật sự kiện",
+          color: "danger",
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
   return (
-    <div className="flex w-full flex-col gap-8 px-2">
+    <div className="flex w-full flex-col gap-8 px-2 md:px-4">
       <div className="flex items-center justify-center gap-2">
         <Button
           isIconOnly
@@ -232,8 +333,10 @@ export default function CreateUpdateEventForm({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+      <form onSubmit={handleSubmit(hanldeCreateEvent)} className="space-y-4">
+        <div className="space-y-2">
+          <p className="text-sm font-light">Thông tin chính</p>
+
           <div className="space-y-0.5">
             <Input
               {...register("title", { required: true })}
@@ -249,6 +352,31 @@ export default function CreateUpdateEventForm({
             <FieldErrorText>{errors.title?.message}</FieldErrorText>
           </div>
 
+          <div className="space-y-0.5">
+            <Textarea
+              {...register("description", { required: true })}
+              label={"Mô tả nội dung sự kiện"}
+              placeholder="Nhập mô tả..."
+              isRequired
+              isInvalid={!!errors.description}
+              endContent={
+                <p
+                  className={`text-xs opacity-75 ${watcher.description.isExceeded && "text-red-500"}`}
+                >
+                  {watcher.description.length}/{INPUT_MAX_LENGTH.description}
+                </p>
+              }
+              isClearable={watcher.description.length > 0}
+              minRows={4}
+              maxRows={4}
+              spellCheck="false"
+            />
+            <FieldErrorText>{errors.description?.message}</FieldErrorText>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-light">Địa điểm & thời gian</p>
           <div className="space-y-0.5">
             <div className="flex flex-col items-stretch gap-2 md:flex-row">
               <Input
@@ -331,8 +459,9 @@ export default function CreateUpdateEventForm({
                 name="start_time"
                 render={({ field }) => (
                   <TimeInput
-                    label={"Giờ bắt đầu"}
+                    label={"Giờ bắt đầu (ước tính)"}
                     isInvalid={!!errors.start_time}
+                    isRequired
                     value={field.value as any}
                     onChange={field.onChange}
                   />
@@ -341,89 +470,77 @@ export default function CreateUpdateEventForm({
 
               <FieldErrorText>{errors.start_time?.message}</FieldErrorText>
             </div>
-
-            <div className="flex flex-1 items-center justify-start space-y-0.5 py-2">
-              <Controller
-                control={control}
-                name="has_alcohol"
-                render={({ field }) => (
-                  <Checkbox
-                    color="secondary"
-                    isInvalid={!!errors.has_alcohol}
-                    isSelected={field.value}
-                    onChange={field.onChange}
-                  >
-                    <span className="relative flex items-center gap-2">
-                      Có sử dụng bia, rượu
-                      <motion.div
-                        className="relative flex items-center justify-center"
-                        animate={{ rotate: field.value ? -15 : 0 }}
-                        transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                      >
-                        <BeerIcon
-                          className={`h-6 w-6 rotate-y-180 transition-all duration-200 ${
-                            field.value ? "text-amber-500 opacity-100" : "opacity-50"
-                          }`}
-                        />
-
-                        <AnimatePresence>
-                          {field.value && (
-                            <>
-                              <motion.div
-                                key="beer2"
-                                initial={{ opacity: 0, x: 40, rotate: 0, scale: 0.5 }}
-                                animate={{ opacity: 1, x: 18, rotate: 15, scale: 1 }}
-                                exit={{ opacity: 0, x: 40, scale: 0.5 }}
-                                transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                                className="absolute right-0"
-                              >
-                                <BeerIcon className="h-6 w-6 text-amber-600" />
-                              </motion.div>
-
-                              <motion.div
-                                key="sparkle"
-                                className="absolute bottom-2 left-3 z-50"
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{
-                                  opacity: [0, 1, 0],
-                                  scale: [0, 1.2, 0],
-                                  rotate: [0, 45, 90],
-                                }}
-                                transition={{
-                                  duration: 0.6,
-                                  ease: "easeOut",
-                                  delay: 0.4,
-                                }}
-                              >
-                                <SparkleIcon className="text-yellow-400" />
-                              </motion.div>
-                            </>
-                          )}
-                        </AnimatePresence>
-
-                        <AnimatePresence>
-                          {!field.value && (
-                            <motion.div
-                              key="xmark"
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.5 }}
-                              transition={{ type: "spring", stiffness: 250, damping: 18 }}
-                              className="absolute"
-                            >
-                              <XIcon className="text-red-500" />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.div>
-                    </span>
-                  </Checkbox>
-                )}
-              />
-
-              <FieldErrorText>{errors.start_time?.message}</FieldErrorText>
-            </div>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <p className="text-sm font-light">Thông tin khác</p>
+
+          <ImageUploading value={images} onChange={handleUploadChange} dataURLKey="data_url">
+            {({
+              imageList,
+              onImageUpload,
+              onImageRemoveAll,
+              onImageUpdate,
+              //   onImageRemove,
+              isDragging,
+              dragProps,
+            }) => (
+              <div className="mx-auto space-y-1">
+                <Button
+                  {...dragProps}
+                  onPress={onImageUpload}
+                  variant="flat"
+                  className={`h-56 w-full rounded-md border border-dashed bg-contain bg-center bg-no-repeat duration-200 ${(isDragging || !!imageList.length) && "border-solid"}`}
+                  style={{
+                    backgroundImage: `url(${imageList?.[0]?.["data_url"] || (editedEvent && currentImage)})`,
+                  }}
+                >
+                  <div
+                    className={`text-center ${(!!imageList.length || (editedEvent && currentImage)) && "hidden"}`}
+                  >
+                    <p className="text-lg font-semibold">
+                      Ảnh nền sự kiện <span className="text-sm opacity-75">(không bắt buộc)</span>
+                    </p>
+                    <span
+                      className={`flex items-center gap-1 opacity-50 duration-200 ${isDragging && "opacity-100"}`}
+                    >
+                      {isDragging ? <HandIcon /> : <CursorIcon size={16} />}
+                      {isDragging
+                        ? "Thả vào đây để tải ảnh lên"
+                        : "Nhấn hoặc kéo thả để tải ảnh lên"}
+                    </span>
+                  </div>
+                </Button>
+                <div className={`flex flex-col items-stretch gap-1 md:flex-row`}>
+                  <Button
+                    fullWidth
+                    color="secondary"
+                    variant="bordered"
+                    onPress={() => onImageUpdate(0)}
+                    startContent={<EditIcon />}
+                    className="flex-3 py-2"
+                  >
+                    Thay đổi ảnh
+                  </Button>
+                  <Button
+                    isIconOnly
+                    fullWidth
+                    color="danger"
+                    variant="bordered"
+                    onPress={() => {
+                      if (!!imageList.length) onImageRemoveAll();
+                      else {
+                        setCurrentImage(undefined);
+                      }
+                    }}
+                    startContent={<DeleteIcon />}
+                    className="w-full flex-1 py-2"
+                  />
+                </div>
+              </div>
+            )}
+          </ImageUploading>
 
           <div className="space-y-0.5">
             <Controller
@@ -448,102 +565,93 @@ export default function CreateUpdateEventForm({
             <FieldErrorText>{errors.tags?.message}</FieldErrorText>
           </div>
 
-          <div className="space-y-0.5">
-            <Textarea
-              {...register("description", { required: true })}
-              label={"Mô tả nội dung sự kiện"}
-              placeholder="Nhập mô tả..."
-              isRequired
-              isInvalid={!!errors.description}
-              endContent={
-                <p
-                  className={`text-xs opacity-75 ${watcher.description.isExceeded && "text-red-500"}`}
+          <div className="flex flex-1 items-center justify-start space-y-0.5 py-2">
+            <Controller
+              control={control}
+              name="has_alcohol"
+              render={({ field }) => (
+                <Checkbox
+                  color="secondary"
+                  isInvalid={!!errors.has_alcohol}
+                  isSelected={field.value}
+                  onChange={field.onChange}
                 >
-                  {watcher.description.length}/{INPUT_MAX_LENGTH.description}
-                </p>
-              }
-              isClearable={watcher.description.length > 0}
-              minRows={4}
-              maxRows={4}
-              spellCheck="false"
-            />
-            <FieldErrorText>{errors.description?.message}</FieldErrorText>
-          </div>
-
-          <ImageUploading
-            value={images}
-            onChange={(imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
-              setImages(imageList);
-            }}
-            dataURLKey="data_url"
-          >
-            {({
-              imageList,
-              onImageUpload,
-              onImageRemoveAll,
-              onImageUpdate,
-              //   onImageRemove,
-              isDragging,
-              dragProps,
-            }) => (
-              <div className="mx-auto space-y-1">
-                <Button
-                  {...dragProps}
-                  onPress={onImageUpload}
-                  variant="flat"
-                  className={`h-56 w-full rounded-md border border-dashed bg-contain bg-center bg-no-repeat duration-200 ${(isDragging || !!imageList.length) && "border-solid"}`}
-                  style={{
-                    backgroundImage: `url(${imageList?.[0]?.["data_url"] || (editedEvent && editedEvent.image)})`,
-                  }}
-                >
-                  <div
-                    className={`text-center ${(!!imageList.length || (editedEvent && editedEvent.image)) && "hidden"}`}
-                  >
-                    <p className="text-lg font-semibold">
-                      Ảnh nền sự kiện <span className="text-sm opacity-75">(không bắt buộc)</span>
-                    </p>
-                    <span
-                      className={`flex items-center gap-1 opacity-50 duration-200 ${isDragging && "opacity-100"}`}
+                  <span className="relative flex items-center gap-2">
+                    Có sử dụng bia, rượu
+                    <motion.div
+                      className="relative flex items-center justify-center"
+                      animate={{ rotate: field.value ? -15 : 0 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     >
-                      {isDragging ? <HandIcon /> : <CursorIcon size={16} />}
-                      {isDragging
-                        ? "Thả vào đây để tải ảnh lên"
-                        : "Nhấn hoặc kéo thả để tải ảnh lên"}
-                    </span>
-                  </div>
-                </Button>
-                <div
-                  className={`flex flex-col items-stretch gap-1 md:flex-row ${!imageList.length && "hidden"}`}
-                >
-                  <Button
-                    fullWidth
-                    color="secondary"
-                    variant="bordered"
-                    onPress={() => onImageUpdate(0)}
-                    startContent={<EditIcon />}
-                    className="flex-3 py-2"
-                  >
-                    Thay đổi ảnh
-                  </Button>
-                  <Button
-                    isIconOnly
-                    fullWidth
-                    color="danger"
-                    variant="bordered"
-                    onPress={onImageRemoveAll}
-                    startContent={<DeleteIcon />}
-                    className="w-full flex-1 py-2"
-                  />
-                </div>
-              </div>
-            )}
-          </ImageUploading>
+                      <BeerIcon
+                        className={`h-6 w-6 rotate-y-180 transition-all duration-200 ${
+                          field.value ? "text-amber-500 opacity-100" : "opacity-50"
+                        }`}
+                      />
 
-          <Button isLoading={loading} type="submit" fullWidth className="mt-4" color="success">
-            Hoàn tất
-          </Button>
-        </form>
-      </div>
+                      <AnimatePresence>
+                        {field.value && (
+                          <>
+                            <motion.div
+                              key="beer2"
+                              initial={{ opacity: 0, x: 40, rotate: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, x: 18, rotate: 15, scale: 1 }}
+                              exit={{ opacity: 0, x: 40, scale: 0.5 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                              className="absolute right-0"
+                            >
+                              <BeerIcon className="h-6 w-6 text-amber-600" />
+                            </motion.div>
+
+                            <motion.div
+                              key="sparkle"
+                              className="absolute bottom-2 left-3 z-50"
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{
+                                opacity: [0, 1, 0],
+                                scale: [0, 1.2, 0],
+                                rotate: [0, 45, 90],
+                              }}
+                              transition={{
+                                duration: 0.6,
+                                ease: "easeOut",
+                                delay: 0.4,
+                              }}
+                            >
+                              <SparkleIcon className="text-yellow-400" />
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+
+                      <AnimatePresence>
+                        {!field.value && (
+                          <motion.div
+                            key="xmark"
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5 }}
+                            transition={{ type: "spring", stiffness: 250, damping: 18 }}
+                            className="absolute"
+                          >
+                            <XIcon className="text-red-500" />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </motion.div>
+                  </span>
+                </Checkbox>
+              )}
+            />
+
+            <FieldErrorText>{errors.start_time?.message}</FieldErrorText>
+          </div>
+        </div>
+
+        <Button isLoading={loading} type="submit" fullWidth className="mt-4" color="success">
+          Hoàn tất
+        </Button>
+      </form>
     </div>
   );
 }

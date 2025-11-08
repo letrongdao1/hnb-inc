@@ -69,8 +69,7 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
     await fetch("/api/profile/banks")
       .then((res) => res.json())
       .then((result) => {
-        if (!result) return;
-
+        console.log({ result });
         setBankList(result.data as Bank[]);
       })
       .finally(() => setLoading(false));
@@ -154,7 +153,7 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
           <div className="flex items-center justify-between gap-2 md:px-4">
             <h3 className="text-lg font-bold md:text-3xl">Danh sách tài khoản</h3>
             {loading ? (
-              <Spinner size="sm" color="default" />
+              <></>
             ) : accountList.length < MAX_BANK_ACCOUNT_CAPACITY ? (
               <Button
                 onPress={async () => {
@@ -411,9 +410,14 @@ const AddAccount = ({
             name="bank"
             label="Ngân hàng"
             placeholder="Chọn ngân hàng"
+            defaultItems={bankList}
             size="lg"
             onSelectionChange={(value) => {
               setSelectedBank(value);
+            }}
+            classNames={{
+              listboxWrapper: "max-h-[320px]",
+              selectorButton: "text-default-500",
             }}
             listboxProps={{
               itemClasses: {
@@ -434,30 +438,25 @@ const AddAccount = ({
               offset: 10,
               classNames: {
                 base: "rounded-large",
-                content: "p-1 space-y-2 border-small border-default-100 bg-background",
+                content: "p-1 border-small border-default-100 bg-background",
               },
             }}
           >
-            {bankList.map((bank) => (
-              <AutocompleteItem
-                key={bank.id}
-                textValue={bank.shortName + " - " + bank.name}
-                startContent={
+            {(bank: Bank) => (
+              <AutocompleteItem key={bank.id} textValue={bank.shortName + " - " + bank.name}>
+                <div className="flex items-center gap-2">
                   <Image
                     src={bank.logo}
                     alt={bank.shortName}
                     className="aspect-square max-w-8 min-w-8 rounded-full border bg-white object-contain"
                   />
-                }
-                title={
                   <p className="line-clamp-1 font-semibold">
                     {bank.shortName}
                     <span className="ml-2 text-xs font-light">{bank.name}</span>
                   </p>
-                }
-                showDivider
-              />
-            ))}
+                </div>
+              </AutocompleteItem>
+            )}
           </Autocomplete>
 
           <div className="space-y-0.5">

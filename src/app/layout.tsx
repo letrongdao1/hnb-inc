@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Alfa_Slab_One, Montserrat } from "next/font/google";
-import { ClientProviders } from "../providers/client.providers";
+import { ClientProviders } from "../providers/client.provider";
 import ClientLayout from "./client-layout";
 import { getCurrentUserInfo } from "./auth/actions";
 import { cache, Suspense } from "react";

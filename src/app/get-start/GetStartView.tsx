@@ -7,7 +7,7 @@ import { CheckIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
 import { createUser } from "./page";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import { PHONE_NUMBER_REGEX } from "@/constants/regex";
 import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
 import imageCompression from "browser-image-compression";

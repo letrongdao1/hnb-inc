@@ -31,3 +31,14 @@ export interface BankAccount {
   is_selected: boolean;
   created_at?: string;
 }
+
+export interface Notification {
+  id: string;
+  user: string;
+  title: string;
+  description: string;
+  href?: string;
+  type?: string;
+  is_read: boolean;
+  created_at: string;
+}

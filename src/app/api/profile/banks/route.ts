@@ -1,4 +1,5 @@
 import { STATUS_CODE } from "@/constants/enums";
+import { Bank } from "@/interfaces/common";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -12,9 +13,14 @@ export async function GET() {
       );
     }
 
-    const data = await response.json();
+    const result = await response.json();
 
-    return NextResponse.json(data, { status: STATUS_CODE.OK });
+    const filteredBankData = {
+      ...result,
+      data: result.data.filter((bank: Bank) => bank.shortName.toLowerCase() !== "momo"),
+    };
+
+    return NextResponse.json(filteredBankData, { status: STATUS_CODE.OK });
   } catch (error) {
     console.error("Error fetching banks:", error);
     return NextResponse.json(

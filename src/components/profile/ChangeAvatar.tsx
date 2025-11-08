@@ -5,7 +5,7 @@ import { addToast, Avatar, Button, Skeleton } from "@heroui/react";
 import React, { useEffect, useState } from "react";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import { CheckIcon, UploadIcon } from "../svg";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import { STATUS_CODE } from "@/constants/enums";
 import imageCompression from "browser-image-compression";
 import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
@@ -16,8 +16,12 @@ export default function ChangeAvatar({ onClose }: { onClose: () => void }) {
   const { user, setUser } = useUser();
 
   const [defaultAvatars, setDefaultAvatars] = useState<string[]>([]);
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>(user?.avatar || "");
+  const [currentAvatarUrl, setCurrentAvatarUrl] = useState<string>("");
   const [uploadImages, setUploadImages] = useState<ImageListType>([]);
+
+  useEffect(() => {
+    if (user) setCurrentAvatarUrl(user.avatar);
+  }, [user]);
 
   useEffect(() => {
     setLoading(true);
@@ -159,7 +163,7 @@ export default function ChangeAvatar({ onClose }: { onClose: () => void }) {
               variant="flat"
               className={`h-40 w-40 rounded-full border border-dashed bg-cover bg-center bg-no-repeat duration-200 ${isDragging && "opacity-50"}`}
               style={{
-                backgroundImage: `url(${imageList?.[0]?.["data_url"] || currentAvatarUrl})`,
+                backgroundImage: `url(${currentAvatarUrl || imageList?.[0]?.["data_url"]})`,
               }}
             ></Button>
 

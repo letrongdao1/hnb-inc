@@ -36,11 +36,12 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import LogoComponent from "../logo/logo";
 import { ROLE, SYSTEM_MESSAGE } from "@/constants/enums";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { RoleUtils } from "@/utils/role.utils";
+import NotificationList from "./notificationList";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
@@ -284,6 +285,8 @@ export default function Navbar() {
       </NavbarContent>
 
       <NavbarContent justify="end">
+        <NotificationList />
+
         {user ? (
           <Dropdown>
             <DropdownTrigger>

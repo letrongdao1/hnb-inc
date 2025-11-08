@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import LogoComponent from "@/components/logo/logo";
 import { STATUS_CODE } from "@/constants/enums";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -6,7 +6,7 @@ import PersonalInfo from "@/components/profile/PersonalInfo";
 import { BankCardIcon, EditIcon, UserIcon } from "@/components/svg";
 import { ANNOUNCEMENT_TYPE } from "@/constants/enums";
 import { useAnnouncement } from "@/hooks/useAnnouncement";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import {
   Avatar,
   Button,

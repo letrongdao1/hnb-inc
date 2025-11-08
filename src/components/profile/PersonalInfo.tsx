@@ -5,7 +5,7 @@ import React, { useMemo, useState } from "react";
 import { Input, Button, Spacer, DatePicker, Select, SelectItem, addToast } from "@heroui/react";
 import { CheckIcon, EditIcon, XIcon } from "../svg";
 import { parseDate } from "@internationalized/date";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import { PHONE_NUMBER_REGEX } from "@/constants/regex";
 
 interface PersonalInfoProps {
@@ -118,8 +118,6 @@ export default function PersonalInfo({ user }: PersonalInfoProps) {
         isReadOnly={!isEditing}
         showMonthAndYearPickers
       />
-
-      <Spacer y={1} />
 
       <div className="flex items-stretch gap-2">
         <Button

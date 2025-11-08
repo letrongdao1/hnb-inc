@@ -34,6 +34,8 @@ import mentionInputStyle from "@/styles/mentionInputStyle";
 import { useTheme } from "next-themes";
 import dynamic from "next/dynamic";
 import ImageUploading, { ImageListType } from "react-images-uploading";
+import imageCompression from "browser-image-compression";
+import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
 
 const EmojiPicker = dynamic(
   () => {
@@ -114,6 +116,28 @@ export default function CreateUpdatePostForm({
 
   const handleAddEmoji = (emojiData: any) => {
     setContent((prev) => prev + emojiData.emoji);
+  };
+
+  const handleUploadChange = async (
+    imageList: ImageListType,
+    _addUpdateIndex: number[] | undefined
+  ) => {
+    if (!imageList || !imageList.length) return;
+
+    const parsedImageList = await Promise.all(
+      imageList.map(async (img) => {
+        if (!img.file) return img;
+
+        const compressedFile = await imageCompression(img.file, IMAGE_COMPRESS_OPTIONS);
+        const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
+        return {
+          data_url: base64,
+          file: compressedFile,
+        };
+      })
+    );
+
+    setImages(parsedImageList);
   };
 
   const handleValidate = () => {
@@ -316,13 +340,7 @@ export default function CreateUpdatePostForm({
       </div>
 
       <div className="w-full">
-        <ImageUploading
-          value={images}
-          onChange={(imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
-            setImages(imageList);
-          }}
-          dataURLKey="data_url"
-        >
+        <ImageUploading value={images} onChange={handleUploadChange} dataURLKey="data_url">
           {({
             imageList,
             onImageUpload,
@@ -357,7 +375,7 @@ export default function CreateUpdatePostForm({
                 </div>
               </Button>
               <div
-                className={`flex flex-col items-stretch gap-1 md:flex-row ${!!imageList.length && (editedPost && currentImage) && "hidden"}`}
+                className={`flex flex-col items-stretch gap-1 md:flex-row ${!imageList.length && !currentImage && "hidden"}`}
               >
                 <Button
                   fullWidth

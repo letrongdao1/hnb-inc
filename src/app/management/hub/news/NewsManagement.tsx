@@ -306,18 +306,20 @@ export default function NewsManagement() {
         })
       )}
 
-      <Pagination
-        isCompact
-        showControls
-        total={Math.ceil(total / DEFAULT_PAGE_SIZE)}
-        initialPage={1}
-        page={currentPage}
-        onChange={(page) => {
-          setCurrentPage(page);
-          fetchPostList(page);
-        }}
-        className="mx-auto mt-4"
-      />
+      {Boolean(postList.length) && (
+        <Pagination
+          isCompact
+          showControls
+          total={Math.ceil(total / DEFAULT_PAGE_SIZE)}
+          initialPage={1}
+          page={currentPage}
+          onChange={(page) => {
+            setCurrentPage(page);
+            fetchPostList(page);
+          }}
+          className="mx-auto mt-4"
+        />
+      )}
 
       <ConfirmModal
         open={activateNowModal.isOpen}

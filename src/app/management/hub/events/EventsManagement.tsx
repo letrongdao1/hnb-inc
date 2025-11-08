@@ -323,18 +323,20 @@ export default function EventsManagement() {
         })
       )}
 
-      <Pagination
-        isCompact
-        showControls
-        total={Math.ceil(total / DEFAULT_PAGE_SIZE)}
-        initialPage={1}
-        page={currentPage}
-        onChange={(page) => {
-          setCurrentPage(page);
-          fetchEventList(page);
-        }}
-        className="mx-auto mt-4"
-      />
+      {Boolean(eventList.length) && (
+        <Pagination
+          isCompact
+          showControls
+          total={Math.ceil(total / DEFAULT_PAGE_SIZE)}
+          initialPage={1}
+          page={currentPage}
+          onChange={(page) => {
+            setCurrentPage(page);
+            fetchEventList(page);
+          }}
+          className="mx-auto mt-4"
+        />
+      )}
 
       <ConfirmModal
         open={endNowModal.isOpen}

@@ -15,7 +15,7 @@ import { addToast, Avatar, AvatarGroup, Button, Chip, Tooltip, useDisclosure } f
 import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 import { STATUS_CODE } from "@/constants/enums";
-import { useUser } from "@/providers/user.providers";
+import { useUser } from "@/providers/user.provider";
 import { usePathname, useRouter } from "next/navigation";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import "@leenguyen/react-flip-clock-countdown/dist/index.css";
