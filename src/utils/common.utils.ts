@@ -1,5 +1,9 @@
 import { createClient } from "@/lib/supabase/client";
 
+export const cn = (...classes: (string | boolean | undefined | null)[]) => {
+  return classes.filter(Boolean).join(" ");
+};
+
 export const CommonUtils = {
   formatMetaData: (title?: string) => {
     const mainTitle = "HNB Hub";
