@@ -23,6 +23,13 @@ export const metadata: Metadata = {
   description: "A hub for HNB Inc.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+};
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const userData = await cache(async () => {
     return await getCurrentUserInfo();
