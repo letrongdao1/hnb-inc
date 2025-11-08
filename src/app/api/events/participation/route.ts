@@ -74,7 +74,11 @@ export async function DELETE(req: Request) {
       });
     }
 
-    const { error } = await supabase.from("event_participation").delete().eq("event", eventId);
+    const { error } = await supabase
+      .from("event_participation")
+      .delete()
+      .eq("event", eventId)
+      .eq("user", userId);
 
     if (error) {
       return NextResponse.json({
