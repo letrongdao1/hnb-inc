@@ -3,11 +3,12 @@
 import { useLoading } from "@/hooks/useLoading";
 import { addToast, Avatar, Button, Skeleton } from "@heroui/react";
 import React, { useEffect, useState } from "react";
-import IMAGE_PLACEHOLDER from "@/assets/icons/image-placeholder.svg";
 import ImageUploading, { ImageListType } from "react-images-uploading";
-import { CheckIcon, CursorIcon, HandIcon, UploadIcon } from "../svg";
+import { CheckIcon, UploadIcon } from "../svg";
 import { useUser } from "@/providers/user.providers";
 import { STATUS_CODE } from "@/constants/enums";
+import imageCompression from "browser-image-compression";
+import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
 
 export default function ChangeAvatar({ onClose }: { onClose: () => void }) {
   const { loading, setLoading } = useLoading();
@@ -32,6 +33,29 @@ export default function ChangeAvatar({ onClose }: { onClose: () => void }) {
 
     fetchDefaultAvatarList();
   }, [setLoading]);
+
+  const handleUploadChange = async (
+    imageList: ImageListType,
+    _addUpdateIndex: number[] | undefined
+  ) => {
+    if (!imageList || !imageList.length) return;
+
+    const parsedImageList = await Promise.all(
+      imageList.map(async (img) => {
+        if (!img.file) return img;
+
+        const compressedFile = await imageCompression(img.file, IMAGE_COMPRESS_OPTIONS);
+        const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
+        return {
+          data_url: base64,
+          file: compressedFile,
+        };
+      })
+    );
+
+    setCurrentAvatarUrl("");
+    setUploadImages(parsedImageList);
+  };
 
   const handleChangeAvatar = async () => {
     if (!user) return;
@@ -126,14 +150,7 @@ export default function ChangeAvatar({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="flex flex-col items-stretch gap-4">
-      <ImageUploading
-        value={uploadImages}
-        onChange={(imageList: ImageListType, _addUpdateIndex: number[] | undefined) => {
-          setCurrentAvatarUrl("");
-          setUploadImages(imageList);
-        }}
-        dataURLKey="data_url"
-      >
+      <ImageUploading value={uploadImages} onChange={handleUploadChange} dataURLKey="data_url">
         {({ imageList, onImageUpload, onImageRemoveAll, isDragging, dragProps }) => (
           <div className="mx-auto flex flex-col items-center gap-4">
             <Button

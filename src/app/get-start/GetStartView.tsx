@@ -4,11 +4,13 @@ import React, { useRef, useState } from "react";
 import IMAGE_PLACEHOLDER from "@/assets/icons/image-placeholder.svg";
 import { addToast, Avatar, Button, DatePicker, Form, Input } from "@heroui/react";
 import { CheckIcon, FemaleIcon, MaleIcon, PlusIcon } from "@/components/svg";
-import { createUser, uploadAvatar } from "./page";
+import { createUser } from "./page";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.providers";
 import { PHONE_NUMBER_REGEX } from "@/constants/regex";
+import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
+import imageCompression from "browser-image-compression";
 
 export default function GetStartView({ defaultAvatars }: { defaultAvatars: string[] }) {
   const router = useRouter();
@@ -24,17 +26,8 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const MAX_FILE_SIZE = 1024 * 1024;
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (file.size > MAX_FILE_SIZE) {
-      return addToast({
-        title: "Kích thước ảnh quá lớn!",
-        description: `Vui lòng chọn ảnh có kích thước tối đa ${Number((MAX_FILE_SIZE / 1024 / 1024).toFixed(1))}MB`,
-        color: "warning",
-      });
-    }
 
     setCurrentAvatarUrl(URL.createObjectURL(file));
     setUploadedFile(file);
@@ -63,13 +56,31 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
     try {
       let avatar: string = currentAvatarUrl;
       if (uploadedFile) {
-        const uploadResponse = await uploadAvatar(uploadedFile);
-        if (uploadResponse) {
-          if (uploadResponse.status === STATUS_CODE.OK) {
-            console.log(uploadResponse.data);
-            avatar = uploadResponse.data;
-          }
-        }
+        const compressedFile = await imageCompression(uploadedFile, IMAGE_COMPRESS_OPTIONS);
+        const base64 = await imageCompression.getDataUrlFromFile(compressedFile);
+        await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileBase64: base64,
+            fileName: uploadedFile.name,
+          }),
+        })
+          .then((res) => res.json())
+          .then((result) => {
+            if (result.status === STATUS_CODE.OK) {
+              avatar = result.data || "";
+            }
+          })
+          .catch((error) => {
+            console.log({ error });
+            return addToast({
+              title: "Tải ảnh lên thất bại!",
+              color: "danger",
+            });
+          });
       }
 
       const { display_name, phone, dob } = data;

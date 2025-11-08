@@ -18,6 +18,12 @@ export interface Event {
   description: string;
   image?: string;
   is_ended: boolean;
+  is_cost_split: boolean;
+  will_pay_user: {
+    id: string;
+    display_name: string;
+    avatar: string;
+  };
   created_at: string;
   participants?: {
     event: string;

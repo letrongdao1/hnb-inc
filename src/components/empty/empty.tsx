@@ -18,7 +18,7 @@ export default function EmptyComponent({
 }) {
   return (
     <div
-      className={`m-auto mt-[${margin}vh] flex w-full flex-col items-center justify-start gap-2 px-2 text-center`}
+      className={`mx-auto mt-[${margin}vh] flex w-full flex-col items-center justify-start gap-2 px-2 text-center`}
     >
       {isShowImage && (
         <div className="mb-4 flex items-center justify-center gap-4">
@@ -26,7 +26,7 @@ export default function EmptyComponent({
           <FloatIcon size={100} />
         </div>
       )}
-      <p className="md:text-lg opacity-75">{title}</p>
+      <p className="opacity-75 md:text-lg">{title}</p>
       <p className="max-w-xl italic">{description}</p>
       {button}
     </div>

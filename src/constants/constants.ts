@@ -18,3 +18,9 @@ export const VIETNAMESE_WEEK_DAYS: { [key: string]: string } = {
   5: "Thứ 6",
   6: "Thứ 7",
 };
+
+export const IMAGE_COMPRESS_OPTIONS = {
+  maxSizeMB: 0.5,
+  maxWidthOrHeight: 1024,
+  useWebWorker: true,
+};

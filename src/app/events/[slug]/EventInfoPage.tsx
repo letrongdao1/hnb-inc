@@ -30,6 +30,7 @@ import { useState } from "react";
 import Countdown from "react-countdown";
 
 export default function EventInfoPage({ event }: { event: Event }) {
+  console.log({ event });
   const router = useRouter();
   const { user: currentUser } = useUser();
 

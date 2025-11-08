@@ -4,6 +4,7 @@ import { getCurrentUserId } from "@/app/auth/actions";
 import { STATUS_CODE } from "@/constants/enums";
 import { Event } from "@/interfaces/events";
 import { DEFAULT_PAGE_SIZE } from "@/constants/constants";
+import { CommonUtils } from "@/utils/common.utils";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,13 +13,14 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || String(DEFAULT_PAGE_SIZE), 10);
 
     const supabase = await createClient();
+    const userId = await getCurrentUserId();
 
     const from = (pageIndex - 1) * pageSize;
     const to = from + pageSize - 1;
 
     const { data, count, error } = await supabase
       .from("events")
-      .select("*", { count: "exact" })
+      .select("*, will_pay_user:users(id, display_name, avatar)", { count: "exact" })
       .range(from, to)
       .order("is_ended", { ascending: true })
       .order("start_date", { ascending: false });
@@ -28,7 +30,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Lỗi lấy danh sách sự kiện!" }, { status: 500 });
     }
 
-    return NextResponse.json({ data, count: count, status: STATUS_CODE.OK });
+    const parsedData = data.map((event) => ({
+      ...event,
+      will_pay_user: CommonUtils.getSingleDataFromUnknown(event.will_pay_user),
+      is_will_pay_user: event.will_pay_user?.id === userId,
+    }));
+
+    return NextResponse.json({ data: parsedData, count: count, status: STATUS_CODE.OK });
   } catch (err) {
     console.error("Unexpected error:", err);
     return NextResponse.json({ error: "Lỗi không xác định!" }, { status: 500 });

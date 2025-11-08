@@ -26,10 +26,13 @@ export async function getEventList(supabase: SupabaseClient): Promise<Event[]> {
 
   const { data: eventData, error } = await supabase
     .from("events")
-    .select("*")
+    .select("*, will_pay_user:events_will_pay_user_fkey(id, display_name, avatar)")
     .order("created_at", { ascending: false });
 
-  if (error || !eventData) return [];
+  if (error || !eventData) {
+    console.log(error);
+    return [];
+  };
 
   const extendedEventData = await Promise.all(
     eventData.map(async (event) => {
@@ -37,6 +40,7 @@ export async function getEventList(supabase: SupabaseClient): Promise<Event[]> {
 
       return {
         ...event,
+        is_will_pay_user: event.will_pay_user?.id === userId,
         participants,
         is_joined: participants.some((p) => p.user.id === userId),
       };
@@ -53,7 +57,7 @@ export async function getEventParticipation(supabase: SupabaseClient, eventId: s
     .from("event_participation")
     .select("*, user:users(id, display_name, avatar)")
     .eq("event", eventId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: true });
 
   if (!data) return [];
 
