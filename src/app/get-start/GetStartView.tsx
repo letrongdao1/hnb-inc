@@ -129,7 +129,7 @@ export default function GetStartView({ defaultAvatars }: { defaultAvatars: strin
 
           <span className="absolute right-1/2 -bottom-4 flex translate-x-1/2 items-center rounded-full border border-gray-900 bg-white px-2">
             <PlusIcon fill="#000" />{" "}
-            <p className="text-xs whitespace-nowrap text-black">Nhấn để upload</p>
+            <p className="text-xs whitespace-nowrap text-gray-900">Nhấn để upload</p>
           </span>
         </button>
         <input
