@@ -261,7 +261,9 @@ export default function SingleEvent({ event }: { event: Event }) {
                         `Bạn`
                       ) : (
                         <div className="flex items-center gap-1">
-                          <p className="text-sm font-semibold">{participant.user.display_name}</p>
+                          <p className="min-w-fit text-sm font-semibold text-nowrap">
+                            {participant.user.display_name}
+                          </p>
                           <span className="min-w-fit font-light">sẽ tham gia</span>
                         </div>
                       )
