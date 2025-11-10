@@ -82,7 +82,7 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
                 transition={{ delay: 0.3 }}
                 className="prose prose-neutral dark:prose-invert min-h-64 max-w-none text-start leading-relaxed"
               >
-                {renderContentWithMentions(post.content)}
+                <pre className="font-sans">{renderContentWithMentions(post.content)}</pre>
               </motion.div>
             )}
           </CardBody>

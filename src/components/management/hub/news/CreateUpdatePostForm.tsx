@@ -216,7 +216,7 @@ export default function CreateUpdatePostForm({
               color: "success",
             });
             fetchPostList();
-            router.push("/management/hub?tab=news");
+            router.push("/management/hub/news");
           } else {
             addToast({
               title: "Đăng bản tin lỗi",
@@ -290,7 +290,7 @@ export default function CreateUpdatePostForm({
               color: "success",
             });
             fetchPostList();
-            router.push("/management/hub?tab=news");
+            router.push("/management/hub/news");
           } else {
             addToast({
               title: "Cập nhật bản tin lỗi",

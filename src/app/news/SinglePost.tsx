@@ -79,7 +79,7 @@ export default function SinglePost({ post, isFirst }: { post: PostInfo; isFirst?
                   isFirst ? "text-lg md:line-clamp-4" : "text-sm md:min-h-16"
                 }`}
               >
-                {renderContentWithMentions(post.content)}
+                <pre className="font-sans">{renderContentWithMentions(post.content)}</pre>
               </div>
             )}
           </CardBody>
