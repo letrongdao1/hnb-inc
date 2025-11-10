@@ -1,5 +1,5 @@
 "use client";
-import { PasswordValidationProps } from "@/components/auth/signup/PasswordInput";
+import { PasswordValidationProps } from "@/components/Auth/Signup/PasswordInput";
 import { CheckIcon, EyeFilledIcon, EyeSlashFilledIcon, XIcon } from "@/components/svg";
 import { Input } from "@heroui/react";
 import React, { useState, useEffect } from "react";

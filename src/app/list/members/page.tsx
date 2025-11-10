@@ -1,6 +1,6 @@
 "use server";
 
-import ErrorComponent from "@/components/error/error";
+import ErrorComponent from "@/components/Error/error";
 import { createClient } from "@/lib/supabase/server";
 import MembersList from "./MembersList";
 import { getUserRolesByUserID } from "@/app/auth/users";

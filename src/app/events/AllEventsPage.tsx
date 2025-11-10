@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageTitle } from "@/components/ui/text/text";
+import { PageTitle } from "@/components/ui/Text/text";
 import { Event } from "@/interfaces/events";
-import SingleEvent from "@/components/events/SingleEvent";
+import SingleEvent from "@/components/Events/SingleEvent";
 
 export default function AllEventsPage({ events }: { events: Event[] }) {
   return (

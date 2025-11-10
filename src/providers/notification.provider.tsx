@@ -9,6 +9,7 @@ type NotificationContextType = {
   notifications: Notification[];
   unreadCount: number;
   markAsRead: (id: string) => Promise<void>;
+  markAsReadAll: () => Promise<void>;
   clearAll: () => Promise<void>;
 };
 
@@ -80,13 +81,17 @@ export function NotificationProvider({
     }
   };
 
-  // const markAsReadAll = async () => {
-  //   const { error } = await supabase.from("notifications").update({ is_read: true }).eq("id", id);
+  const markAsReadAll = async () => {
+    const { error } = await supabase
+      .from("notifications")
+      .update({ is_read: true })
+      .eq("user", userId)
+      .eq("is_read", false);
 
-  //   if (!error) {
-  //     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-  //   }
-  // };
+    if (!error) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    }
+  };
 
   const clearAll = async () => {
     const { error } = await supabase.from("notifications").delete().eq("user", userId);
@@ -97,7 +102,9 @@ export function NotificationProvider({
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, clearAll }}>
+    <NotificationContext.Provider
+      value={{ notifications, unreadCount, markAsRead, markAsReadAll, clearAll }}
+    >
       {children}
     </NotificationContext.Provider>
   );

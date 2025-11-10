@@ -9,7 +9,7 @@ import {
   Text,
   Font,
 } from "@react-email/components";
-import { AcmeLogo } from "../logo/logo";
+import { AcmeLogo } from "../Logo/logo";
 
 interface PlaidVerifyIdentityEmailProps {
   validationCode?: string;

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { signup } from "../actions";
-import EmailSignupForm from "@/components/auth/signup/EmailInput";
-import PasswordSignupForm from "@/components/auth/signup/PasswordInput";
+import EmailSignupForm from "@/components/Auth/Signup/EmailInput";
+import PasswordSignupForm from "@/components/Auth/Signup/PasswordInput";
 import { addToast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { STATUS_CODE } from "@/constants/enums";

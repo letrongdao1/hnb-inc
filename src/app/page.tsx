@@ -1,7 +1,7 @@
 "use client";
 
-import LogoComponent from "@/components/logo/logo";
-import Maintenance from "@/components/maintenance";
+import LogoComponent from "@/components/Logo/logo";
+import Maintenance from "@/components/Maintenance";
 
 export default function Home() {
   return (

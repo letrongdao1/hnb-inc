@@ -17,7 +17,7 @@ import { PostInfo } from "@/interfaces/news";
 import { STATUS_CODE } from "@/constants/enums";
 import { useRouter } from "next/navigation";
 import { CommonUtils } from "@/utils/common.utils";
-import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import ConfirmModal from "@/components/ui/Modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 import {
   now,

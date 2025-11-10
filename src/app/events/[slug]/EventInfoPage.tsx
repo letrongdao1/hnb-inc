@@ -1,8 +1,8 @@
 "use client";
 
-import EmptyComponent from "@/components/empty/empty";
-import EventCostList from "@/components/events/EventCostList";
-import { SpinningGlass } from "@/components/events/SingleEvent";
+import EmptyComponent from "@/components/Empty/empty";
+import EventCostList from "@/components/Events/EventCostList";
+import { SpinningGlass } from "@/components/Events/SingleEvent";
 import {
   ArrowLeftIcon,
   CalendarCheckIcon,

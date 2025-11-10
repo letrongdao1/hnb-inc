@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeftIcon, CheckIcon, EyeFilledIcon, EyeSlashFilledIcon } from "@/components/svg";
-import StrongPasswordInput from "@/components/ui/password-input/StrongPasswordInput";
+import StrongPasswordInput from "@/components/ui/PasswordInput/StrongPasswordInput";
 import { CommonUtils } from "@/utils/common.utils";
 import { addToast, Button, Form, Input } from "@heroui/react";
 import { useMemo, useState } from "react";

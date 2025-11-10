@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import LogoComponent from "../logo/logo";
+import LogoComponent from "../Logo/logo";
 import { usePathname } from "next/navigation";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];

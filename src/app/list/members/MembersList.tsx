@@ -2,7 +2,7 @@
 
 import React from "react";
 import { MemberResponse } from "./page";
-import { PageTitle } from "@/components/ui/text/text";
+import { PageTitle } from "@/components/ui/Text/text";
 import { ROLE } from "@/constants/enums";
 import SingleMember from "./SingleMember";
 import { Divider } from "@heroui/react";

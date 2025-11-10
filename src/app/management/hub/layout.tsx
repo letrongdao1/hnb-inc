@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarIcon, NewsPaperIcon } from "@/components/svg";
-import { PageTitle } from "@/components/ui/text/text";
+import { PageTitle } from "@/components/ui/Text/text";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
