@@ -9,6 +9,7 @@ import { useLoading } from "@/hooks/useLoading";
 import { PostInfo } from "@/interfaces/news";
 import {
   addToast,
+  Avatar,
   Button,
   Chip,
   Dropdown,
@@ -17,18 +18,31 @@ import {
   DropdownTrigger,
   Image,
   Pagination,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Tooltip,
   useDisclosure,
 } from "@heroui/react";
 import FIRE_ICON from "@/assets/icons/fire-svgrepo-com.svg";
-import { CheckIcon, DeleteIcon, EditIcon, ImageIcon, MoreIcon, PlusIcon } from "@/components/svg";
+import {
+  CheckIcon,
+  DeleteIcon,
+  EditIcon,
+  EyeFilledIcon,
+  ImageIcon,
+  MoreIcon,
+  PlusIcon,
+} from "@/components/svg";
 import { CommonUtils } from "@/utils/common.utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import CreateUpdatePostForm from "@/components/Management/Hub/news/CreateUpdatePostForm";
 import ConfirmModal from "@/components/ui/Modal/ConfirmModal";
 import Countdown from "react-countdown";
+import { useUser } from "@/providers/user.provider";
 
 export default function NewsManagement() {
+  const { user } = useUser();
   const router = useRouter();
   const pathName = usePathname();
   const searchParams = useSearchParams();
@@ -62,7 +76,7 @@ export default function NewsManagement() {
       color: "primary",
       onClick: (post: PostInfo) => {
         setSelectedPost(post);
-        router.push(`${pathName}?tab=news&edit=true`);
+        router.push(`${pathName}?edit=true`);
       },
       disabled: false,
     },
@@ -201,11 +215,12 @@ export default function NewsManagement() {
             index > 0 && CommonUtils.compareDate(postList[index - 1].active_at, post.active_at);
           const isAvailable = new Date(post.active_at) < new Date(Date.now());
           return (
-            <div key={post.id} className={`flex w-full items-stretch justify-start px-2 py-4`}>
+            <div
+              key={post.id}
+              className={`flex w-full items-start justify-start px-2 py-4 md:items-stretch`}
+            >
               <Tooltip content={"Ngày bản tin được phát hành"}>
-                <div
-                  className={`border-default-300 hidden items-center gap-2 border-b px-2 sm:flex ${isDateHidden && "invisible"}`}
-                >
+                <div className={`border-default-300 flex items-center gap-2 border-b px-2`}>
                   <p className="w-full text-xl font-semibold">
                     {getDateDetails(post.active_at).date}
                   </p>
@@ -218,7 +233,7 @@ export default function NewsManagement() {
                 </div>
               </Tooltip>
 
-              <div className="border-default-300 flex w-full items-center justify-around gap-4 border-b px-2 py-1">
+              <div className="border-default-300 flex w-full flex-col items-stretch justify-around gap-4 border-b px-2 py-1 md:flex-row md:items-center">
                 <div className="flex flex-3 items-center justify-start gap-2">
                   <p className="line-clamp-1 text-sm font-semibold wrap-anywhere">{post.title}</p>
                   <span className="hidden shrink-0 sm:inline">
@@ -235,41 +250,77 @@ export default function NewsManagement() {
                   </span>
                 </div>
 
-                <span className={`flex flex-1 justify-center`}>
-                  {isAvailable ? (
-                    <Tooltip content={"Bản tin đang được hiển thị trên bảng tin HNB."}>
-                      <Chip size="sm" color="success" variant="shadow">
-                        <CheckIcon size={16} />
-                      </Chip>
-                    </Tooltip>
-                  ) : (
-                    <Countdown
-                      date={post.active_at}
-                      renderer={({ days, hours, minutes, seconds, completed }) =>
-                        completed ? (
-                          <Tooltip content={"Bản tin đang được hiển thị trên bảng tin HNB."}>
-                            <Chip size="sm" color="success" variant="shadow">
-                              <CheckIcon size={16} />
-                            </Chip>
-                          </Tooltip>
-                        ) : (
-                          <Tooltip
-                            content={"Thời gian còn lại để bản tin xuất hiện trên bảng tin HNB."}
-                          >
-                            <Chip color="default" variant="bordered" className="text-xs font-light">
-                              {days > 0
-                                ? `> ${days} ngày`
-                                : `${padTimeDisplay(hours)}:${padTimeDisplay(minutes)}:
+                <div className="flex justify-evenly gap-2 md:ml-auto md:justify-end">
+                  <span className={`flex items-center justify-start gap-2 md:flex-1`}>
+                    {isAvailable ? (
+                      <Tooltip content={"Bản tin đang được hiển thị trên bảng tin HNB."}>
+                        <Chip size="sm" color="success" variant="shadow">
+                          <CheckIcon size={16} />
+                        </Chip>
+                      </Tooltip>
+                    ) : (
+                      <Countdown
+                        date={post.active_at}
+                        renderer={({ days, hours, minutes, seconds, completed }) =>
+                          completed ? (
+                            <Tooltip content={"Bản tin đang được hiển thị trên bảng tin HNB."}>
+                              <Chip size="sm" color="success" variant="shadow">
+                                <CheckIcon size={16} />
+                              </Chip>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip
+                              content={"Thời gian còn lại để bản tin xuất hiện trên bảng tin HNB."}
+                            >
+                              <Chip
+                                color="default"
+                                variant="bordered"
+                                className="text-xs font-light"
+                              >
+                                {days > 0
+                                  ? `> ${days} ngày`
+                                  : `${padTimeDisplay(hours)}:${padTimeDisplay(minutes)}:
                             ${padTimeDisplay(seconds)}`}
-                            </Chip>
-                          </Tooltip>
-                        )
-                      }
-                    />
-                  )}
-                </span>
+                              </Chip>
+                            </Tooltip>
+                          )
+                        }
+                      />
+                    )}
 
-                <div className="ml-auto flex justify-end">
+                    <Popover>
+                      <PopoverTrigger>
+                        <button
+                          disabled={!post.seenBy?.length}
+                          className="text-default-900 bg-default-100 flex cursor-pointer items-center gap-2 rounded-full px-2 py-1"
+                        >
+                          <EyeFilledIcon />
+                          <p className="text-sm">{post.seenBy ? post.seenBy.length : 0}</p>
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="space-y-2 p-2">
+                        <p className="font-light opacity-75">Danh sách người đã xem bài viết</p>
+                        <div className="flex w-80 flex-wrap items-center justify-start gap-2">
+                          {post.seenBy &&
+                            post.seenBy.map((seen) => {
+                              const seenUser = seen.user;
+                              const isYou = user && user.id === seenUser.id;
+                              return (
+                                <Chip
+                                  key={seenUser.id}
+                                  avatar={<Avatar src={seenUser.avatar} alt="" />}
+                                  variant="solid"
+                                  color={isYou ? "primary" : "default"}
+                                >
+                                  {seenUser.display_name}
+                                </Chip>
+                              );
+                            })}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </span>
+
                   <Dropdown>
                     <DropdownTrigger>
                       <Button

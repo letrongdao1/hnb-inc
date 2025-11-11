@@ -36,7 +36,7 @@ export async function getPosts(supabase: SupabaseClient, { pageIndex, pageSize }
 
   const { data: postData, error } = await supabase
     .from("posts")
-    .select("*, user: users(id, display_name, avatar)")
+    .select("*, user:posts_user_fkey(id, display_name, avatar)")
     .range(from, to)
     .eq("status", 1)
     .lte("active_at", NOW)

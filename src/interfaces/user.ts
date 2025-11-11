@@ -1,11 +1,13 @@
 import { ROLE } from "@/constants/enums";
 
-export interface UserInfo {
+export interface BaseUserInfo {
   id: string;
-  email: string;
   display_name: string;
-  gender: "M" | "F";
   avatar: string;
+}
+export interface UserInfo extends BaseUserInfo {
+  email: string;
+  gender: "M" | "F";
   dob: string;
   phone: string;
   roles: RoleInfo[];

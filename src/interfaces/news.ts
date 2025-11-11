@@ -1,3 +1,5 @@
+import { BaseUserInfo } from "./user";
+
 export interface PostInfo {
   id: string;
   user: {
@@ -14,4 +16,9 @@ export interface PostInfo {
   status: number;
   active_at: string;
   created_at: string;
+  seenBy?: {
+    post: string;
+    user: BaseUserInfo;
+    created_at: string;
+  }[];
 }
