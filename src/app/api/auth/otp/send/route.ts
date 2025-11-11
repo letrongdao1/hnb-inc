@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis/redis";
 import { CryptoUtils } from "@/utils/crypto";
 import { Resend } from "resend";
-import VerifyEmailTemplate from "@/components/email/VerifyEmail";
+import PlaidVerifyIdentityEmail from "@/components/email/VerifyEmail";
 import { STATUS_CODE } from "@/constants/enums";
 
 const OTP_TTL = 5 * 60; // 5 minutes
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       from: "HNB Inc <no-reply@hnb-inc.site>",
       to: email,
       subject: "[HNB] MÃ XÁC THỰC ĐĂNG KÝ TÀI KHOẢN HNB HUB",
-      react: VerifyEmailTemplate({ validationCode: otp }),
+      react: PlaidVerifyIdentityEmail({ validationCode: otp }),
     })
     .catch((err) => {
       console.log(err);
