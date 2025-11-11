@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis/redis";
 import { CryptoUtils } from "@/utils/crypto";
 import { Resend } from "resend";
-import PlaidVerifyIdentityEmail from "@/components/email/VerifyEmail";
+import PlaidVerifyIdentityEmail from "@/components/email-templates/VerifyEmail";
 import { STATUS_CODE } from "@/constants/enums";
 
 const OTP_TTL = 5 * 60; // 5 minutes
