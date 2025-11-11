@@ -3,6 +3,8 @@ export default {
   control: {
     fontSize: 16,
     backgroundColor: "transparent",
+    maxHeight: 400,
+    overflow: "auto",
   },
 
   "&multiLine": {
@@ -12,10 +14,14 @@ export default {
     highlighter: {
       padding: 9,
       border: "1px solid transparent",
+      maxHeight: 400,
+      overflow: "auto",
     },
     input: {
       padding: 9,
       border: "1px solid silver",
+      maxHeight: 400,
+      overflow: "auto",
     },
   },
 

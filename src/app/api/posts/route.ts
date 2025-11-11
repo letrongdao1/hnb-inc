@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       error,
     } = await supabase
       .from("posts")
-      .select("*, user: users(id, display_name, avatar)", { count: "exact" })
+      .select("*, user:posts_user_fkey(id, display_name, avatar)", { count: "exact" })
       .range(from, to)
       .order("active_at", { ascending: false });
 
@@ -32,10 +32,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Lỗi lấy danh sách bản tin!" }, { status: 500 });
     }
 
-    const posts = postData.map((post: any) => ({
-      ...post,
-      user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
-    }));
+    const posts = await Promise.all(
+      postData.map(async (post: any) => ({
+        ...post,
+        user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
+        seenBy: (await supabase
+          .from("post_seen")
+          .select("*, user:post_seen_user_fkey(id, display_name, avatar)")
+          .eq("post", post.id)).data || [],
+      }))
+    );
 
     return NextResponse.json({ data: posts, count: count, status: STATUS_CODE.OK });
   } catch (err) {
@@ -95,7 +101,7 @@ export async function PATCH(request: NextRequest) {
         status: STATUS_CODE.INVALID_CREDENTIALS,
         message: "Không tìm thấy ID người dùng. Vui lòng thử lại sau!",
       });
-    };
+    }
 
     const data: Partial<PostInfo> = await request.json();
 
