@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import EmptyComponent from "@/components/Empty/empty";
+import EmptyComponent from "@/components/empty/empty";
 import Loader from "@/components/loader";
 import { DEFAULT_PAGE_SIZE, VIETNAMESE_WEEK_DAYS } from "@/constants/constants";
 import { STATUS_CODE } from "@/constants/enums";
@@ -36,8 +36,8 @@ import {
 } from "@/components/svg";
 import { CommonUtils } from "@/utils/common.utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import CreateUpdatePostForm from "@/components/Management/Hub/news/CreateUpdatePostForm";
-import ConfirmModal from "@/components/ui/Modal/ConfirmModal";
+import CreateUpdatePostForm from "@/components/management/hub/news/CreateUpdatePostForm";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Countdown from "react-countdown";
 import { useUser } from "@/providers/user.provider";
 

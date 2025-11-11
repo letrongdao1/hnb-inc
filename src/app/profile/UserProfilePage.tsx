@@ -1,8 +1,8 @@
 "use client";
 
-import BankAccountManagement from "@/components/Profile/BankAccountManagement";
-import ChangeAvatar from "@/components/Profile/ChangeAvatar";
-import PersonalInfo from "@/components/Profile/PersonalInfo";
+import BankAccountManagement from "@/components/profile/BankAccountManagement";
+import ChangeAvatar from "@/components/profile/ChangeAvatar";
+import PersonalInfo from "@/components/profile/PersonalInfo";
 import { BankCardIcon, EditIcon, UserIcon } from "@/components/svg";
 import { ANNOUNCEMENT_TYPE } from "@/constants/enums";
 import { useAnnouncement } from "@/hooks/useAnnouncement";

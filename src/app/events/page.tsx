@@ -1,4 +1,3 @@
-import Maintenance from "@/components/Maintenance";
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
 import { SupabaseClient } from "@supabase/supabase-js";

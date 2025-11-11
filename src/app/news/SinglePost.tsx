@@ -1,6 +1,6 @@
 "use client";
 
-import HoverableUser from "@/components/HoverableUser/hoverable-user";
+import HoverableUser from "@/components/hoverable-user/hoverable-user";
 import { motion } from "framer-motion";
 import { PostInfo } from "@/interfaces/news";
 import { Badge, Card, CardBody, CardFooter, CardHeader, Divider, Image } from "@heroui/react";

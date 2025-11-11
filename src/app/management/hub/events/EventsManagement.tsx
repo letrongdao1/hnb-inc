@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import EmptyComponent from "@/components/Empty/empty";
+import EmptyComponent from "@/components/empty/empty";
 import Loader from "@/components/loader";
 import { DEFAULT_PAGE_SIZE, VIETNAMESE_WEEK_DAYS } from "@/constants/constants";
 import { STATUS_CODE } from "@/constants/enums";
@@ -30,10 +30,10 @@ import {
 } from "@/components/svg";
 import { CommonUtils } from "@/utils/common.utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import ConfirmModal from "@/components/ui/Modal/ConfirmModal";
 import Countdown from "react-countdown";
 import { Event } from "@/interfaces/events";
-import CreateUpdateEventForm from "@/components/Management/Hub/events/CreateUpdateEventForm";
+import CreateUpdateEventForm from "@/components/management/hub/events/CreateUpdateEventForm";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 
 export default function EventsManagement() {
   const router = useRouter();

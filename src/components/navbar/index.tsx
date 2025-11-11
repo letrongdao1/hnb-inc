@@ -38,7 +38,7 @@ import {
   UserIcon,
 } from "../svg";
 import { createClient } from "@/lib/supabase/client";
-import LogoComponent from "../Logo/logo";
+import LogoComponent from "../logo/logo";
 import { ROLE, SYSTEM_MESSAGE } from "@/constants/enums";
 import { useUser } from "@/providers/user.provider";
 import { usePathname, useRouter } from "next/navigation";

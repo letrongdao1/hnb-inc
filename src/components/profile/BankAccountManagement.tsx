@@ -18,14 +18,14 @@ import { Bank, BankAccount } from "@/interfaces/common";
 import { useLoading } from "@/hooks/useLoading";
 import Loader from "../loader";
 import { STATUS_CODE } from "@/constants/enums";
-import EmptyComponent from "../Empty/empty";
-import ConfirmModal from "../ui/Modal/ConfirmModal";
+import EmptyComponent from "../empty/empty";
+import ConfirmModal from "../ui/modal/ConfirmModal";
 import { CommonUtils } from "@/utils/common.utils";
 import { MAX_BANK_ACCOUNT_CAPACITY } from "@/constants/constants";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { FieldErrorText } from "../ui/Text/text";
+import { FieldErrorText } from "../ui/text";
 
 interface PersonalInfoProps {
   user: UserInfo | null;

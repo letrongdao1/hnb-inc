@@ -12,7 +12,7 @@ import {
   XIcon,
 } from "../svg";
 import { addToast, Avatar, AvatarGroup, Button, Chip, Tooltip, useDisclosure } from "@heroui/react";
-import ConfirmModal from "../ui/Modal/ConfirmModal";
+import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 import { STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.provider";

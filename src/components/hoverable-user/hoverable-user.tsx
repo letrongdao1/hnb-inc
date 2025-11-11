@@ -10,7 +10,7 @@ import dayjs from "dayjs";
 import { GLOBAL_DATE_FORMAT, SUPABASE_DATE_FORMAT } from "@/constants/constants";
 import { RoleUtils } from "@/utils/role.utils";
 import { ROLE } from "@/constants/enums";
-import EmptyComponent from "../Empty/empty";
+import EmptyComponent from "../empty/empty";
 
 export default function HoverableUser({ user }: { user: Partial<UserInfo> | null }) {
   const [isYou, setIsYou] = useState<boolean>(false);

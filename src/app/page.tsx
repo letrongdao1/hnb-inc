@@ -1,8 +1,8 @@
 "use client";
 
-import HeroSection from "@/components/HomePage/HeroSection";
-import LogoComponent from "@/components/Logo/logo";
-import Maintenance from "@/components/Maintenance";
+import HeroSection from "@/components/home/HeroSection";
+import LogoComponent from "@/components/logo/logo";
+import Maintenance from "@/components/maintenance";
 
 export default function Home() {
   return (

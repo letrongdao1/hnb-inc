@@ -16,7 +16,7 @@ import { useNotifications } from "@/providers/notification.provider";
 import { BellIcon, DeleteIcon } from "../svg";
 import { CommonUtils } from "@/utils/common.utils";
 import NOTIFICATION_IMAGE from "@/assets/images/notification.png";
-import ConfirmModal from "../ui/Modal/ConfirmModal";
+import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 
 export default function NotificationList() {

@@ -3,8 +3,8 @@
 import React from "react";
 import { PostResponse } from "./page";
 import SinglePost from "./SinglePost";
-import { PageTitle } from "@/components/ui/Text/text";
-import EmptyComponent from "@/components/Empty/empty";
+import { PageTitle } from "@/components/ui/text";
+import EmptyComponent from "@/components/empty/empty";
 import { motion } from "framer-motion";
 
 export default function NewsFeed({ posts }: { posts: PostResponse }) {

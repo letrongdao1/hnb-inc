@@ -26,7 +26,7 @@ import { CheckIcon, PlusIcon, ReloadIcon } from "../svg";
 import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { FieldErrorText } from "../ui/Text/text";
+import { FieldErrorText } from "../ui/text";
 import { useLoading } from "@/hooks/useLoading";
 import { CommonUtils } from "@/utils/common.utils";
 import TableLoader from "../loader/TableLoader";
