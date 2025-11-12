@@ -9,6 +9,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        xs: "480px",
+      },
       fontFamily: {
         sans: ["var(--font-montserrat)", "sans-serif"],
         title: ["var(--font-alfaSlabOne)", "sans-serif"],

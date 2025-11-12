@@ -70,3 +70,49 @@ export async function POST(req: NextRequest) {
     });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createClient();
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json({
+        status: STATUS_CODE.INVALID_CREDENTIALS,
+        message: "Không tìm thấy ID người dùng. Vui lòng thử lại sau!",
+      });
+    }
+
+    const { costId } = await req.json();
+
+    if (!costId) {
+      return NextResponse.json({
+        status: STATUS_CODE.INVALID_CREDENTIALS,
+        message: "Không tìm thấy chi phí. Vui lòng thử lại sau!",
+      });
+    }
+
+    const { error } = await supabase
+      .from("event_costs")
+      .delete()
+      .eq("id", costId)
+
+    if (error) {
+      return NextResponse.json({
+        status: STATUS_CODE.ERROR,
+        message: "Xóa chi phí sự kiện thất bại. Vui lòng thử lại sau!",
+      });
+    }
+
+    return NextResponse.json({
+      status: STATUS_CODE.OK,
+      message: "Xóa chi phí sự kiện sự kiện thành công.",
+    });
+  } catch {
+    return NextResponse.json({
+      status: STATUS_CODE.INTERNAL_SERVER_ERROR,
+      message: "Lỗi không xác định. Vui lòng thử lại sau!",
+    });
+  }
+}
+

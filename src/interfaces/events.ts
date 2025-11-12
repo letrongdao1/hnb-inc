@@ -1,3 +1,5 @@
+import { BaseUserInfo } from "./user";
+
 export interface EventTag {
   id: number;
   tag_name: string;
@@ -18,20 +20,12 @@ export interface Event {
   image?: string;
   is_ended: boolean;
   is_cost_split: boolean;
-  will_pay_user?: {
-    id: string;
-    display_name: string;
-    avatar: string;
-  };
+  will_pay_user?: BaseUserInfo;
   is_will_pay_user?: boolean;
   created_at: string;
   participants?: {
     event: string;
-    user: {
-      id: string;
-      display_name: string;
-      avatar: string;
-    };
+    user: BaseUserInfo;
     created_at: string;
   }[];
   is_joined?: boolean;
@@ -45,11 +39,7 @@ export interface EventParticipation {
 
 export interface EventCost {
   id: string;
-  user: {
-    id: string;
-    display_name: string;
-    avatar: string;
-  };
+  user: BaseUserInfo;
   event: string;
   type: string;
   amount: number;
