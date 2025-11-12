@@ -30,10 +30,10 @@ import {
 } from "@/components/svg";
 import { CommonUtils } from "@/utils/common.utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Countdown from "react-countdown";
 import { Event } from "@/interfaces/events";
 import CreateUpdateEventForm from "@/components/management/hub/events/CreateUpdateEventForm";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 
 export default function EventsManagement() {
   const router = useRouter();

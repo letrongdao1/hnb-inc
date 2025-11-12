@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PageTitle } from "@/components/ui/text/text";
+import { PageTitle } from "@/components/ui/text";
 import { Event } from "@/interfaces/events";
 import SingleEvent from "@/components/events/SingleEvent";
 

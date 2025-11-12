@@ -14,7 +14,11 @@ interface EventDetailProps {
 }
 
 export async function getEvent(supabase: SupabaseClient, slug: string) {
-  const { data: event } = await supabase.from("events").select("*").eq("slug", slug).maybeSingle();
+  const { data: event } = await supabase
+    .from("events")
+    .select("*, will_pay_user:events_will_pay_user_fkey(id, display_name, avatar)")
+    .eq("slug", slug)
+    .maybeSingle();
 
   return event || null;
 }
@@ -44,6 +48,7 @@ export default async function EventDetailPage({ params }: EventDetailProps) {
     ...event,
     participants,
     is_joined: participants.some((p) => p.user.id === userId),
+    is_will_pay_user: event.will_pay_user?.id === userId,
   };
 
   return <EventInfoPage event={parsedEvent || null} />;

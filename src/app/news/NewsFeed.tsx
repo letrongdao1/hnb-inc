@@ -3,7 +3,7 @@
 import React from "react";
 import { PostResponse } from "./page";
 import SinglePost from "./SinglePost";
-import { PageTitle } from "@/components/ui/text/text";
+import { PageTitle } from "@/components/ui/text";
 import EmptyComponent from "@/components/empty/empty";
 import { motion } from "framer-motion";
 

@@ -53,7 +53,7 @@ export default function SingleEvent({ event }: { event: Event }) {
     router.push(`${pathName}/${event.slug}`);
   };
 
-  const handleJoin = async () => {
+  const handleJoinEvent = async () => {
     if (!user) return;
 
     joinLoading.setLoading(true);
@@ -299,7 +299,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                 if (isJoinedStatus) {
                   confirmNotJoin.onOpen();
                 } else {
-                  handleJoin();
+                  handleJoinEvent();
                 }
               }}
               hidden={isEventInProgress || event.is_ended}

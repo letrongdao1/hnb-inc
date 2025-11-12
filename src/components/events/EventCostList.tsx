@@ -1,7 +1,8 @@
 import { STATUS_CODE } from "@/constants/enums";
-import { EventCost } from "@/interfaces/events";
+import { Event, EventCost } from "@/interfaces/events";
 import {
   addToast,
+  Avatar,
   Button,
   Chip,
   Input,
@@ -21,15 +22,17 @@ import {
   useDisclosure,
   User,
 } from "@heroui/react";
-import React, { useCallback, useEffect, useState } from "react";
-import { CheckIcon, PlusIcon, ReloadIcon } from "../svg";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { CheckIcon, DeleteIcon, PlusIcon, ReloadIcon } from "../svg";
 import * as yup from "yup";
 import { Controller, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { FieldErrorText } from "../ui/text/text";
+import { FieldErrorText } from "../ui/text";
 import { useLoading } from "@/hooks/useLoading";
 import { CommonUtils } from "@/utils/common.utils";
 import TableLoader from "../loader/TableLoader";
+import ConfirmModal from "../ui/modal/ConfirmModal";
+import { useUser } from "@/providers/user.provider";
 
 type CreateEventCostFieldProps = yup.InferType<typeof schema>;
 
@@ -49,12 +52,21 @@ const schema = yup
   })
   .required();
 
-export default function EventCostList({ eventId }: { eventId: string }) {
-  const addCostModal = useDisclosure();
+export default function EventCostList({ event }: { event: Event }) {
+  const { user } = useUser();
   const { setLoading, loading } = useLoading();
+  const addCostModal = useDisclosure();
   const addLoading = useLoading();
+  const deleteCostModal = useDisclosure();
+  const deleteLoading = useLoading();
 
   const [eventCostList, setEventCostList] = useState<EventCost[]>([]);
+  const [selectedCost, setSelectedCost] = useState<EventCost>();
+
+  const totalCost = useMemo(
+    () => eventCostList.reduce((prev, current) => (prev += current.amount), 0),
+    [eventCostList]
+  );
 
   const {
     control,
@@ -81,10 +93,10 @@ export default function EventCostList({ eventId }: { eventId: string }) {
   };
 
   const fetchEventCostList = useCallback(async () => {
-    if (!eventId) return;
+    if (!event) return;
 
     setLoading(true);
-    await fetch(`/api/events/costs?eventId=${eventId}`)
+    await fetch(`/api/events/costs?eventId=${event.id}`)
       .then((res) => res.json())
       .then((result) => {
         if (result.status === STATUS_CODE.OK) {
@@ -95,7 +107,7 @@ export default function EventCostList({ eventId }: { eventId: string }) {
       .finally(() => {
         setLoading(false);
       });
-  }, [eventId, setLoading]);
+  }, [event, setLoading]);
 
   const columns = [
     {
@@ -114,10 +126,29 @@ export default function EventCostList({ eventId }: { eventId: string }) {
       key: "created_at",
       label: "Thời gian",
     },
+    {
+      key: "action",
+      label: "",
+      maxWidth: 50,
+    },
   ];
 
-  const renderCell = React.useCallback((eventCost: EventCost, columnKey: keyof EventCost) => {
+  const renderCell = React.useCallback((eventCost: EventCost, columnKey: any) => {
     switch (columnKey) {
+      case "action":
+        return eventCost.user.id === user?.id ? (
+          <Button
+            isIconOnly
+            color="danger"
+            startContent={<DeleteIcon size={16} />}
+            onPress={() => {
+              setSelectedCost(eventCost);
+              deleteCostModal.onOpen();
+            }}
+          />
+        ) : (
+          <></>
+        );
       case "user":
         return (
           <User
@@ -163,7 +194,7 @@ export default function EventCostList({ eventId }: { eventId: string }) {
   const handleCreateEventCost = async (values: any) => {
     const params = {
       ...values,
-      event: eventId,
+      event: event.id,
     };
 
     addLoading.setLoading(true);
@@ -194,43 +225,80 @@ export default function EventCostList({ eventId }: { eventId: string }) {
     reset();
   };
 
+  const handleDeleteEventCost = async () => {
+    if (!selectedCost) return;
+
+    const costId = selectedCost.id;
+
+    deleteLoading.setLoading(true);
+
+    await fetch("/api/events/costs", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ costId }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.status === STATUS_CODE.OK) {
+          setEventCostList((prev) => prev.filter((cost) => cost.id !== costId));
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        deleteLoading.setLoading(false);
+        deleteCostModal.onClose();
+      });
+  };
+
   if (loading) return <TableLoader />;
 
   return (
     <div>
       {Boolean(eventCostList.length) ? (
         <Table
-          aria-label="Example table with custom cells"
+          isHeaderSticky
+          isCompact
+          topContentPlacement="outside"
           topContent={
-            <div className="flex items-center justify-between gap-2">
-              {eventCostList.length > 0 && (
-                <p className="text-xs font-light">Tổng: {eventCostList.length}</p>
-              )}
-
-              <div className="ml-auto flex items-center gap-2">
-                <Button
-                  startContent={<ReloadIcon />}
-                  color="secondary"
-                  variant="flat"
-                  onPress={() => {
-                    fetchEventCostList();
-                  }}
-                  isIconOnly
-                />
-                <Button
-                  startContent={<PlusIcon />}
-                  color="success"
-                  onPress={() => {
-                    addCostModal.onOpen();
-                  }}
-                >
-                  Tạo khoản chi phí
-                </Button>
-              </div>
+            <div className="ml-auto flex items-center gap-2">
+              <Button
+                startContent={<ReloadIcon />}
+                color="secondary"
+                variant="flat"
+                onPress={() => {
+                  fetchEventCostList();
+                }}
+                isIconOnly
+              />
+              <Button
+                startContent={<PlusIcon />}
+                color="success"
+                onPress={() => {
+                  addCostModal.onOpen();
+                }}
+                hidden={!event.is_cost_split && event.will_pay_user && !event.is_will_pay_user}
+              >
+                <p className="hidden md:inline">Tạo khoản chi phí</p>
+              </Button>
             </div>
           }
-          topContentPlacement="inside"
-          isHeaderSticky
+          bottomContentPlacement="outside"
+          bottomContent={
+            <>
+              {eventCostList.length > 0 && (
+                <p className="shrink-0 text-end text-xs font-light">
+                  Tổng:{" "}
+                  <span className="text-sm font-medium">
+                    {CommonUtils.formatMoneyVND(totalCost)}
+                  </span>
+                </p>
+              )}
+            </>
+          }
         >
           <TableHeader columns={columns}>
             {(column) => (
@@ -249,17 +317,24 @@ export default function EventCostList({ eventId }: { eventId: string }) {
         </Table>
       ) : (
         <div className="flex w-full flex-col items-center justify-center gap-2 py-8">
+          {(event.is_cost_split && !event.will_pay_user) || event.is_will_pay_user ? (
+            <Button
+              startContent={<PlusIcon />}
+              color="success"
+              onPress={() => {
+                addCostModal.onOpen();
+              }}
+            >
+              Tạo khoản chi phí
+            </Button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <Avatar src={event.will_pay_user?.avatar} alt="" className="mr-1" />
+              <p className="font-semibold">{event.will_pay_user?.display_name}</p>
+              <p>sẽ chi trả toàn bộ chi phí cho sự kiện này.</p>
+            </div>
+          )}
           <p className="text-sm font-light opacity-75">Chưa có khoản chi phí nào</p>
-
-          <Button
-            startContent={<PlusIcon />}
-            color="success"
-            onPress={() => {
-              addCostModal.onOpen();
-            }}
-          >
-            Tạo khoản chi phí
-          </Button>
         </div>
       )}
 
@@ -303,7 +378,7 @@ export default function EventCostList({ eventId }: { eventId: string }) {
                           value={field.value ? Number(field.value).toLocaleString("en-US") : ""}
                           onChange={(e) => {
                             const raw = e.target.value.replace(/,/g, "");
-                            const cleaned = raw.replace(/\D/g, "");
+                            const cleaned = raw.replace(/\D/g, "") || "0";
                             field.onChange(cleaned);
                           }}
                           onBlur={() => {
@@ -356,6 +431,21 @@ export default function EventCostList({ eventId }: { eventId: string }) {
           </ModalContent>
         </form>
       </Modal>
+
+      <ConfirmModal
+        open={deleteCostModal.isOpen}
+        onOpenChange={deleteCostModal.onOpenChange}
+        onClose={deleteCostModal.onClose}
+        title="Xác nhận xóa chi phí"
+        extra={<span className="text-red-500">Thao tác này không thể hoàn tác</span>}
+        onConfirm={handleDeleteEventCost}
+        confirmText="Xóa"
+        okButtonProps={{
+          startContent: !deleteLoading.loading && <DeleteIcon size={16} />,
+          color: "danger",
+          isLoading: deleteLoading.loading,
+        }}
+      />
     </div>
   );
 }

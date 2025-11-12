@@ -3,7 +3,7 @@
 import EmptyComponent from "@/components/empty/empty";
 import HoverableUser from "@/components/hoverable-user/hoverable-user";
 import { ArrowLeftIcon } from "@/components/svg";
-import { PageTitle } from "@/components/ui/text/text";
+import { PageTitle } from "@/components/ui/text";
 import type { PostInfo } from "@/interfaces/news";
 import { CommonUtils } from "@/utils/common.utils";
 import {

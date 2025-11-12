@@ -25,7 +25,7 @@ import { MAX_BANK_ACCOUNT_CAPACITY } from "@/constants/constants";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
-import { FieldErrorText } from "../ui/text/text";
+import { FieldErrorText } from "../ui/text";
 
 interface PersonalInfoProps {
   user: UserInfo | null;

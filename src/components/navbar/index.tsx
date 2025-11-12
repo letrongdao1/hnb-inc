@@ -211,7 +211,7 @@ export default function Navbar() {
     menuItems.map((item) => {
       router.prefetch(item.href);
     });
-  }, [router]);
+  }, [menuItems, router]);
 
   if (pageToHide.some((page) => page === pathname)) return null;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FieldErrorText, PageTitle } from "@/components/ui/text/text";
+import { FieldErrorText, PageTitle } from "@/components/ui/text";
 import { Event, EventTag } from "@/interfaces/events";
 import {
   addToast,
