@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { login } from "../actions";
 import { addToast, Button, Form, Input } from "@heroui/react";
 import { LoginIcon } from "@/components/svg";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import LogoComponent from "@/components/logo/logo";
 import { STATUS_CODE } from "@/constants/enums";
@@ -13,6 +13,8 @@ import { useUser } from "@/providers/user.provider";
 export default function LoginPage() {
   const router = useRouter();
   const { setUser } = useUser();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectedFrom") || "/";
   const [loading, setLoading] = useState<boolean>(false);
 
   const [form, setForm] = useState({
@@ -67,9 +69,7 @@ export default function LoginPage() {
           case STATUS_CODE.OK: {
             if (response.data) {
               setUser(response.data);
-              const redirectPath = sessionStorage.getItem("redirectAfterLogin") || "/";
-              sessionStorage.removeItem("redirectAfterLogin");
-              router.replace(redirectPath);
+              router.replace(redirectTo);
             } else {
               router.push("/get-start");
             }

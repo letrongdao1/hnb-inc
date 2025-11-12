@@ -5,6 +5,7 @@ import { AUTH_NOT_REQUIRED_PATHS } from "./constants/constants";
 
 export default async function middleware(request: NextRequest) {
   const response = await updateSession(request);
+  const { pathname } = request.nextUrl;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,7 +30,9 @@ export default async function middleware(request: NextRequest) {
   );
 
   if (isAuthRequired && !user) {
-    console.log("Middleware: Không xác định được session đăng nhập!");
+    const loginUrl = new URL("/auth/login", request.url);
+    loginUrl.searchParams.set("redirectedFrom", request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
   }
 
   return response;

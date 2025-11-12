@@ -213,7 +213,7 @@ export default function Navbar() {
     });
   }, [menuItems, router]);
 
-  if (pageToHide.some((page) => page === pathname)) return null;
+  if (!user || pageToHide.some((page) => page === pathname)) return null;
 
   return (
     <HeroNavbar

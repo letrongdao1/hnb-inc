@@ -1,5 +1,5 @@
 import Loader from "@/components/loader";
 
-export default function Loading() {
-  return <Loader />;
+export default function HomeLoading() {
+  return <Loader margin={40} />;
 }
