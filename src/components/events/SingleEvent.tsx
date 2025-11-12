@@ -12,7 +12,6 @@ import {
   XIcon,
 } from "../svg";
 import { addToast, Avatar, AvatarGroup, Button, Chip, Tooltip, useDisclosure } from "@heroui/react";
-import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
 import { STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.provider";
@@ -20,6 +19,7 @@ import { usePathname, useRouter } from "next/navigation";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
 import "@leenguyen/react-flip-clock-countdown/dist/index.css";
 import Countdown from "react-countdown";
+import ConfirmModal from "../ui/modal/ConfirmModal";
 
 const MAX_TAG_SHOWN = 2;
 const MAX_AVATAR_SHOWN = 5;
