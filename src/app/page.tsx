@@ -11,7 +11,7 @@ export default function Home() {
         <LogoComponent />
         <p className="text-center text-5xl font-semibold">Chào mừng đến với HNB Hub!</p>
 
-        <Maintenance />
+        <Maintenance showBackButton={false} />
       </div>
     );
 
