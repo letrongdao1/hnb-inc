@@ -40,7 +40,6 @@ export default function HomePage({ userStreak }: HomeProps) {
       await fetch("/api/home")
         .then((res) => res.json())
         .then((result) => {
-          console.log({ result });
           if (result.status === STATUS_CODE.OK) {
             setHomeData(result.data);
           }
@@ -49,17 +48,7 @@ export default function HomePage({ userStreak }: HomeProps) {
     };
 
     fetchHomeData();
-  }, []);
-
-  if (!Boolean(process.env.NEXT_PUBLIC_IS_TESTING))
-    return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-start gap-8 px-2 py-4 font-sans sm:p-10 xl:max-w-2/3">
-        <LogoComponent />
-        <p className="text-center text-5xl font-semibold">Chào mừng đến với HNB Hub!</p>
-
-        <Maintenance showBackButton={false} />
-      </div>
-    );
+  }, [setLoading]);
 
   if (loading)
     return (
