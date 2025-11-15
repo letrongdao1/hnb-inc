@@ -26,6 +26,7 @@ interface ConfirmModalProps {
   okButtonProps?: ButtonProps;
   cancelButtonProps?: ButtonProps;
   loading?: boolean;
+  placement?: ModalProps["placement"];
 }
 
 export default function ConfirmModal({
@@ -42,9 +43,10 @@ export default function ConfirmModal({
   okButtonProps,
   cancelButtonProps,
   loading,
+  placement = "center",
 }: ConfirmModalProps) {
   return (
-    <Modal isOpen={open} onOpenChange={onOpenChange} placement="center" {...modalProps}>
+    <Modal isOpen={open} onOpenChange={onOpenChange} placement={placement} {...modalProps}>
       <ModalContent>
         <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
         <ModalBody>

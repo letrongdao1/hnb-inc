@@ -1,3 +1,6 @@
+import { ButtonProps } from "@heroui/react";
+import { BaseUserInfo } from "./user";
+
 export interface PaginationProps {
   pageIndex: number;
   pageSize: number;
@@ -41,4 +44,27 @@ export interface Notification {
   type?: string;
   is_read: boolean;
   created_at: string;
+}
+
+export interface UserStreak {
+  user: BaseUserInfo;
+  current_streak: number;
+  longest_streak: number;
+  last_login: string;
+}
+
+export interface ModalProps {
+  open: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  onClose: () => void;
+  title?: string | React.ReactNode;
+  description?: string | React.ReactNode;
+  extra?: string | React.ReactNode;
+  onConfirm: () => void;
+  confirmText?: string;
+  cancelText?: string;
+  modalProps?: Partial<ModalProps>;
+  okButtonProps?: ButtonProps;
+  cancelButtonProps?: ButtonProps;
+  loading?: boolean;
 }

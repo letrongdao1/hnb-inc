@@ -9,6 +9,7 @@ import Loader from "@/components/loader";
 import { UserProvider } from "@/providers/user.provider";
 import Footer from "@/components/footer";
 import { NotificationProvider } from "@/providers/notification.provider";
+import StreakUpdater from "@/hooks/useStreakUpdater";
 
 export default function ClientLayout({
   user,
@@ -51,6 +52,8 @@ export default function ClientLayout({
           </AnimatePresence>
 
           {contentLoaded && <Footer />}
+
+          {/* <StreakUpdater /> */}
         </div>
       </NotificationProvider>
     </UserProvider>

@@ -1,26 +1,30 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserId } from "./auth/actions";
+import HomePage from "@/components/home";
 
-import HeroSection from "@/components/home/HeroSection";
-import LogoComponent from "@/components/logo/logo";
-import Maintenance from "@/components/maintenance";
+export default async function Home() {
+  const supabase = await createClient();
+  const userId = await getCurrentUserId();
 
-export default function Home() {
-  if (!Boolean(process.env.NEXT_PUBLIC_IS_TESTING))
-    return (
-      <div className="flex min-h-screen w-full flex-col items-center justify-start gap-8 px-0 py-4 font-sans sm:p-10">
-        <LogoComponent />
-        <p className="text-center text-5xl font-semibold">Chào mừng đến với HNB Hub!</p>
+  const userStreak = await getCurrentUserStreak();
 
-        <Maintenance showBackButton={false} />
-      </div>
-    );
+  return <HomePage userStreak={userStreak} />;
+}
 
-  return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-start gap-8 px-0 py-4 font-sans sm:p-10">
-      {/* <LogoComponent />
-      <p className="text-center text-5xl font-semibold">Chào mừng đến với HNB Hub!</p> */}
+export async function getCurrentUserStreak() {
+  const supabase = await createClient();
+  const userId = await getCurrentUserId();
 
-      <HeroSection />
-    </div>
-  );
+  if (!userId) return null;
+
+  await supabase.rpc("update_user_streak", { p_user_id: userId });
+
+  const { data } = await supabase
+    .from("user_streaks")
+    .select("*, user:user_streaks_user_id_fkey1(id, display_name, avatar)")
+    .eq("user_id", userId)
+    .limit(1)
+    .single();
+
+  return data || null;
 }
