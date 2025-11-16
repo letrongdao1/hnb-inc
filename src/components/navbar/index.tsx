@@ -356,6 +356,18 @@ export default function Navbar() {
       </NavbarContent>
 
       <NavbarMenu className="pt-8">
+        <NavbarMenuItem key={`home`} isActive={pathname === "/"} className="px-2">
+          <Link
+            className="w-full"
+            color={"foreground"}
+            onClick={() => {
+              router.push("/");
+              setIsMenuOpen(false);
+            }}
+          >
+            Trang chủ
+          </Link>
+        </NavbarMenuItem>
         {menuItems.map((item, index) => {
           if (item.hidden) return null;
 

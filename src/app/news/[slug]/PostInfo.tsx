@@ -119,7 +119,7 @@ export const renderContentWithMentions = (content: string) => {
     if (match) {
       const [, display, id] = match;
       return (
-        <p key={i} className="inline font-semibold text-sky-600 hover:underline">
+        <p key={i} className="inline font-semibold text-cyan-600 hover:underline">
           @{display}
         </p>
       );

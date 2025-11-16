@@ -48,11 +48,3 @@ select {
 .font-alfa {
   font-family: "Alfa Slab One", sans-serif;
 }
-
-.emoji-text {
-  font-family:
-    "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji",
-    sans-serif;
-  font-size: 1rem;
-  line-height: 1.5;
-}

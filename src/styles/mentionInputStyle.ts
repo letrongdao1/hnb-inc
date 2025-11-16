@@ -46,6 +46,8 @@ export default {
       zIndex: 9999,
       color: "#333",
       fontFamily: "Montserrat, sans-serif",
+      maxHeight: "30vh",
+      overflowY: "auto" as any,
     },
     item: {
       padding: "5px 15px",

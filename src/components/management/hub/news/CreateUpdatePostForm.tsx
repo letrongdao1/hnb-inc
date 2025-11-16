@@ -36,6 +36,7 @@ import dynamic from "next/dynamic";
 import ImageUploading, { ImageListType } from "react-images-uploading";
 import imageCompression from "browser-image-compression";
 import { IMAGE_COMPRESS_OPTIONS } from "@/constants/constants";
+import { Montserrat } from "next/font/google";
 
 const EmojiPicker = dynamic(
   () => {
@@ -43,6 +44,10 @@ const EmojiPicker = dynamic(
   },
   { ssr: false }
 );
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+});
 
 interface TagUsersProps {
   roles: RoleInfo[];
@@ -411,7 +416,7 @@ export default function CreateUpdatePostForm({
         <MentionsInput
           value={content}
           onChange={(_, newValue) => setContent(newValue)}
-          className="emoji-text min-h-[100px] w-full rounded-lg border"
+          className={`emoji-text ${montserrat.className} min-h-[100px] w-full rounded-lg border`}
           placeholder="Nhập nội dung bản tin..."
           style={mentionInputStyle}
           a11ySuggestionsListLabel={"Tag"}
