@@ -47,7 +47,7 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="mx-auto flex w-full items-start justify-center p-4"
+      className="mx-auto flex w-full items-start justify-center p-2 md:p-4"
     >
       <ScrollShadow className="w-full">
         <Card
@@ -68,7 +68,7 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
             </CardHeader>
           )}
 
-          <CardBody className="flex flex-col items-stretch gap-4 p-6">
+          <CardBody className="flex flex-col items-stretch gap-4 md:p-6">
             <div className="flex-1 text-center">
               <PageTitle>{post.title}</PageTitle>
             </div>
@@ -82,7 +82,7 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
                 transition={{ delay: 0.3 }}
                 className="prose prose-neutral dark:prose-invert min-h-64 max-w-none text-start leading-relaxed"
               >
-                <pre className="font-sans">{renderContentWithMentions(post.content)}</pre>
+                <pre className="font-sans whitespace-pre-wrap break-words">{renderContentWithMentions(post.content)}</pre>
               </motion.div>
             )}
           </CardBody>
