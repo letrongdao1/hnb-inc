@@ -2,10 +2,12 @@
 
 import EmptyComponent from "@/components/empty/empty";
 import HoverableUser from "@/components/hoverable-user/hoverable-user";
+import CommentInput from "@/components/posts/comments/CommentInput";
+import CommentTree from "@/components/posts/comments/SingleComment";
 import { ArrowLeftIcon } from "@/components/svg";
-import { PageTitle } from "@/components/ui/text";
-import type { PostInfo } from "@/interfaces/news";
-import { CommonUtils } from "@/utils/common.utils";
+import { PageTitle, SectionTitle } from "@/components/ui/text";
+import type { PostComment, PostInfo } from "@/interfaces/news";
+import { createClient } from "@/lib/supabase/client";
 import {
   Button,
   Card,
@@ -15,12 +17,61 @@ import {
   Divider,
   Image,
   ScrollShadow,
+  Spacer,
 } from "@heroui/react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function PostInfoPage({ post }: { post: PostInfo }) {
+const supabase = createClient();
+
+export default function PostInfoPage({ post }: { post: PostInfo | null }) {
   const router = useRouter();
+
+  const [currentCommentList, setCurrentCommentList] = useState<PostComment[]>(
+    post?.commentList || []
+  );
+
+  const [commentInput, setCommentInput] = useState<string>("");
+
+  useEffect(() => {
+    if (!post) return;
+
+    const channel = supabase
+      .channel("realtime-post_comments")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "post_comments",
+          filter: `post=eq.${post.id}`,
+        },
+        (payload) => {
+          const updatedComment = payload.new as PostComment;
+          setCurrentCommentList((prev) =>
+            prev.map((comment) =>
+              comment.id === updatedComment.id
+                ? {
+                    ...comment,
+                    like_count: updatedComment.like_count,
+                    dislike_count: updatedComment.dislike_count,
+                  }
+                : comment
+            )
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [post]);
+
+  const handleAddNewComment = (newComment: PostComment) => {
+    setCurrentCommentList((prev) => [newComment, ...prev]);
+  };
 
   if (!post)
     return (
@@ -82,14 +133,41 @@ export default function PostInfoPage({ post }: { post: PostInfo }) {
                 transition={{ delay: 0.3 }}
                 className="prose prose-neutral dark:prose-invert min-h-64 max-w-none text-start leading-relaxed"
               >
-                <pre className="font-sans whitespace-pre-wrap break-words">{renderContentWithMentions(post.content)}</pre>
+                <pre className="font-sans break-words whitespace-pre-wrap">
+                  {renderContentWithMentions(post.content)}
+                </pre>
               </motion.div>
             )}
+
+            <p className="text-default-400 ml-auto text-xs italic">Thông tin đến HNB</p>
+
+            <Spacer y={16} />
+
+            <div className="flex flex-col items-stretch justify-start gap-2">
+              <SectionTitle>Bình luận</SectionTitle>
+
+              <CommentInput
+                value={commentInput}
+                setValue={setCommentInput}
+                postId={post.id}
+                callback={handleAddNewComment}
+              />
+
+              <Divider className="my-2" />
+
+              {!currentCommentList || !currentCommentList.length ? (
+                <EmptyComponent imageSize={100} margin={20} title={"Chưa có bình luận "} />
+              ) : (
+                <div className="flex flex-col items-stretch gap-2">
+                  {currentCommentList.map((comment) => (
+                    <CommentTree key={comment.id} comment={comment} />
+                  ))}
+                </div>
+              )}
+            </div>
           </CardBody>
 
           <CardFooter className="text-default-400 flex flex-col items-end gap-2 px-6 py-4 text-xs italic">
-            <p>Thông tin đến HNB</p>
-
             <Divider className="my-4" />
 
             <div className="md:ml-auto">

@@ -1,7 +1,7 @@
 "use client";
 
 import { getCurrentUserInfo } from "@/app/auth/actions";
-import { UserInfo } from "@/interfaces/user";
+import { BaseUserInfo, UserInfo } from "@/interfaces/user";
 import { CommonUtils } from "@/utils/common.utils";
 import { Avatar, Popover, PopoverContent, PopoverTrigger, Skeleton, Tooltip } from "@heroui/react";
 import React, { useEffect, useState } from "react";
@@ -12,7 +12,12 @@ import { RoleUtils } from "@/utils/role.utils";
 import { ROLE } from "@/constants/enums";
 import EmptyComponent from "../empty/empty";
 
-export default function HoverableUser({ user }: { user: Partial<UserInfo> | null }) {
+type HoverableUserProps = {
+  user: Partial<UserInfo> | BaseUserInfo | null;
+  hideName?: boolean;
+};
+
+export default function HoverableUser({ user, hideName }: HoverableUserProps) {
   const [isYou, setIsYou] = useState<boolean>(false);
   const [isTooltipOpen, setIsTooltipOpen] = useState<boolean>(false);
   const [userData, setUserData] = useState<UserInfo>();
@@ -65,8 +70,12 @@ export default function HoverableUser({ user }: { user: Partial<UserInfo> | null
       <PopoverTrigger>
         <button className={`group flex cursor-pointer items-center`}>
           <Avatar src={user.avatar} alt="avatar" isBordered size="sm" />
-          <p className="pr-1 pl-2 font-semibold group-hover:underline">{user.display_name}</p>
-          <p className="text-sm italic opacity-70">{isYou && "(Bạn)"}</p>
+          {!hideName && (
+            <>
+              <p className="pr-1 pl-3 font-semibold group-hover:underline">{user.display_name}</p>
+              <p className="text-sm italic opacity-70">{isYou && "(Bạn)"}</p>
+            </>
+          )}
         </button>
       </PopoverTrigger>
       <PopoverContent>

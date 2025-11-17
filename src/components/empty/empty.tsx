@@ -28,8 +28,8 @@ export default function EmptyComponent({
           <FloatIcon size={imageSize} />
         </div>
       )}
-      <span className="opacity-75 md:text-lg">{title}</span>
-      <span className="max-w-xl italic">{description}</span>
+      <span className="font-light opacity-75">{title}</span>
+      <span className="max-w-xl text-xs italic">{description}</span>
       {button}
     </div>
   );

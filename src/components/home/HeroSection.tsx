@@ -69,18 +69,16 @@ export default function HeroSection({ userStreak }: HomeProps) {
           </motion.p>
         </div>
       )}
-      <Badge content="Mới" color="danger" size="sm" className="border-none">
-        <Button
-          variant="faded"
-          color="default"
-          startContent={<FireAnimatedIcon />}
-          onPress={() => {
-            streakModal.onOpen();
-          }}
-        >
-          {userStreak?.current_streak || 1}
-        </Button>
-      </Badge>
+      <Button
+        variant="faded"
+        color="default"
+        startContent={<FireAnimatedIcon />}
+        onPress={() => {
+          streakModal.onOpen();
+        }}
+      >
+        {userStreak?.current_streak || 1}
+      </Button>
 
       <StreakModal
         isOpen={streakModal.isOpen}

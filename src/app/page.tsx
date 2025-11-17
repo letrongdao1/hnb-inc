@@ -3,9 +3,6 @@ import { getCurrentUserId } from "./auth/actions";
 import HomePage from "@/components/home";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const userId = await getCurrentUserId();
-
   const userStreak = await getCurrentUserStreak();
 
   return <HomePage userStreak={userStreak} />;

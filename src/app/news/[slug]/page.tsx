@@ -14,7 +14,7 @@ interface PostDetailProps {
 
 export async function generateMetadata({ params }: PostDetailProps): Promise<Metadata> {
   const { slug } = await params;
-  const post: PostInfo = await getPost(slug);
+  const post: PostInfo | null = await getPost(slug);
 
   if (!post) return { title: "Không tìm thấy bản tin" };
 
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: PostDetailProps): Promise<Met
 
 export default async function PostDetailPage({ params }: PostDetailProps) {
   const { slug } = await params;
-  const post: PostInfo = await getPost(slug);
+  const post: PostInfo | null = await getPost(slug);
   await markSeenPost(slug);
 
   return <PostInfoPage post={post || null} />;
@@ -34,18 +34,34 @@ export default async function PostDetailPage({ params }: PostDetailProps) {
 
 export async function getPost(slug: string) {
   const supabase = await createClient();
-  const { data: post } = await supabase
+  const { data, error } = await supabase
     .from("posts")
     .select("*, user:posts_user_fkey(id, display_name, avatar)")
     .eq("slug", slug)
     .maybeSingle();
 
-  return post || null;
+  if (error || !data) {
+    console.log({ error });
+    return null;
+  }
+
+  const { data: commentData } = await supabase
+    .from("post_comments")
+    .select("*, user:post_comments_user_fkey(id, display_name, avatar)")
+    .eq("post", data.id)
+    .order("updated_at", { ascending: false });
+
+  const postInfo: PostInfo = {
+    ...data,
+    commentList: CommonUtils.formatComments(commentData || []),
+  };
+
+  return postInfo;
 }
 
 export async function markSeenPost(slug: string) {
   const supabase = await createClient();
-  const post: PostInfo = await getPost(slug);
+  const post: PostInfo | null = await getPost(slug);
   const userId = await getCurrentUserId();
 
   if (!post || !userId) {

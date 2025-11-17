@@ -67,10 +67,15 @@ export default function HomePage({ userStreak }: HomeProps) {
 
           <Link
             href={`/events/${homeData.event.slug}`}
-            className="group relative flex w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-md border bg-auto p-2 md:flex-row"
-            style={{ backgroundImage: `url(${homeData.event.image})` }}
+            className="group relative flex w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-md border p-2 md:flex-row"
           >
-            <div className="absolute inset-0 z-0 h-full w-full bg-black/80" />
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat duration-200 group-hover:scale-110"
+              style={{
+                backgroundImage: homeData.event.image ? `url(${homeData.event.image})` : "none",
+              }}
+            />
+            <div className="absolute inset-0 z-0 h-full w-full bg-black/80 group-hover:bg-black/50" />
             <div className="z-10 flex-1 space-y-4">
               <p className="text-center text-base font-bold wrap-anywhere uppercase group-hover:underline md:text-start md:text-lg">
                 {homeData.event.title}

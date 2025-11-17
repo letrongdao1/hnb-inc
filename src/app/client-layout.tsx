@@ -53,7 +53,7 @@ export default function ClientLayout({
 
           {contentLoaded && <Footer />}
 
-          {/* <StreakUpdater /> */}
+          <StreakUpdater />
         </div>
       </NotificationProvider>
     </UserProvider>

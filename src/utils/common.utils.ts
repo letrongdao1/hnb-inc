@@ -1,3 +1,4 @@
+import { PostComment } from "@/interfaces/news";
 import { createClient } from "@/lib/supabase/client";
 
 export const cn = (...classes: (string | boolean | undefined | null)[]) => {
@@ -122,7 +123,7 @@ export const CommonUtils = {
       d1.getDate() === d2.getDate()
     );
   },
-  getTimeComparedToNow(timestamp: string | Date): string {
+  getTimeComparedToNow(timestamp: string | Date, shortened?: boolean): string {
     const date = new Date(timestamp);
     const now = new Date();
 
@@ -134,25 +135,50 @@ export const CommonUtils = {
     const diffWeek = Math.floor(diffDay / 7);
     const diffMonth =
       now.getMonth() - date.getMonth() + 12 * (now.getFullYear() - date.getFullYear());
+    const diffYear = Math.floor(diffMonth / 12);
 
-    // Within today
+    const short = (value: number, unit: string) => `${value}${unit}`;
+    const full = (value: number, unit: string) => `${value} ${unit} trước`;
+
     if (diffDay === 0) {
-      if (diffHour > 0) return `${diffHour} giờ trước`;
-      if (diffMin > 0) return `${diffMin} phút trước`;
-      return `Vừa xong`;
+      if (diffHour > 0) return shortened ? short(diffHour, "g") : full(diffHour, "giờ");
+      if (diffMin > 0) return shortened ? short(diffMin, "p") : full(diffMin, "phút");
+      if (diffSec > 0) return "Vừa xong";
+      return "Vừa xong";
     }
 
-    // Days ago
-    if (diffDay < 7) return `${diffDay} ngày trước`;
+    if (diffDay < 7) return shortened ? short(diffDay, "n") : full(diffDay, "ngày");
 
-    // Weeks ago
-    if (diffWeek < 4) return `${diffWeek} tuần trước`;
+    if (diffWeek < 4) return shortened ? short(diffWeek, "t") : full(diffWeek, "tuần");
 
-    // Months ago
-    if (diffMonth < 12) return `${diffMonth} tháng trước`;
+    if (diffMonth < 12) return shortened ? short(diffMonth, "th") : full(diffMonth, "tháng");
 
-    // Over a year ago
-    const diffYear = Math.floor(diffMonth / 12);
-    return `${diffYear} năm trước`;
+    return shortened ? short(diffYear, "y") : full(diffYear, "năm");
+  },
+  formatComments: (comments: any[]): PostComment[] => {
+    const map = new Map<string, PostComment>();
+    const roots: PostComment[] = [];
+
+    comments.forEach((comment) => {
+      const formatted: PostComment = { ...comment, children: [] };
+      map.set(comment.id, formatted);
+    });
+
+    comments.forEach((comment) => {
+      if (comment.parent_id) {
+        const parent = map.get(comment.parent_id);
+        if (parent) {
+          parent.children!.push(map.get(comment.id)!);
+        }
+      }
+    });
+
+    comments.forEach((comment) => {
+      if (!comment.parent_id) {
+        roots.push(map.get(comment.id)!);
+      }
+    });
+
+    return roots;
   },
 };
