@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "@/app/auth/actions";
-import { STATUS_CODE } from "@/constants/enums";
+import { NOTIFICATION_TYPE, STATUS_CODE } from "@/constants/enums";
 import { Event } from "@/interfaces/events";
 import { DEFAULT_PAGE_SIZE } from "@/constants/constants";
 import { CommonUtils } from "@/utils/common.utils";
+import { notifyAllActiveUser } from "@/lib/notifications/notifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,9 +58,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const data: Partial<Event> = await req.json();
+    const params: Partial<Event> = await req.json();
 
-    const { error } = await supabase.from("events").insert(data);
+    const { data, error } = await supabase.from("events").insert(params).select("*").maybeSingle();
 
     if (error) {
       return NextResponse.json({
@@ -67,6 +68,16 @@ export async function POST(req: NextRequest) {
         message: "Tạo thông tin sự kiện thất bại. Vui lòng thử lại sau!",
       });
     }
+
+    notifyAllActiveUser({
+      supabase,
+      title: "SỰ KIỆN HNB MỚI",
+      description: data.title,
+      href: `/events/${data.slug}`,
+      type: NOTIFICATION_TYPE.EVENT,
+      from_user: userId,
+      ref_id: data.id,
+    });
 
     return NextResponse.json({
       status: STATUS_CODE.CREATED,

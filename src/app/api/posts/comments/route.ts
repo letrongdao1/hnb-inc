@@ -1,6 +1,7 @@
 import { getCurrentUserId } from "@/app/auth/actions";
-import { STATUS_CODE } from "@/constants/enums";
+import { NOTIFICATION_TYPE, STATUS_CODE } from "@/constants/enums";
 import { PostComment } from "@/interfaces/news";
+import { notifySpecificUser } from "@/lib/notifications/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,17 +18,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const reqData: Partial<PostComment> = await req.json();
+    const reqData: Partial<PostComment> & { parent_user_id?: string } = await req.json();
 
     const params = {
       ...reqData,
+      parent_user_id: undefined,
       user: userId,
     };
 
     const { data, error } = await supabase
       .from("post_comments")
       .insert(params)
-      .select("*, user:post_comments_user_fkey(id, display_name, avatar)")
+      .select(
+        "*, user:post_comments_user_fkey(id, display_name, avatar), post:post_comments_post_fkey(id, user, title, slug, active_at)"
+      )
       .maybeSingle();
 
     if (error) {
@@ -42,6 +46,18 @@ export async function POST(req: NextRequest) {
       ...CommonUtils.getSingleDataFromUnknown(data),
       children: [],
     };
+
+    if (reqData.parent_id && reqData.parent_user_id && reqData.parent_user_id !== userId)
+      notifySpecificUser({
+        supabase,
+        user: reqData.parent_user_id,
+        title: `${data.user.display_name} đã trả lời bình luận của bạn`,
+        description: reqData.content,
+        type: NOTIFICATION_TYPE.COMMENT,
+        href: `/news/${data.post.slug}?cmt=${data.id}`,
+        from_user: userId,
+        ref_id: data.id,
+      });
 
     return NextResponse.json({
       status: STATUS_CODE.CREATED,

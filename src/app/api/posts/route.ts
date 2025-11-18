@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
-import { STATUS_CODE } from "@/constants/enums";
+import { NOTIFICATION_TYPE, STATUS_CODE } from "@/constants/enums";
 import { getCurrentUserId } from "@/app/auth/actions";
 import { PostInfo } from "@/interfaces/news";
 import { DEFAULT_PAGE_SIZE } from "@/constants/constants";
+import { notifyAllActiveUser } from "@/lib/notifications/notifications";
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,10 +37,13 @@ export async function GET(request: NextRequest) {
       postData.map(async (post: any) => ({
         ...post,
         user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
-        seenBy: (await supabase
-          .from("post_seen")
-          .select("*, user:post_seen_user_fkey(id, display_name, avatar)")
-          .eq("post", post.id)).data || [],
+        seenBy:
+          (
+            await supabase
+              .from("post_seen")
+              .select("*, user:post_seen_user_fkey(id, display_name, avatar)")
+              .eq("post", post.id)
+          ).data || [],
       }))
     );
 
@@ -64,20 +68,30 @@ export async function POST(req: NextRequest) {
 
     const reqData: Partial<PostInfo> = await req.json();
 
-    const data = {
+    const params = {
       ...reqData,
       user: userId,
     };
 
-    const { error } = await supabase.from("posts").insert(data);
+    const { data, error } = await supabase.from("posts").insert(params).select("id").maybeSingle();
 
-    if (error) {
+    if (error || !data) {
       console.log({ error });
       return NextResponse.json({
         status: STATUS_CODE.ERROR,
         message: "Tạo bản tin thất bại. Vui lòng thử lại sau!",
       });
     }
+
+    notifyAllActiveUser({
+      supabase,
+      from_user: userId,
+      title: `${params.is_hot ? "(HOT) " : ""}BẢN TIN MỚI`,
+      description: params.title,
+      type: NOTIFICATION_TYPE.POST,
+      href: `/news/${params.slug}`,
+      ref_id: data.id,
+    });
 
     return NextResponse.json({
       status: STATUS_CODE.CREATED,

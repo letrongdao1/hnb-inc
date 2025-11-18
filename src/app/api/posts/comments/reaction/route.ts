@@ -1,16 +1,15 @@
-import { getCurrentUserId } from "@/app/auth/actions";
-import { STATUS_CODE } from "@/constants/enums";
-import { PostComment } from "@/interfaces/news";
+import { getCurrentUserId, getCurrentUserInfo } from "@/app/auth/actions";
+import { NOTIFICATION_TYPE, STATUS_CODE } from "@/constants/enums";
+import { hasSentNotificationRecently, notifySpecificUser } from "@/lib/notifications/notifications";
 import { createClient } from "@/lib/supabase/server";
-import { CommonUtils } from "@/utils/common.utils";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = await getCurrentUserId();
+    const currentUser = await getCurrentUserInfo();
 
-    if (!userId) {
+    if (!currentUser) {
       return NextResponse.json({
         status: STATUS_CODE.INVALID_CREDENTIALS,
         message: "Không tìm thấy ID người dùng. Vui lòng thử lại sau!",
@@ -19,6 +18,9 @@ export async function POST(req: NextRequest) {
 
     const reqData: {
       commentId: string;
+      commentUserId: string;
+      commentContent: string;
+      postSlug: string;
       reaction_type: "like" | "dislike";
       increment: number;
     } = await req.json();
@@ -36,6 +38,20 @@ export async function POST(req: NextRequest) {
         message: "Cập nhật biểu cảm thất bại. Vui lòng thử lại sau!",
       });
     }
+
+    notifySpecificUser({
+      supabase,
+      user: reqData.commentUserId,
+      title: `${currentUser.display_name} đã bày tỏ cảm xúc với bình luận của bạn`,
+      description: reqData.commentContent,
+      type:
+        reqData.reaction_type === "like"
+          ? NOTIFICATION_TYPE.REACTION_LIKE
+          : NOTIFICATION_TYPE.REACTION_DISLIKE,
+      href: `/news/${reqData.postSlug}?cmt=${reqData.commentId}`,
+      from_user: currentUser.id,
+      ref_id: reqData.commentId,
+    });
 
     return NextResponse.json({
       status: STATUS_CODE.OK,

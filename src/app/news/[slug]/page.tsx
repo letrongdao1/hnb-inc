@@ -47,7 +47,9 @@ export async function getPost(slug: string) {
 
   const { data: commentData } = await supabase
     .from("post_comments")
-    .select("*, user:post_comments_user_fkey(id, display_name, avatar)")
+    .select(
+      "*, user:post_comments_user_fkey(id, display_name, avatar), post:post_comments_post_fkey(id, title, slug, active_at)"
+    )
     .eq("post", data.id)
     .order("updated_at", { ascending: false });
 

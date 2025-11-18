@@ -91,8 +91,6 @@ export default function PostInfoPage({ post }: { post: PostInfo | null }) {
       />
     );
 
-  // const mentions = CommonUtils.parseMentions(post.content);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -141,7 +139,7 @@ export default function PostInfoPage({ post }: { post: PostInfo | null }) {
 
             <p className="text-default-400 ml-auto text-xs italic">Thông tin đến HNB</p>
 
-            <Spacer y={16} />
+            <Spacer y={8} />
 
             <div className="flex flex-col items-stretch justify-start gap-2">
               <SectionTitle>Bình luận</SectionTitle>
@@ -149,7 +147,7 @@ export default function PostInfoPage({ post }: { post: PostInfo | null }) {
               <CommentInput
                 value={commentInput}
                 setValue={setCommentInput}
-                postId={post.id}
+                post={post}
                 callback={handleAddNewComment}
               />
 

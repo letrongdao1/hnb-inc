@@ -1,5 +1,6 @@
 import { ButtonProps } from "@heroui/react";
 import { BaseUserInfo } from "./user";
+import { NOTIFICATION_TYPE } from "@/constants/enums";
 
 export interface PaginationProps {
   pageIndex: number;
@@ -37,12 +38,14 @@ export interface BankAccount {
 
 export interface Notification {
   id: string;
+  from_user?: string | null;
   user: string;
   title: string;
   description: string;
+  type: NOTIFICATION_TYPE;
   href?: string;
-  type?: string;
   is_read: boolean;
+  ref_id?: string | null;
   created_at: string;
 }
 

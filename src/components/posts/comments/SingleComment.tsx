@@ -1,16 +1,20 @@
 "use client";
 
-import { LikeIcon } from "@/components/svg";
 import { PostComment } from "@/interfaces/news";
 import { CommonUtils } from "@/utils/common.utils";
 import { Avatar, Button, Image, Textarea, Tooltip } from "@heroui/react";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import KNOWLEDGE_MEME from "@/assets/images/meme/knowledge-meme.jpg";
-import SHOOT_MEME from "@/assets/images/meme/shoot-meme.jpg";
 import CommentInput from "./CommentInput";
 import { motion, AnimatePresence } from "framer-motion";
 import { STATUS_CODE } from "@/constants/enums";
-import { createClient } from "@/lib/supabase/client";
+import { REACT_IMAGE_SRC } from "@/constants/constants";
+import { useUser } from "@/providers/user.provider";
+
+type SingleCommentProps = {
+  comment: PostComment;
+  hideReply?: boolean;
+  replyCallback?: (newComment: PostComment) => void;
+};
 
 export default function CommentTree({ comment }: { comment: PostComment }) {
   const [childCommentList, setChildCommentList] = useState<PostComment[]>(comment.children || []);
@@ -34,15 +38,8 @@ export default function CommentTree({ comment }: { comment: PostComment }) {
   );
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-
-type SingleCommentProps = {
-  comment: PostComment;
-  hideReply?: boolean;
-  replyCallback?: (newComment: PostComment) => void;
-};
-
 export function SingleComment({ comment, hideReply, replyCallback }: SingleCommentProps) {
+  const { user } = useUser();
   const [currentLike, setCurrentLike] = useState<number>(comment.like_count);
   const [currentDislike, setCurrentDislike] = useState<number>(comment.dislike_count);
   const [isShowReply, setIsShowReply] = useState<boolean>(false);
@@ -73,6 +70,9 @@ export function SingleComment({ comment, hideReply, replyCallback }: SingleComme
         },
         body: JSON.stringify({
           commentId: comment.id,
+          commentUserId: comment.user.id,
+          commentContent: comment.content,
+          postSlug: comment.post.slug,
           reaction_type,
           increment:
             reaction_type === "like" ? incrementLikeRef.current : incrementDislikeRef.current,
@@ -90,6 +90,8 @@ export function SingleComment({ comment, hideReply, replyCallback }: SingleComme
   );
 
   const handleIncrementLike = () => {
+    if (user && comment.user.id === user.id) return;
+
     incrementLikeRef.current += 1;
 
     setCurrentLike((prev) => {
@@ -106,6 +108,8 @@ export function SingleComment({ comment, hideReply, replyCallback }: SingleComme
   };
 
   const handleIncrementDislike = () => {
+    if (user && comment.user.id === user.id) return;
+
     incrementDislikeRef.current += 1;
 
     setCurrentDislike((prev) => {
@@ -128,10 +132,10 @@ export function SingleComment({ comment, hideReply, replyCallback }: SingleComme
       <div className="my-auto flex flex-1 flex-col items-stretch gap-2">
         <div>
           <p className="font-semibold">{comment.user.display_name}</p>
-          <p className="">{comment.content}</p>
+          <p className="text-sm">{comment.content}</p>
         </div>
 
-        <span className="flex w-full items-center justify-start gap-4 md:gap-8">
+        <span className="flex w-full items-center justify-start gap-2 md:gap-4">
           <Tooltip
             content={
               <div className="flex items-center gap-1">
@@ -158,65 +162,69 @@ export function SingleComment({ comment, hideReply, replyCallback }: SingleComme
           </Tooltip>
 
           {!hideReply && (
-            <button
-              onClick={() => {
-                setIsShowReply((prev) => !prev);
-              }}
-              className="text-tiny py-2"
-            >
-              Trả lời
-            </button>
+            <>
+              &middot;
+              <button
+                onClick={() => {
+                  setIsShowReply((prev) => !prev);
+                }}
+                className="text-tiny py-2"
+              >
+                Trả lời
+              </button>
+            </>
           )}
-
-          <span className="flex items-center justify-start gap-2">
-            <Button
-              isIconOnly
-              size="sm"
-              variant={currentLike > 0 ? "solid" : "bordered"}
-              color={currentLike > 0 ? "success" : "default"}
-              startContent={
-                <div className="flex items-center gap-2 text-xs font-semibold">
-                  <Image
-                    src={KNOWLEDGE_MEME.src}
-                    alt=""
-                    width={24}
-                    height={20}
-                    radius="none"
-                    className="rounded-xs"
-                  />
-                  {currentLike || ""}
-                </div>
-              }
-              onPress={handleIncrementLike}
-              className="min-w-fit px-2"
-            />
-            <Button
-              isIconOnly
-              size="sm"
-              variant={currentDislike > 0 ? "solid" : "bordered"}
-              color={currentDislike > 0 ? "danger" : "default"}
-              startContent={
-                <div className="flex items-center gap-2 text-xs font-semibold">
-                  <Image
-                    src={SHOOT_MEME.src}
-                    alt=""
-                    width={24}
-                    height={20}
-                    radius="none"
-                    className="rounded-xs"
-                  />
-                  {currentDislike || ""}
-                </div>
-              }
-              onPress={handleIncrementDislike}
-              className="min-w-fit px-2"
-            />
-            {currentLike === 0 && currentDislike === 0 && (
-              <p className="text-tiny hidden min-w-fit opacity-50 md:inline">
-                Nhấn (liên tục) để biểu cảm
-              </p>
-            )}
-          </span>
+          {(comment.user.id !== user?.id || currentLike + currentDislike > 0) && (
+            <span className="flex items-center justify-start gap-2">
+              <Button
+                isIconOnly
+                size="sm"
+                variant={currentLike > 0 && comment.user.id !== user?.id ? "solid" : "light"}
+                color={currentLike > 0 && comment.user.id !== user?.id ? "success" : "default"}
+                startContent={
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <Image
+                      src={REACT_IMAGE_SRC.like}
+                      alt=""
+                      width={24}
+                      height={20}
+                      radius="none"
+                      className="rounded-xs"
+                    />
+                    {currentLike || ""}
+                  </div>
+                }
+                onPress={handleIncrementLike}
+                className="min-w-fit px-2"
+              />
+              <Button
+                isIconOnly
+                size="sm"
+                variant={currentDislike > 0 && comment.user.id !== user?.id ? "solid" : "light"}
+                color={currentDislike > 0 && comment.user.id !== user?.id ? "danger" : "default"}
+                startContent={
+                  <div className="flex items-center gap-2 text-xs font-semibold">
+                    <Image
+                      src={REACT_IMAGE_SRC.dislike}
+                      alt=""
+                      width={24}
+                      height={20}
+                      radius="none"
+                      className="rounded-xs"
+                    />
+                    {currentDislike || ""}
+                  </div>
+                }
+                onPress={handleIncrementDislike}
+                className="min-w-fit px-2"
+              />
+              {currentLike === 0 && currentDislike === 0 && (
+                <p className="text-tiny hidden min-w-fit opacity-50 md:inline">
+                  Nhấn (liên tục) để biểu cảm
+                </p>
+              )}
+            </span>
+          )}
         </span>
 
         <AnimatePresence mode="wait">
@@ -232,7 +240,7 @@ export function SingleComment({ comment, hideReply, replyCallback }: SingleComme
               <CommentInput
                 value={replyInput}
                 setValue={setReplyInput}
-                postId={comment.post}
+                post={comment.post}
                 placeholder={`Trả lời ${comment.user.display_name}...`}
                 toReplyComment={comment}
                 callback={replyCallback}

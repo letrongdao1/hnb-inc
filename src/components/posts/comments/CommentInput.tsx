@@ -2,7 +2,7 @@
 
 import { SendIcon } from "@/components/svg";
 import { STATUS_CODE, SYSTEM_MESSAGE } from "@/constants/enums";
-import { PostComment } from "@/interfaces/news";
+import { BasePostInfo, PostComment } from "@/interfaces/news";
 import { useUser } from "@/providers/user.provider";
 import { addToast, Avatar, Button, Textarea } from "@heroui/react";
 import React, { useMemo, useRef, useState } from "react";
@@ -10,7 +10,7 @@ import React, { useMemo, useRef, useState } from "react";
 type CommentInputProps = {
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
-  postId: string;
+  post: BasePostInfo;
   toReplyComment?: PostComment;
   maxLength?: number;
   placeholder?: string;
@@ -20,7 +20,7 @@ type CommentInputProps = {
 export default function CommentInput({
   value,
   setValue,
-  postId,
+  post,
   toReplyComment,
   placeholder = "Bình luận bản tin...",
   maxLength = 5000,
@@ -36,9 +36,10 @@ export default function CommentInput({
 
   const handleSend = async () => {
     const newComment = {
-      post: postId,
+      post: post.id,
       content: value,
       parent_id: toReplyComment ? toReplyComment.id : undefined,
+      parent_user_id: toReplyComment ? toReplyComment.user.id : undefined,
     };
 
     setIsSending(true);

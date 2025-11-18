@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Notification } from "@/interfaces/common";
 import { createClient } from "@/lib/supabase/client";
 import { addToast } from "@heroui/react";
+import { getNotiDisplayStyle } from "@/components/navbar/notificationList";
 
 type NotificationContextType = {
   notifications: Notification[];
@@ -58,10 +59,21 @@ export function NotificationProvider({
         (payload) => {
           const newNotification = payload.new as Notification;
           addToast({
-            title: newNotification.title,
-            description: <p className="wrap-anywhere">{newNotification.description}</p>,
-            color: "primary",
+            title: (
+              <div className="w-full font-semibold wrap-anywhere text-ellipsis">
+                {newNotification.title}:&ensp;
+                <span className="text-sm font-light wrap-anywhere">
+                  {newNotification.description}
+                </span>
+              </div>
+            ),
+            color: "default",
             variant: "flat",
+            icon: (
+              <div className="min-w-12">
+                {getNotiDisplayStyle(newNotification.type)?.icon || <></>}
+              </div>
+            ),
           });
           setNotifications((prev) => [newNotification, ...prev]);
         }

@@ -3,7 +3,7 @@
 import LogoComponent from "@/components/logo/logo";
 import Maintenance from "@/components/maintenance";
 import { UserStreak } from "@/interfaces/common";
-import { Button, Chip, Image } from "@heroui/react";
+import { Button, Chip, Image, Skeleton } from "@heroui/react";
 import { FireAnimatedIcon } from "../svg/complex";
 import { motion } from "framer-motion";
 import HeroSection from "./HeroSection";
@@ -52,8 +52,19 @@ export default function HomePage({ userStreak }: HomeProps) {
 
   if (loading)
     return (
-      <div className="w-full xl:max-w-2/3">
-        <DetailPageLoader />
+      <div className="flex w-full flex-col gap-4 p-6 md:gap-8 xl:max-w-2/3">
+        <div className="flex items-stretch justify-between gap-2 md:gap-4">
+          <Skeleton className="h-8 w-2/3 rounded-lg" />
+          <Skeleton className="h-8 w-1/3 rounded-lg" />
+        </div>
+
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="flex flex-col items-stretch justify-start gap-2 md:gap-4">
+            <Skeleton className="h-8 w-3/4 rounded-xl" />
+            <Skeleton className="h-32 w-full rounded-xl" />
+            <Skeleton className="h-24 w-full rounded-xl" />
+          </div>
+        ))}
       </div>
     );
 
@@ -67,7 +78,7 @@ export default function HomePage({ userStreak }: HomeProps) {
 
           <Link
             href={`/events/${homeData.event.slug}`}
-            className="group relative flex w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-md border p-2 md:flex-row"
+            className="group relative flex min-h-40 w-full cursor-pointer flex-col items-stretch justify-center gap-2 overflow-hidden rounded-md border p-2 md:flex-row md:justify-between"
           >
             <div
               className="absolute inset-0 bg-cover bg-center bg-no-repeat duration-200 group-hover:scale-110"
@@ -75,9 +86,9 @@ export default function HomePage({ userStreak }: HomeProps) {
                 backgroundImage: homeData.event.image ? `url(${homeData.event.image})` : "none",
               }}
             />
-            <div className="absolute inset-0 z-0 h-full w-full bg-black/80 group-hover:bg-black/50" />
-            <div className="z-10 flex-1 space-y-4">
-              <p className="text-center text-base font-bold wrap-anywhere uppercase group-hover:underline md:text-start md:text-lg">
+            <div className="absolute inset-0 z-0 h-full w-full bg-black/70 group-hover:bg-black/50" />
+            <div className="z-10 space-y-4 md:flex-1">
+              <p className="text-center text-lg font-bold wrap-anywhere uppercase group-hover:underline md:text-start md:text-2xl">
                 {homeData.event.title}
               </p>
 
@@ -109,7 +120,7 @@ export default function HomePage({ userStreak }: HomeProps) {
               </div>
             </div>
 
-            <div className="flex min-w-max shrink-0 flex-col items-center justify-center px-2">
+            <div className="flex min-w-max shrink-0 flex-col items-center justify-center px-2 md:pr-12">
               <Countdown
                 date={homeData.event.start_at}
                 renderer={({ days, completed }) =>

@@ -213,7 +213,6 @@ export default function CreateUpdatePostForm({
       })
         .then((res) => res.json())
         .then((result) => {
-          console.log({ result });
           if (result.status === STATUS_CODE.CREATED) {
             addToast({
               title: "Đăng bản tin thành công",

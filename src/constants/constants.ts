@@ -1,3 +1,6 @@
+import REACTION_LIKE_IMAGE from "@/assets/images/meme/knowledge-meme.jpg";
+import REACTION_DISLIKE_IMAGE from "@/assets/images/meme/shoot-meme.jpg";
+
 export const AUTH_NOT_REQUIRED_PATHS = ["/auth/login", "/auth/signup"];
 export const NAVBAR_NOT_REQUIRED_PATHS = ["/auth/login", "/auth/signup", "/get-start"];
 
@@ -23,4 +26,9 @@ export const IMAGE_COMPRESS_OPTIONS = {
   maxSizeMB: 0.5,
   maxWidthOrHeight: 1024,
   useWebWorker: true,
+};
+
+export const REACT_IMAGE_SRC = {
+  like: REACTION_LIKE_IMAGE.src,
+  dislike: REACTION_DISLIKE_IMAGE.src,
 };

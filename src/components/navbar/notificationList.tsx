@@ -13,13 +13,19 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { useNotifications } from "@/providers/notification.provider";
-import { BellIcon, DeleteIcon } from "../svg";
+import { BellIcon, CalendarIcon, DeleteIcon, NewsPaperIcon } from "../svg";
 import { CommonUtils } from "@/utils/common.utils";
 import NOTIFICATION_IMAGE from "@/assets/images/notification.png";
 import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useLoading } from "@/hooks/useLoading";
+import { useRouter } from "next/navigation";
+import { NOTIFICATION_TYPE } from "@/constants/enums";
+import { REACT_IMAGE_SRC } from "@/constants/constants";
+
+const ICON_SIZE = 24;
 
 export default function NotificationList() {
+  const router = useRouter();
   const { notifications, unreadCount, markAsRead, markAsReadAll, clearAll } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const confirmDeleteModal = useDisclosure();
@@ -97,6 +103,7 @@ export default function NotificationList() {
                   closeOnSelect={!!noti.href}
                   onPress={() => {
                     if (!noti.is_read) markAsRead(noti.id);
+                    if (noti.href) router.push(noti.href);
                   }}
                   className={`flex flex-col items-stretch gap-2 ${!noti.is_read && "border-default-400 border-2"}`}
                 >
@@ -111,16 +118,20 @@ export default function NotificationList() {
                     }}
                     hidden={noti.is_read}
                   >
-                    <div className="flex w-full items-start gap-3">
-                      <BellIcon size={24} className="shrink-0" />
-                      <div className="flex flex-1 flex-col items-stretch gap-2">
-                        <div className="w-full">
-                          <p className="text-tiny float-right pt-0.5 font-light">
-                            {CommonUtils.getTimeComparedToNow(noti.created_at)}
-                          </p>
-                          <p className="font-semibold wrap-anywhere">{noti.title}</p>
-                        </div>
-                        <p className="text-sm font-light wrap-anywhere">{noti.description}</p>
+                    <div className="flex max-h-40 min-h-12 w-full items-stretch gap-3 overflow-hidden text-ellipsis">
+                      <div className="flex w-12 shrink-0 items-start justify-center pt-2">
+                        {getNotiDisplayStyle(noti.type)?.icon}
+                      </div>
+                      <div className="w-full flex-1">
+                        <p className="text-[0.7em] float-right pt-0.5 md:pl-1 font-light opacity-75">
+                          {CommonUtils.getTimeComparedToNow(noti.created_at)}
+                        </p>
+                        <p className="font-semibold wrap-anywhere text-ellipsis">
+                          {noti.title}:&ensp;
+                          <span className="text-sm font-light wrap-anywhere">
+                            {noti.description}
+                          </span>
+                        </p>
                       </div>
                     </div>
                   </Badge>
@@ -151,3 +162,39 @@ export default function NotificationList() {
     </>
   );
 }
+
+export const getNotiDisplayStyle = (type: NOTIFICATION_TYPE) => {
+  switch (type) {
+    case NOTIFICATION_TYPE.GENERAL:
+      break;
+    case NOTIFICATION_TYPE.POST:
+      return {
+        icon: <NewsPaperIcon size={ICON_SIZE} />,
+      };
+    case NOTIFICATION_TYPE.REACTION_LIKE:
+      return {
+        icon: (
+          <Image src={REACT_IMAGE_SRC.like} alt="" className="aspect-square w-full object-cover" />
+        ),
+      };
+    case NOTIFICATION_TYPE.REACTION_DISLIKE:
+      return {
+        icon: (
+          <Image
+            src={REACT_IMAGE_SRC.dislike}
+            alt=""
+            className="aspect-square w-full object-cover"
+          />
+        ),
+      };
+    case NOTIFICATION_TYPE.EVENT:
+      return {
+        icon: <CalendarIcon size={ICON_SIZE} />,
+      };
+    case NOTIFICATION_TYPE.OTHER:
+    default:
+      return {
+        icon: <BellIcon size={ICON_SIZE} />,
+      };
+  }
+};

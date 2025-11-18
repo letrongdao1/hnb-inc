@@ -1,20 +1,18 @@
 import { BaseUserInfo } from "./user";
 
-export interface PostInfo {
+export interface BasePostInfo {
   id: string;
-  user: {
-    id: string;
-    display_name?: string;
-    avatar?: string;
-  } | null;
+  user: BaseUserInfo;
   title: string;
   slug: string;
+  active_at: string;
+}
+export interface PostInfo extends BasePostInfo {
   description?: string;
   content: string;
   image?: string;
   is_hot?: boolean;
   status: number;
-  active_at: string;
   created_at: string;
   seenBy?: {
     post: string;
@@ -26,9 +24,10 @@ export interface PostInfo {
 
 export interface PostComment {
   id: string;
-  post: string;
+  post: BasePostInfo;
   user: BaseUserInfo;
   content: string;
+  parent_id?: string;
   children?: PostComment[];
   like_count: number;
   dislike_count: number;
