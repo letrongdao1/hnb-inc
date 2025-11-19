@@ -26,8 +26,8 @@ export default function StreakUpdater() {
       if (!user) return;
 
       if (!hasUpdatedToday()) {
-        await supabase.rpc("update_user_streak", { p_user_id: user.id });
-        markUpdatedToday();
+        const { error } = await supabase.rpc("update_user_streak", { p_user_id: user.id });
+        if (!error) markUpdatedToday();
       }
     };
 

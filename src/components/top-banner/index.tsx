@@ -1,6 +1,7 @@
 import { TopBanner as ITopBanner } from "@/interfaces/common";
 import {
   Alert,
+  AlertProps,
   Button,
   Chip,
   Modal,
@@ -36,21 +37,18 @@ export default function TopBanner({
   };
 
   const getTopBannerDisplay = () => {
-    if (!topBanner)
-      return {
-        icon: <></>,
-      };
-
     switch (topBanner?.type) {
       case TOP_BANNER_TYPE.SYSTEM:
         return {
           icon: <SettingIcon size={ICON_SIZE} className="shrink-0" />,
+          color: "primary",
         };
       case TOP_BANNER_TYPE.HOLIDAY:
       case TOP_BANNER_TYPE.REMINDER:
       default:
         return {
           icon: <></>,
+          color: "default",
         };
     }
   };
@@ -76,6 +74,7 @@ export default function TopBanner({
           </p>
         }
         variant="flat"
+        color={getTopBannerDisplay().color as AlertProps["color"]}
         radius="sm"
         hideIcon
         startContent={getTopBannerDisplay().icon}
