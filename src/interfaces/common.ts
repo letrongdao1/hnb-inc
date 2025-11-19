@@ -1,6 +1,6 @@
 import { ButtonProps } from "@heroui/react";
 import { BaseUserInfo } from "./user";
-import { NOTIFICATION_TYPE } from "@/constants/enums";
+import { NOTIFICATION_TYPE, TOP_BANNER_TYPE } from "@/constants/enums";
 
 export interface PaginationProps {
   pageIndex: number;
@@ -70,4 +70,16 @@ export interface ModalProps {
   okButtonProps?: ButtonProps;
   cancelButtonProps?: ButtonProps;
   loading?: boolean;
+}
+
+export interface TopBanner {
+  id: number;
+  title: string;
+  content: string;
+  extra?: string;
+  image?: string;
+  type: TOP_BANNER_TYPE;
+  active_at: string;
+  expired_at: string;
+  created_at: string;
 }

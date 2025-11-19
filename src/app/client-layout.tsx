@@ -10,6 +10,9 @@ import { UserProvider } from "@/providers/user.provider";
 import Footer from "@/components/footer";
 import { NotificationProvider } from "@/providers/notification.provider";
 import StreakUpdater from "@/hooks/useStreakUpdater";
+import { TopBanner as ITopBanner } from "@/interfaces/common";
+import { LOCAL_STORAGE_KEY, STATUS_CODE } from "@/constants/enums";
+import TopBanner from "@/components/top-banner";
 
 export default function ClientLayout({
   user,
@@ -20,17 +23,50 @@ export default function ClientLayout({
 }) {
   const pathname = usePathname();
 
-  const [contentLoaded, setContentLoaded] = useState(false);
+  const [contentLoaded, setContentLoaded] = useState<boolean>(false);
+  const [topBanner, setTopBanner] = useState<ITopBanner>();
+  const [isShowTopBanner, setIsShowTopBanner] = useState<boolean>(false);
 
   useEffect(() => {
     setContentLoaded(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const fetchTopBanner = async () => {
+      await fetch("/api/top-banners")
+        .then((res) => res.json())
+        .then((result) => {
+          if (result.status === STATUS_CODE.OK) {
+            const checkHidden = localStorage.getItem(LOCAL_STORAGE_KEY.HIDDEN_TOP_BANNER);
+            if (!checkHidden || checkHidden !== String(result.data.id)) {
+              setTopBanner(result.data);
+              setIsShowTopBanner(true);
+            }
+          }
+        });
+    };
+
+    fetchTopBanner();
+  }, []);
+
   return (
     <UserProvider initialUser={user}>
       <NotificationProvider userId={user?.id}>
-        <div className="mx-auto flex min-h-screen w-full flex-col items-stretch justify-start gap-8 px-2 py-4 sm:p-10 lg:max-w-[80em]">
-          <Navbar />
+        <div
+          className={`relative mx-auto flex min-h-screen w-full flex-col items-stretch justify-start gap-8 px-2 py-2 md:py-8 lg:max-w-[80em]`}
+        >
+          <div className="flex w-full flex-col items-stretch gap-2">
+            {isShowTopBanner && (
+              <AnimatePresence>
+                <TopBanner
+                  topBanner={topBanner}
+                  isShowTopBanner={isShowTopBanner}
+                  setIsShowTopBanner={setIsShowTopBanner}
+                />
+              </AnimatePresence>
+            )}
+            <Navbar />
+          </div>
 
           <AnimatePresence mode="wait">
             <motion.div

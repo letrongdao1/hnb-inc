@@ -41,6 +41,10 @@ export enum ANNOUNCEMENT_TYPE {
   FEATURE_IN_MAINTENANCE = "FEATURE_IN_MAINTENANCE",
 }
 
+export enum LOCAL_STORAGE_KEY {
+  HIDDEN_TOP_BANNER = "hidden-top-banners",
+}
+
 export enum NOTIFICATION_TYPE {
   GENERAL = "GENERAL",
   POST = "POST",
@@ -49,4 +53,10 @@ export enum NOTIFICATION_TYPE {
   COMMENT = "COMMENT",
   EVENT = "EVENT",
   OTHER = "OTHER",
+}
+
+export enum TOP_BANNER_TYPE {
+  SYSTEM = "SYSTEM",
+  HOLIDAY = "HOLIDAY",
+  REMINDER = "REMINDER",
 }

@@ -22,7 +22,7 @@ import {
   Spinner,
 } from "@heroui/react";
 import "./index.scss";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownSLineIcon,
   CalendarIcon,
@@ -54,6 +54,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { user } = useUser();
+  const containerRef = useRef<HTMLElement>(null);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(false);
@@ -221,19 +222,20 @@ export default function Navbar() {
       isMenuOpen={isMenuOpen}
       onMenuOpenChange={setIsMenuOpen}
       className="navbar-container"
+      ref={containerRef}
     >
       <NavbarMenuToggle
         aria-label={isMenuOpen ? "Close menu" : "Open menu"}
         className="sm:hidden"
       />
 
-      <NavbarBrand className="cursor-pointer text-inherit">
+      <NavbarBrand className="cursor-pointer">
         <Link onClick={() => router.push("/")} className="text-inherit">
           <LogoComponent responsive="lg" />
         </Link>
       </NavbarBrand>
 
-      <NavbarContent className="hidden gap-8 text-inherit lg:flex" justify="center">
+      <NavbarContent className="hidden gap-8 lg:flex" justify="center">
         {menuItems
           .filter((item) => !Boolean(item.hiddenOnMain))
           .map((item, index) => {
@@ -263,7 +265,7 @@ export default function Navbar() {
                         variant="light"
                         endContent={<ArrowDownSLineIcon />}
                         radius="sm"
-                        className="text-medium text-inherit hover:!bg-transparent hover:brightness-50"
+                        className="text-medium hover:!bg-transparent hover:brightness-50"
                       >
                         {item.label}
                       </Button>
@@ -281,7 +283,7 @@ export default function Navbar() {
                           <DropdownItem key={index}>
                             <Link
                               onClick={() => router.push(childItem.href)}
-                              className="flex items-center gap-2 text-inherit"
+                              className="flex items-center gap-2"
                             >
                               {childItem.icon}
                               {childItem.label}
@@ -306,7 +308,7 @@ export default function Navbar() {
                 variant="bordered"
                 startContent={<Avatar isBordered src={user.avatar} alt="" />}
                 endContent={<ArrowDownSLineIcon />}
-                className="h-full border-none px-0 text-inherit sm:px-1"
+                className="h-full border-none px-0 sm:px-1"
               >
                 <p className="hidden h-fit max-w-24 overflow-hidden px-1 text-ellipsis whitespace-nowrap sm:inline">
                   {user.display_name}
@@ -355,7 +357,7 @@ export default function Navbar() {
         )}
       </NavbarContent>
 
-      <NavbarMenu className="pt-8">
+      <NavbarMenu portalContainer={containerRef.current || undefined}>
         <NavbarMenuItem key={`home`} isActive={pathname === "/"} className="px-2">
           <Link
             className="w-full"
@@ -368,6 +370,7 @@ export default function Navbar() {
             Trang chủ
           </Link>
         </NavbarMenuItem>
+
         {menuItems.map((item, index) => {
           if (item.hidden) return null;
 
