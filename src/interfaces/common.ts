@@ -81,5 +81,6 @@ export interface TopBanner {
   type: TOP_BANNER_TYPE;
   active_at: string;
   expired_at: string;
+  status: boolean;
   created_at: string;
 }

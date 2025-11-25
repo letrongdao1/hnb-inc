@@ -40,6 +40,7 @@ import CreateUpdatePostForm from "@/components/management/hub/news/CreateUpdateP
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Countdown from "react-countdown";
 import { useUser } from "@/providers/user.provider";
+import ImagePreviewModal from "@/components/image-preview-modal";
 
 export default function NewsManagement() {
   const { user } = useUser();
@@ -53,6 +54,8 @@ export default function NewsManagement() {
 
   const activateNowModal = useDisclosure();
   const activateNowLoading = useLoading();
+
+  const previewModal = useDisclosure();
 
   const [postList, setPostList] = useState<PostInfo[]>([]);
   const [total, setTotal] = useState<number>(0);
@@ -200,7 +203,7 @@ export default function NewsManagement() {
         <Button
           color="success"
           onPress={() => {
-            router.push(`${pathName}?tab=news&create=true`);
+            router.push(`${pathName}?create=true`);
           }}
           startContent={<PlusIcon size={16} />}
         >
@@ -243,9 +246,27 @@ export default function NewsManagement() {
                       )}
                     </Tooltip>
                   </span>
-                  <span className="hidden shrink-0 sm:inline">
-                    <Tooltip content={"Có ảnh bìa"}>
-                      {post.image && <ImageIcon size={16} className="text-cyan-600" />}
+                  <span className="shrink-0">
+                    <Tooltip content={"Xem ảnh bìa"}>
+                      {post.image && (
+                        <div>
+                          <Image
+                            src={post.image}
+                            alt={post.title}
+                            width={32}
+                            height={20}
+                            radius="none"
+                            onClick={() => previewModal.onOpen()}
+                          />
+                          <ImagePreviewModal
+                            isOpen={previewModal.isOpen}
+                            onOpenChange={previewModal.onOpenChange}
+                            onClose={previewModal.onClose}
+                            src={post.image}
+                            alt={post.title}
+                          />
+                        </div>
+                      )}
                     </Tooltip>
                   </span>
                 </div>

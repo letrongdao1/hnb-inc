@@ -12,7 +12,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import React from "react";
-import { SettingIcon, XIcon } from "../svg";
+import { SettingIcon, SnowIcon, XIcon } from "../svg";
 import { LOCAL_STORAGE_KEY, TOP_BANNER_TYPE } from "@/constants/enums";
 import { motion } from "framer-motion";
 
@@ -44,6 +44,10 @@ export default function TopBanner({
           color: "primary",
         };
       case TOP_BANNER_TYPE.HOLIDAY:
+        return {
+          icon: <SnowIcon size={ICON_SIZE} className="shrink-0" />,
+          color: "default",
+        };
       case TOP_BANNER_TYPE.REMINDER:
       default:
         return {
@@ -89,7 +93,10 @@ export default function TopBanner({
             className="opacity-50"
           />
         }
-        className="z-50 mx-auto flex-1 py-1 md:max-h-10 xl:max-w-5/6"
+        className={`z-50 mx-auto flex-1 py-1 md:max-h-16 xl:max-w-7/8 ${topBanner.image && "bg-cover bg-no-repeat bg-blend-darken"}`}
+        style={{
+          backgroundImage: topBanner.image ? `url(${topBanner.image})` : `unset`,
+        }}
       />
 
       <Modal isOpen={showModal.isOpen} onOpenChange={showModal.onOpenChange}>

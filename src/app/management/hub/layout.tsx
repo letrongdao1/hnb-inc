@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarIcon, NewsPaperIcon } from "@/components/svg";
+import { CalendarIcon, FlagIcon, NewsPaperIcon } from "@/components/svg";
 import { PageTitle } from "@/components/ui/text";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,6 +19,11 @@ export default function HubManagementLayout({ children }: { children: React.Reac
       href: "/management/hub/events",
       label: "Quản lý sự kiện",
       icon: <CalendarIcon />,
+    },
+    {
+      href: "/management/hub/top-banners",
+      label: "Quản lý banner",
+      icon: <FlagIcon />,
     },
   ];
 
