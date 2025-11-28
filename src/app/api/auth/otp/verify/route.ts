@@ -6,12 +6,22 @@ import { STATUS_CODE } from "@/constants/enums";
 
 const MAX_ATTEMPTS = 5;
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
+}
+
 export async function POST(req: NextRequest) {
   const { email, otp } = await req.json();
   if (!email || !otp)
     return NextResponse.json(
       { error: "Không tìm thấy email hoặc OTP" },
-      { status: STATUS_CODE.BAD_REQUEST }
+      { status: STATUS_CODE.BAD_REQUEST, headers: corsHeaders }
     );
 
   const attemptsKey = `otp_attempts:${email}`;
@@ -19,14 +29,14 @@ export async function POST(req: NextRequest) {
   if (attempts >= MAX_ATTEMPTS)
     return NextResponse.json(
       { error: "Số lần xác thực OTP đã vượt quá giới hạn!" },
-      { status: STATUS_CODE.TOO_MANY_REQUESTS }
+      { status: STATUS_CODE.TOO_MANY_REQUESTS, headers: corsHeaders }
     );
 
   const storedHash = await redis.get(`otp:${email}`);
   if (!storedHash)
     return NextResponse.json(
       { error: "Không tìm thấy OTP hoặc OTP đã hết hạn!" },
-      { status: STATUS_CODE.BAD_REQUEST }
+      { status: STATUS_CODE.BAD_REQUEST, headers: corsHeaders }
     );
 
   const candidate = CryptoUtils.hashOtp(otp);
@@ -43,13 +53,12 @@ export async function POST(req: NextRequest) {
         error: `Mã xác thực không đúng!`,
         data: { attemptsLeft },
       },
-      { status: STATUS_CODE.INVALID_CREDENTIALS }
+      { status: STATUS_CODE.INVALID_CREDENTIALS, headers: corsHeaders }
     );
   }
 
   await redis.del(`otp:${email}`);
   await redis.del(attemptsKey);
 
-  // TODO: create session / issue token
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { status: STATUS_CODE.OK, headers: corsHeaders });
 }
