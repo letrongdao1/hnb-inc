@@ -20,7 +20,7 @@ export async function OPTIONS() {
 
 export async function POST(req: NextRequest) {
   const { email } = await req.json();
-  return NextResponse.json({ ok: true, status: STATUS_CODE.OK }, { headers: corsHeaders });
+
   if (!email)
     return NextResponse.json(
       { error: "Không tìm thấy email!" },
