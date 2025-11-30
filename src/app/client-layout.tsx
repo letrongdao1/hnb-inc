@@ -14,6 +14,8 @@ import { TopBanner as ITopBanner } from "@/interfaces/common";
 import { LOCAL_STORAGE_KEY, STATUS_CODE } from "@/constants/enums";
 import TopBanner from "@/components/top-banner";
 
+const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
+
 export default function ClientLayout({
   user,
   children,
@@ -26,6 +28,8 @@ export default function ClientLayout({
   const [contentLoaded, setContentLoaded] = useState<boolean>(false);
   const [topBanner, setTopBanner] = useState<ITopBanner>();
   const [isShowTopBanner, setIsShowTopBanner] = useState<boolean>(false);
+
+  const isTopBarsHidden = !user || pageToHide.some((page) => page === pathname);
 
   useEffect(() => {
     setContentLoaded(false);
@@ -55,18 +59,20 @@ export default function ClientLayout({
         <div
           className={`relative mx-auto flex min-h-screen w-full flex-col items-stretch justify-start gap-8 px-2 py-2 md:py-8 lg:max-w-[80em]`}
         >
-          <div className="flex w-full flex-col items-stretch gap-2">
-            {isShowTopBanner && (
-              <AnimatePresence>
-                <TopBanner
-                  topBanner={topBanner}
-                  isShowTopBanner={isShowTopBanner}
-                  setIsShowTopBanner={setIsShowTopBanner}
-                />
-              </AnimatePresence>
-            )}
-            <Navbar />
-          </div>
+          {!isTopBarsHidden && (
+            <div className="flex w-full flex-col items-stretch gap-2">
+              {isShowTopBanner && (
+                <AnimatePresence>
+                  <TopBanner
+                    topBanner={topBanner}
+                    isShowTopBanner={isShowTopBanner}
+                    setIsShowTopBanner={setIsShowTopBanner}
+                  />
+                </AnimatePresence>
+              )}
+              <Navbar />
+            </div>
+          )}
 
           <AnimatePresence mode="wait">
             <motion.div
