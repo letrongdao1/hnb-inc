@@ -299,7 +299,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
             ) : (
               <p className="text-tiny font-semibold text-green-500">
                 {event.will_pay_user.display_name}{" "}
-                <span className="font-light">sẽ chi trả toàn bộ chi phí cho sự kiện này.</span>
+                <span className="font-light">{event.is_ended ? "đã" : "sẽ"} chi trả toàn bộ chi phí cho sự kiện này</span>
               </p>
             )
           }

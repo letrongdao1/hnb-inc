@@ -27,7 +27,7 @@ export async function getEventList(supabase: SupabaseClient): Promise<Event[]> {
     .from("events")
     .select("*, will_pay_user:events_will_pay_user_fkey(id, display_name, avatar)")
     .order("is_ended", { ascending: true })
-    .order("start_at", { ascending: true });
+    .order("start_at", { ascending: false });
 
   if (error || !eventData) {
     console.log(error);
