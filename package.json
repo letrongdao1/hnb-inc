@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.940.0",
     "@heroui/react": "^2.8.5",
     "@hookform/resolvers": "^5.2.2",
     "@leenguyen/react-flip-clock-countdown": "^1.7.2",
@@ -31,6 +32,7 @@
     "react-image-crop": "^11.0.10",
     "react-images-uploading": "^3.1.7",
     "react-mentions": "^4.4.10",
+    "react-responsive-masonry": "^2.7.1",
     "resend": "^6.2.2",
     "yup": "^1.7.1"
   },
@@ -41,6 +43,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-mentions": "^4.4.1",
+    "@types/react-responsive-masonry": "^2.7.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "prettier": "^3.6.2",

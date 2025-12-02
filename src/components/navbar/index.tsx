@@ -99,6 +99,7 @@ export default function Navbar() {
         ],
       },
       { label: "Về HNB", icon: <CompanyIcon size={16} />, href: "/about", type: "link" },
+      { label: "HNB Books", icon: <CompanyIcon size={16} />, href: "/hnb-books", type: "link" },
       {
         label: "Đăng xuất",
         href: "#",
