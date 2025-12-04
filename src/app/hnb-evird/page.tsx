@@ -1,0 +1,38 @@
+import { CommonUtils } from "@/utils/common.utils";
+import EvirdPage from "./EvirdPage";
+import { ROLE, STATUS_CODE } from "@/constants/enums";
+import { FolderNode } from "@/lib/s3/folders";
+import { getCurrentUserInfo } from "../auth/actions";
+import Forbidden403 from "@/components/403";
+import { RoleUtils } from "@/utils/role.utils";
+
+export async function generateMetadata() {
+  return {
+    title: CommonUtils.formatMetaData("HNB Evird"),
+    description: "HNB Evird - Nơi lưu giữ những dữ liệu của HNB trên đám mây",
+  };
+}
+
+export default async function Evird() {
+  const user = await getCurrentUserInfo();
+  if (user && !RoleUtils.checkIsRole(user, ROLE.STAFF)) {
+    return <Forbidden403 />;
+  }
+
+  const folderList = await getFolderList();
+  return <EvirdPage folderList={folderList || []} />;
+}
+
+export async function getFolderList() {
+  return await fetch(`${process.env.NEXT_SITE_URL}/api/b2/folders`)
+    .then((res) => res.json())
+    .then((result) => {
+      if (result.status === STATUS_CODE.OK) {
+        return result.data as FolderNode[];
+      }
+    })
+    .catch((err) => {
+      console.log({ err });
+      return [];
+    });
+}

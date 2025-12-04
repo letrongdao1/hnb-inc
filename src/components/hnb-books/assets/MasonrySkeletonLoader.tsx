@@ -21,7 +21,7 @@ export default function MasonrySkeletonLoader({ count = 12 }: FilesSkeletonProps
           return (
             <div key={idx} className="w-full">
               <Skeleton
-                className="w-full rounded-lg bg-slate-100 dark:bg-gray-950"
+                className="dark:bg-default-200 bg-default-200 w-full rounded-lg"
                 style={{ height }}
               />
             </div>

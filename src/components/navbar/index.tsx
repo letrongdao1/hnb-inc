@@ -26,6 +26,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownSLineIcon,
   CalendarIcon,
+  CloudDriveIcon,
   CompanyIcon,
   LogoutIcon,
   MoonIcon,
@@ -99,7 +100,6 @@ export default function Navbar() {
         ],
       },
       { label: "Về HNB", icon: <CompanyIcon size={16} />, href: "/about", type: "link" },
-      { label: "HNB Books", icon: <CompanyIcon size={16} />, href: "/hnb-books", type: "link" },
       {
         label: "Đăng xuất",
         href: "#",
@@ -145,6 +145,13 @@ export default function Navbar() {
               key: "system",
               title: "Hệ thống",
               children: [
+                {
+                  key: "drive",
+                  title: "HNB Evird",
+                  icon: <CloudDriveIcon />,
+                  onClick: () => router.push("/hnb-evird"),
+                  hidden: !RoleUtils.checkIsRole(user, ROLE.STAFF),
+                },
                 {
                   key: "theme",
                   icon: <PaleteIcon />,

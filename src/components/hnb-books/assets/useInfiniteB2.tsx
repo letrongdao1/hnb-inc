@@ -1,22 +1,36 @@
 import { DEFAULT_IMAGE_PAGE_SIZE } from "@/constants/constants";
+import { UploadFile } from "@/interfaces/common";
+import { FolderNode } from "@/lib/s3/folders";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export default function useInfiniteB2(folder?: string, pageSize = DEFAULT_IMAGE_PAGE_SIZE) {
-  const [files, setFiles] = useState<any[]>([]);
+type Props = {
+  folder?: FolderNode;
+  pageSize?: number;
+  setIsLoadingFile: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export default function useInfiniteB2({
+  folder,
+  pageSize = DEFAULT_IMAGE_PAGE_SIZE,
+  setIsLoadingFile,
+}: Props) {
+  const [files, setFiles] = useState<UploadFile[]>([]);
   const [pageIndex, setPageIndex] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const loaderRef = useRef<HTMLDivElement | null>(null);
 
   const loadMore = useCallback(async () => {
-    if (loading || done) return;
-    setLoading(true);
+    if (done) return;
+
+    if (!folder || (folder.children && folder.children.length > 0)) return;
+
+    setIsLoadingFile(true);
 
     try {
       const params = new URLSearchParams();
       params.append("pageIndex", String(pageIndex));
       params.append("pageSize", String(pageSize));
-      if (folder) params.append("folder", folder);
+      params.append("folder", folder.relativePath || "");
 
       const res = await fetch(`/api/upload/list?${params.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch");
@@ -37,9 +51,9 @@ export default function useInfiniteB2(folder?: string, pageSize = DEFAULT_IMAGE_
     } catch (err) {
       console.error("loadMore error", err);
     } finally {
-      setLoading(false);
+      setIsLoadingFile(false);
     }
-  }, [folder, pageIndex, pageSize, loading, done, files.length]);
+  }, [folder, pageIndex, pageSize, done, files.length, setIsLoadingFile]);
 
   useEffect(() => {
     setFiles([]);
@@ -62,5 +76,12 @@ export default function useInfiniteB2(folder?: string, pageSize = DEFAULT_IMAGE_
     return () => obs.disconnect();
   }, [loadMore]);
 
-  return { files, loading, done, loaderRef, loadMore };
+  const reload = async () => {
+    setFiles([]);
+    setPageIndex(1);
+    setDone(false);
+    await loadMore();
+  };
+
+  return { files, done, loaderRef, loadMore, reload };
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@heroui/react";
 import React from "react";
 import { ArrowLeftIcon } from "../svg";
@@ -5,7 +7,7 @@ import { redirect } from "next/navigation";
 
 export default function Forbidden403() {
   return (
-    <div className="flex flex-col items-stretch justify-center gap-8 text-center">
+    <div className="mt-[20vh] flex flex-col items-stretch justify-center gap-8 text-center">
       <p className="text-6xl font-bold">
         403 <span className="text-red-600">!</span>
       </p>

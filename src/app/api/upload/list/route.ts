@@ -16,13 +16,15 @@ export async function GET(request: NextRequest) {
     const to = from + pageSize - 1;
 
     let query = supabase
-      .from("upload_images")
-      .select("*")
+      .from("upload_files")
+      .select("*, upload_by:upload_files_upload_by_fkey(id, display_name, avatar)")
       .order("created_at", { ascending: false })
       .range(from, to);
 
     if (folder) {
       query = query.eq("folder", folder);
+    } else {
+      query = query.or("folder.is.null,folder.eq.");
     }
 
     const { data, error, count } = await query;

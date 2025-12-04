@@ -4,17 +4,20 @@ import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { b2 } from "@/lib/b2/b2";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_CODE } from "@/constants/enums";
+import { getCurrentUserId } from "@/app/auth/actions";
+import { FileUtils } from "@/utils/file.utils";
 
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
+    const userId = await getCurrentUserId();
 
     const form = await req.formData();
 
     const files = form.getAll("files") as File[];
+    const folder = form.get("folder") as string | null;
     const title = form.get("title") as string;
     const description = form.get("description") as string;
-    const folder = form.get("folder") as string | null;
 
     if (!files || !files.length) {
       return NextResponse.json({ error: "Không tìm thấy file!" }, { status: 400 });
@@ -44,13 +47,15 @@ export async function POST(req: Request) {
     }
 
     const { data, error } = await supabase
-      .from("upload_images")
+      .from("upload_files")
       .insert(
         uploadedFiles.map((file) => ({
+          upload_by: userId,
+          url: file.url,
+          type: FileUtils.detectFileType(file.url),
+          folder,
           title,
           description,
-          folder,
-          url: file.url,
         }))
       )
       .select();

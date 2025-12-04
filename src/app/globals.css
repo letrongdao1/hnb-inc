@@ -48,3 +48,8 @@ select {
 .font-alfa {
   font-family: "Alfa Slab One", sans-serif;
 }
+
+.no-select {
+  -webkit-user-select: none; /* Safari */
+  user-select: none;
+}

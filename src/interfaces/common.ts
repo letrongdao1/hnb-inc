@@ -1,6 +1,7 @@
 import { ButtonProps } from "@heroui/react";
 import { BaseUserInfo } from "./user";
 import { NOTIFICATION_TYPE, TOP_BANNER_TYPE } from "@/constants/enums";
+import { FileTypeEnum } from "@/utils/file.utils";
 
 export interface PaginationProps {
   pageIndex: number;
@@ -82,5 +83,16 @@ export interface TopBanner {
   active_at: string;
   expired_at: string;
   status: boolean;
+  created_at: string;
+}
+
+export interface UploadFile {
+  id: string;
+  upload_by?: BaseUserInfo;
+  url: string;
+  type: FileTypeEnum;
+  folder?: string;
+  title?: string;
+  description?: string;
   created_at: string;
 }

@@ -6,6 +6,7 @@ interface ImagePreviewModalProps {
   onClose?: () => void;
   src: string;
   alt?: string;
+  isVideo?: boolean;
 }
 
 export default function ImagePreviewModal({
@@ -14,6 +15,7 @@ export default function ImagePreviewModal({
   onClose,
   src,
   alt,
+  isVideo = false,
 }: ImagePreviewModalProps) {
   return (
     <Modal
@@ -32,7 +34,13 @@ export default function ImagePreviewModal({
         {() => (
           <>
             <ModalBody className="flex items-center justify-center p-0">
-              <Image src={src} alt={alt} className="max-h-[90vh] max-w-[90vw] object-contain" />
+              {!isVideo ? (
+                <Image src={src} alt={alt} className="max-h-[90vh] max-w-[90vw] object-contain" />
+              ) : (
+                <video src={src} controls className="max-h-[90vh] max-w-[90vw] object-contain">
+                  {alt && <track kind="descriptions" label={alt} />}
+                </video>
+              )}
             </ModalBody>
           </>
         )}

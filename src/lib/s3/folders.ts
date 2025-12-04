@@ -4,6 +4,7 @@ import { s3 } from "./s3";
 export interface FolderNode {
   label: string;
   path: string;
+  relativePath?: string;
   children?: FolderNode[];
 }
 
@@ -28,21 +29,30 @@ export async function listAllFolders(bucket: string, prefix = ""): Promise<strin
   return allFolders;
 }
 
-export function buildFolderTree(folders: string[]): FolderNode[] {
+export function buildFolderTree(folders: string[], rootFolder = ""): FolderNode[] {
   const tree: FolderNode[] = [];
-
   const map: Record<string, FolderNode> = {};
 
   folders.forEach((fullPath) => {
-    const parts = fullPath.replace(/\/$/, "").split("/");
+    const cleanedPath = fullPath.replace(/\/$/, "");
+    const parts = cleanedPath.split("/");
+
     let currentPath = "";
     let parent: FolderNode[] = tree;
 
-    parts.forEach((part) => {
+    parts.forEach((part, index) => {
       currentPath = currentPath ? `${currentPath}/${part}` : part;
 
       if (!map[currentPath]) {
-        const node: FolderNode = { label: part, path: currentPath, children: [] };
+        const relativePath = rootFolder ? currentPath.replace(`${rootFolder}/`, "") : currentPath;
+
+        const node: FolderNode = {
+          label: part,
+          path: part,
+          relativePath,
+          children: [],
+        };
+
         map[currentPath] = node;
         parent.push(node);
       }
