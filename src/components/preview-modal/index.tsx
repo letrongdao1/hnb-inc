@@ -30,14 +30,23 @@ export default function ImagePreviewModal({
       }}
       size="full"
     >
-      <ModalContent className="bg-transparent shadow-none" onClick={onClose}>
+      <ModalContent className="relative bg-transparent shadow-none">
         {() => (
           <>
+            <div className="absolute inset-0" onClick={onClose} />
+
             <ModalBody className="flex items-center justify-center p-0">
               {!isVideo ? (
                 <Image src={src} alt={alt} className="max-h-[90vh] max-w-[90vw] object-contain" />
               ) : (
-                <video src={src} controls className="max-h-[90vh] max-w-[90vw] object-contain">
+                <video
+                  src={src}
+                  autoPlay={isOpen}
+                  muted
+                  playsInline
+                  controls
+                  className="max-h-[90vh] max-w-[90vw] object-contain"
+                >
                   {alt && <track kind="descriptions" label={alt} />}
                 </video>
               )}

@@ -153,7 +153,7 @@ export default function UploadFileSection({
               onClick={() => {
                 setUploadFileList((prev) => prev.filter((_, i) => index !== i));
               }}
-              className="hidden cursor-pointer text-red-500 duration-200 group-hover:inline hover:scale-110"
+              className="inline cursor-pointer text-red-500 duration-200 group-hover:inline hover:scale-110 md:hidden"
             >
               <DeleteIcon size={16} />
             </button>

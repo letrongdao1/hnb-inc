@@ -1161,3 +1161,45 @@ export const VideoPlayIcon = ({
     </svg>
   );
 };
+
+export const MasonryLayoutIcon = ({
+  fill = "currentColor",
+  size,
+  height,
+  width,
+  ...props
+}: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M22 20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3H21C21.5523 3 22 3.44772 22 4V20ZM11 15H4V19H11V15ZM20 11H13V19H20V11ZM11 5H4V13H11V5ZM20 5H13V9H20V5Z"></path>
+    </svg>
+  );
+};
+
+export const HorizontalLayoutIcon = ({
+  fill = "currentColor",
+  size,
+  height,
+  width,
+  ...props
+}: SVGProps) => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size || width || 24}
+      height={size || height || 24}
+      viewBox="0 0 24 24"
+      fill={fill}
+      {...props}
+    >
+      <path d="M5 19H19V5H5V19ZM3 4C3 3.44772 3.44772 3 4 3H20C20.5523 3 21 3.44772 21 4V20C21 20.5523 20.5523 21 20 21H4C3.44772 21 3 20.5523 3 20V4ZM7 9H17V7H7V9ZM17 13H7V11H17V13ZM7 17H17V15H7V17Z"></path>
+    </svg>
+  );
+};

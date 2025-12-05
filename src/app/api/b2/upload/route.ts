@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { b2 } from "@/lib/b2/b2";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_CODE } from "@/constants/enums";
 import { getCurrentUserId } from "@/app/auth/actions";
 import { FileUtils } from "@/utils/file.utils";
+import { s3 } from "@/lib/s3/s3";
+
+const bucket = process.env.B2_BUCKET_NAME!;
+const region = process.env.B2_REGION!;
 
 export async function POST(req: Request) {
   try {
@@ -20,11 +24,11 @@ export async function POST(req: Request) {
     const description = form.get("description") as string;
 
     if (!files || !files.length) {
-      return NextResponse.json({ error: "Không tìm thấy file!" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Không tìm thấy file!" },
+        { status: STATUS_CODE.BAD_REQUEST }
+      );
     }
-
-    const bucket = process.env.B2_BUCKET_NAME!;
-    const region = process.env.B2_REGION!;
 
     const uploadedFiles: { url: string; filename: string }[] = [];
 
@@ -61,7 +65,10 @@ export async function POST(req: Request) {
       .select();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { error: error.message },
+        { status: STATUS_CODE.INTERNAL_SERVER_ERROR }
+      );
     }
 
     return NextResponse.json({
@@ -70,6 +77,70 @@ export async function POST(req: Request) {
       uploaded: uploadedFiles,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Upload failed" },
+      { status: STATUS_CODE.INTERNAL_SERVER_ERROR }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const supabase = await createClient();
+    const userId = await getCurrentUserId();
+
+    const form = await req.formData();
+
+    const fileUrlListString = form.get("fileUrls") as string;
+    const fileUrlList = fileUrlListString.split(",");
+
+    await Promise.all(
+      fileUrlList.map(async (url) => {
+        if (!url.length) return;
+
+        const { data } = await supabase
+          .from("upload_files")
+          .select("id, upload_by")
+          .eq("url", url)
+          .maybeSingle();
+
+        if (!data) return;
+
+        if (data.upload_by && data.upload_by !== userId) {
+          return NextResponse.json(
+            { error: "Bạn không có quyền thực hiện xóa file này", status: STATUS_CODE.FORBIDDEN },
+            { status: STATUS_CODE.FORBIDDEN }
+          );
+        }
+
+        const filePathArr = new URL(url).pathname.split("/").filter(Boolean);
+        filePathArr.shift();
+        const filePath = filePathArr.join("/");
+
+        await s3.send(
+          new DeleteObjectCommand({
+            Bucket: bucket,
+            Key: filePath,
+          })
+        );
+
+        const { error } = await supabase.from("upload_files").delete().eq("url", url);
+        if (error) {
+          return NextResponse.json(
+            { error: error.message },
+            { status: STATUS_CODE.INTERNAL_SERVER_ERROR }
+          );
+        }
+      })
+    );
+
+    return NextResponse.json({
+      status: STATUS_CODE.OK,
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || "Upload failed" },
+      { status: STATUS_CODE.INTERNAL_SERVER_ERROR }
+    );
   }
 }

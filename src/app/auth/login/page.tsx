@@ -80,13 +80,13 @@ export default function LoginPage() {
               title: response.message,
               color: "danger",
             });
+            setLoading(false);
             break;
           }
         }
       }
     } catch {
       console.log("Login error");
-    } finally {
       setLoading(false);
     }
   };

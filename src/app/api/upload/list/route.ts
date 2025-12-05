@@ -23,8 +23,6 @@ export async function GET(request: NextRequest) {
 
     if (folder) {
       query = query.eq("folder", folder);
-    } else {
-      query = query.or("folder.is.null,folder.eq.");
     }
 
     const { data, error, count } = await query;

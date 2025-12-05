@@ -10,7 +10,7 @@ import {
   Progress,
   useDisclosure,
 } from "@heroui/react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UploadFileSection from "./UploadFileSection";
 import FileInfoSection from "./FileInfoSection";
 
@@ -18,7 +18,7 @@ type UploadAssetsModalProps = {
   isOpen: boolean;
   onOpenChange: () => void;
   onClose: () => void;
-  handleInsertNewFolder: (newRelativePath: string) => void;
+  handleFinishUpload: () => void;
 };
 
 export type UploadProps = {
@@ -32,12 +32,25 @@ export default function UploadAssetsModal({
   isOpen,
   onClose,
   onOpenChange,
-  handleInsertNewFolder,
+  handleFinishUpload,
 }: UploadAssetsModalProps) {
   const [uploadFileList, setUploadFileList] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const progressModal = useDisclosure();
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isOpen && uploadProgress > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handler);
+
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isOpen, uploadProgress]);
 
   const handleUpload = async (props: UploadProps) => {
     if (!uploadFileList.length) {
@@ -87,7 +100,7 @@ export default function UploadAssetsModal({
       });
     }
 
-    handleInsertNewFolder(props.folderPath);
+    handleFinishUpload();
     addToast({
       title: `Tải file lên cloud thành công`,
       description: `Tổng: ${uploadFileList.length} file`,
@@ -149,7 +162,13 @@ export default function UploadAssetsModal({
                   {() => (
                     <ModalBody className="px-2 py-4">
                       <Progress
-                        label={<p className="text-sm font-light">Đang tải ảnh lên...</p>}
+                        label={
+                          <p className="text-sm font-light">
+                            {uploadProgress < 100
+                              ? "Đang tải ảnh lên..."
+                              : "Đang hoàn tất quá trình..."}
+                          </p>
+                        }
                         value={uploadProgress}
                         showValueLabel={true}
                         size="sm"

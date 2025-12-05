@@ -149,9 +149,15 @@ export default function Navbar() {
                   key: "drive",
                   title: "HNB Evird",
                   icon: <CloudDriveIcon />,
-                  onClick: () => router.push("/hnb-evird"),
+                  onClick: () => router.push("/hnb-evird/folder"),
                   hidden: !RoleUtils.checkIsRole(user, ROLE.STAFF),
                 },
+              ],
+            },
+            {
+              key: "theme",
+              title: "Giao diện",
+              children: [
                 {
                   key: "theme",
                   icon: <PaleteIcon />,

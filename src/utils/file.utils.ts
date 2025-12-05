@@ -49,7 +49,6 @@ export const FileUtils = {
 
       video.onerror = () => {
         if (isFile) URL.revokeObjectURL(videoUrl);
-        reject(new Error("Failed to load video"));
       };
     });
   },
@@ -116,5 +115,11 @@ export const FileUtils = {
     if (IMAGE_EXT.includes(ext)) return FileTypeEnum.IMAGE;
     if (VIDEO_EXT.includes(ext)) return FileTypeEnum.VIDEO;
     return FileTypeEnum.OTHER;
+  },
+  getCurrentFolderNameByRelativePath: (path: string): string => {
+    if (!path || !path.length) return "";
+
+    const parts = path.split("/").filter((p) => p && p.trim().length > 0);
+    return parts[parts.length - 1];
   },
 };

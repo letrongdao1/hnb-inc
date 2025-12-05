@@ -46,4 +46,12 @@ export const NodeUtils = {
 
     return chain;
   },
+  generateFolderNodeFromPath: (path: string): FolderNode | undefined => {
+    if (!path || !path.length) return undefined;
+
+    const parts = path.split("/").filter((p) => p && p.trim().length > 0);
+    const name = parts[parts.length - 1];
+
+    return { label: name, path: name, relativePath: path };
+  },
 };
