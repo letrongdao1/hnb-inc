@@ -183,6 +183,9 @@ export default function FileInfoSection({ handleUpload, uploadProgress }: FileIn
 
   return (
     <div className="flex flex-1 flex-col items-stretch justify-start gap-2">
+      {!Boolean(selectedFolderType) && (
+        <p className="text-warning-500 text-sm italic">Vui lòng chọn thư mục lưu</p>
+      )}
       <Select
         classNames={{
           trigger: "h-12",

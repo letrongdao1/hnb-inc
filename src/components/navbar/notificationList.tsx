@@ -80,7 +80,10 @@ export default function NotificationList() {
                     size="sm"
                     variant="light"
                     color="danger"
-                    onPress={confirmDeleteModal.onOpen}
+                    onPress={() => {
+                      setIsOpen(false);
+                      confirmDeleteModal.onOpen();
+                    }}
                   >
                     Xóa tất cả
                   </Button>
@@ -123,7 +126,7 @@ export default function NotificationList() {
                         {getNotiDisplayStyle(noti.type)?.icon}
                       </div>
                       <div className="w-full flex-1">
-                        <p className="text-[0.7em] float-right pt-0.5 md:pl-1 font-light opacity-75">
+                        <p className="float-right pt-0.5 text-[0.7em] font-light opacity-75 md:pl-1">
                           {CommonUtils.getTimeComparedToNow(noti.created_at)}
                         </p>
                         <p className="font-semibold wrap-anywhere text-ellipsis">

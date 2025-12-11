@@ -258,6 +258,7 @@ function Card({ card, index, activeIndex, totalCards }: CardProps) {
       initial={false}
     >
       <div className="relative h-full w-full overflow-hidden rounded-3xl bg-gray-200 shadow-2xl dark:bg-neutral-800">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={card.imageUrl}
           alt={card.title}

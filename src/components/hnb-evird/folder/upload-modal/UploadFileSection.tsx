@@ -119,57 +119,53 @@ export default function UploadFileSection({
     );
 
   return (
-    <div className="z-0 flex flex-1 flex-col items-stretch justify-start gap-1">
-      {uploadFileList.slice(0, MAX_PREVIEW_SIZE).map((file, index) => (
-        <div
-          key={index}
-          className={`group border-default-300 flex items-center gap-2 border-b px-2 py-1 text-sm`}
-        >
-          {file.type.startsWith("image/") ? (
-            <Image
-              src={previews[file.name]}
-              alt={file.name}
-              radius="sm"
-              onClick={() => {
-                setIsVideo(false);
-                handleOpenPreview(previews[file.name]);
-              }}
-              className="h-8 w-8 cursor-pointer object-cover duration-200 hover:scale-110"
-            />
-          ) : (
-            <button
-              onClick={() => {
-                setIsVideo(true);
-                handleOpenPreview(previews[file.name]);
-              }}
-              className="cursor-pointer px-1 duration-200 hover:scale-110"
-            >
-              <VideoCameraIcon />
-            </button>
-          )}
-          <div className="flex flex-1 items-center justify-start gap-2">
-            <p className="line-clamp-1">{file.name}</p>
-            <button
-              onClick={() => {
-                setUploadFileList((prev) => prev.filter((_, i) => index !== i));
-              }}
-              className="inline cursor-pointer text-red-500 duration-200 group-hover:inline hover:scale-110 md:hidden"
-            >
-              <DeleteIcon size={16} />
-            </button>
-          </div>
+    <div className="z-0 flex flex-1 flex-col items-stretch gap-1">
+      <div className="flex max-h-96 flex-col items-stretch justify-start gap-1 overflow-y-auto">
+        {uploadFileList.map((file, index) => (
+          <div
+            key={index}
+            className={`group border-default-300 flex items-center gap-2 border-b px-2 py-1 text-sm`}
+          >
+            {file.type.startsWith("image/") ? (
+              <Image
+                src={previews[file.name]}
+                alt={file.name}
+                radius="sm"
+                onClick={() => {
+                  setIsVideo(false);
+                  handleOpenPreview(previews[file.name]);
+                }}
+                className="h-8 w-8 cursor-pointer object-cover duration-200 hover:scale-110"
+              />
+            ) : (
+              <button
+                onClick={() => {
+                  setIsVideo(true);
+                  handleOpenPreview(previews[file.name]);
+                }}
+                className="cursor-pointer px-1 duration-200 hover:scale-110"
+              >
+                <VideoCameraIcon />
+              </button>
+            )}
+            <div className="flex flex-1 items-center justify-start gap-2">
+              <p className="line-clamp-1">{file.name}</p>
+              <button
+                onClick={() => {
+                  setUploadFileList((prev) => prev.filter((_, i) => index !== i));
+                }}
+                className="inline cursor-pointer text-red-500 duration-200 group-hover:inline hover:scale-110 md:hidden"
+              >
+                <DeleteIcon size={16} />
+              </button>
+            </div>
 
-          <p className="font-extralight">{FileUtils.formatFileSize(file.size)}</p>
-        </div>
-      ))}
+            <p className="font-extralight">{FileUtils.formatFileSize(file.size)}</p>
+          </div>
+        ))}
+      </div>
 
       <span className="flex-1" />
-
-      {uploadFileList.length > MAX_PREVIEW_SIZE && (
-        <p className="py-1 text-center text-sm font-semibold opacity-75">
-          + {uploadFileList.length - MAX_PREVIEW_SIZE}
-        </p>
-      )}
 
       <div className="flex items-center justify-between gap-1 px-2">
         <p className="text-xs font-light">Tổng: {uploadFileList.length} file</p>
@@ -177,29 +173,43 @@ export default function UploadFileSection({
         <p className="text-sm font-bold">{FileUtils.formatFileSize(totalUploadSize)}</p>
       </div>
 
-      <>
+      <div className="flex shrink-0 items-stretch gap-2">
+        <div className="flex-1">
+          <Button
+            fullWidth
+            color="primary"
+            variant="flat"
+            onPress={() => {
+              if (fileInputRef.current) {
+                fileInputRef.current.click();
+              }
+            }}
+            startContent={<UploadIcon size={16} />}
+          >
+            Chọn thêm file
+          </Button>
+          <input
+            ref={fileInputRef}
+            hidden
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            onChange={handleFileSelect}
+          />
+        </div>
+
         <Button
-          color="primary"
-          variant="ghost"
+          color="danger"
+          variant="flat"
           onPress={() => {
-            if (fileInputRef.current) {
-              fileInputRef.current.click();
-            }
+            setUploadFileList([]);
           }}
-          startContent={<UploadIcon size={16} />}
-          className="shrink-0"
+          startContent={<DeleteIcon size={16} />}
+          className="flex-1 shrink-0"
         >
-          <p className="text-sm font-bold">Tải lên</p>
+          Xóa tất cả
         </Button>
-        <input
-          ref={fileInputRef}
-          hidden
-          type="file"
-          accept="image/*,video/*"
-          multiple
-          onChange={handleFileSelect}
-        />
-      </>
+      </div>
 
       {currentPreviewSrc && (
         <ImagePreviewModal

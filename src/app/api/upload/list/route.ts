@@ -17,8 +17,11 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("upload_files")
-      .select("*, upload_by:upload_files_upload_by_fkey(id, display_name, avatar)")
+      .select("*, upload_by:upload_files_upload_by_fkey(id, display_name, avatar)", {
+        count: "exact",
+      })
       .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
       .range(from, to);
 
     if (folder) {
@@ -28,7 +31,7 @@ export async function GET(request: NextRequest) {
     const { data, error, count } = await query;
 
     if (error) {
-      console.error("Supabase error:", error);
+      console.error("Lỗi lấy data ảnh:", error);
       return NextResponse.json({ status: STATUS_CODE.NOT_FOUND });
     }
 

@@ -204,9 +204,11 @@ export default function EmailSignupForm({
     <>
       <form
         onSubmit={handleSubmitEmail}
-        className="mx-auto mt-16 max-w-md space-y-2 rounded-2xl border border-gray-700 p-6 shadow-lg"
+        className="mx-auto w-full max-w-lg space-y-2 rounded-2xl border border-gray-700 p-6 shadow-lg"
       >
-        <h2 className="mb-12 text-center text-2xl font-semibold">Tạo tài khoản Nhân viên HNB</h2>
+        <h2 className="mb-12 text-center text-xl font-semibold md:text-2xl">
+          Tạo tài khoản HNB Hub
+        </h2>
 
         <Input
           label="Nhập địa chỉ email"
@@ -236,7 +238,7 @@ export default function EmailSignupForm({
           Tiếp tục
         </Button>
 
-        <p className="mx-auto text-center text-sm text-gray-400">
+        <p className="mx-auto mt-4 text-center text-sm text-gray-400">
           Đã có tài khoản?{" "}
           <Link
             href="/auth/login"

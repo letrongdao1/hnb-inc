@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     const form = await req.formData();
 
     const files = form.getAll("files") as File[];
-    const folder = form.get("folder") as string | null;
+    const folder = (form.get("folder") as string) || "";
     const title = form.get("title") as string;
     const description = form.get("description") as string;
 
@@ -34,8 +34,10 @@ export async function POST(req: Request) {
 
     for (const file of files) {
       const fileBuffer = Buffer.from(await file.arrayBuffer());
-      const ext = file.name.split(".").pop();
-      const filename = `${folder ? folder + "/" : ""}${Date.now()}-${file.name}`;
+      const originFileName = file.name.split("/").pop() || file.name;
+      const filename = folder
+        ? `${folder}/${Date.now()}-${originFileName}`
+        : `${Date.now()}-${originFileName}`;
 
       await b2.send(
         new PutObjectCommand({

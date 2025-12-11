@@ -10,14 +10,14 @@ interface FilesSkeletonProps {
   count?: number;
 }
 
-export default function MasonrySkeletonLoader({ count = 12 }: FilesSkeletonProps) {
+export default function MasonrySkeletonLoader({ count = 8 }: FilesSkeletonProps) {
   const placeholders = Array.from({ length: count });
 
   return (
     <div className="py-6 text-center text-gray-400">
       <ResponsiveMasonry
-        columnsCountBreakPoints={{ 350: 1, 750: 2, 900: 3, 1440: 4 }}
-        gutterBreakPoints={{ 350: "12px", 750: "16px", 900: "24px" }}
+        columnsCountBreakPoints={{ 350: 2, 750: 3, 1080: 4 }}
+        gutterBreakPoints={{ 350: "12px", 750: "10px", 900: "8px" }}
       >
         <Masonry>
           {placeholders.map((_, idx) => {

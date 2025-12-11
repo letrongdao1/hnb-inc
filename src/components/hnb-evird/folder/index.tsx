@@ -48,7 +48,7 @@ export default function EvirdFolderContentPage({ folderList }: AssetsPageProps) 
         })}
       </div>
 
-      {!folderList.length && <FileDisplayPage />}
+      {!folderList.length && <FileDisplayPage folderList={folderList} />}
     </>
   );
 }

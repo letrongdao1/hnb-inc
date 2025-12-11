@@ -3,8 +3,9 @@
 import { FileIcon, FileUnknownIcon, VideoPlayIcon } from "@/components/svg";
 import { UploadFile } from "@/interfaces/common";
 import { FileTypeEnum, FileUtils } from "@/utils/file.utils";
-import { Avatar, Image, Spinner } from "@heroui/react";
+import { Image, Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
+import ERROR_IMAGE from "@/assets/images/fallback/error-image-fallback.png";
 
 export default function MasonryItem({
   file,
@@ -13,6 +14,7 @@ export default function MasonryItem({
   file: UploadFile;
   onPreviewOpen: () => void;
 }) {
+  const [currentSrc, setCurrentSrc] = useState<string>(file.url);
   const [isLoadingContent, setIsLoadingContent] = useState<boolean>(false);
   const [contentByType, setContentByType] = useState<React.JSX.Element | null>(null);
 
@@ -22,10 +24,14 @@ export default function MasonryItem({
         case FileTypeEnum.IMAGE:
           setContentByType(
             <Image
-              src={file.url}
-              alt={file.title}
-              radius="sm"
+              src={currentSrc}
+              alt={file.title ?? ""}
               loading="lazy"
+              radius="sm"
+              removeWrapper
+              onError={() => {
+                setCurrentSrc(ERROR_IMAGE.src);
+              }}
               className="h-auto w-full object-cover"
             />
           );
@@ -66,7 +72,7 @@ export default function MasonryItem({
     };
 
     load();
-  }, [file]);
+  }, [file, currentSrc]);
 
   return (
     <div className="group relative h-full w-full">

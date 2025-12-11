@@ -133,7 +133,7 @@ export default function EventCostList({ event }: { event: Event }) {
     },
   ];
 
-  const renderCell = React.useCallback((eventCost: EventCost, columnKey: any) => {
+  const renderCell = useCallback((eventCost: EventCost, columnKey: any) => {
     switch (columnKey) {
       case "action":
         return eventCost.user.id === user?.id ? (
@@ -185,7 +185,7 @@ export default function EventCostList({ event }: { event: Event }) {
       default:
         return "-";
     }
-  }, []);
+  }, [deleteCostModal, user]);
 
   useEffect(() => {
     fetchEventCostList();

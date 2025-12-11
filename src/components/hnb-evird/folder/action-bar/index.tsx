@@ -134,7 +134,6 @@ export default function EvirdActionBar() {
         isOpen={uploadModal.isOpen}
         onOpenChange={uploadModal.onOpenChange}
         onClose={uploadModal.onClose}
-        handleFinishUpload={() => {}}
       />
     </div>
   );

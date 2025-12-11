@@ -20,7 +20,17 @@ const alfaSlabOne = Alfa_Slab_One({
 
 export const metadata: Metadata = {
   title: "HNB Hub",
-  description: "A hub for HNB Inc.",
+  description: "A platform belonging to HNB for customized contents, shared assets and connectivity.",
+  openGraph: {
+    title: "HNB Hub",
+    description: "A platform belonging to HNB for customized contents, shared assets and connectivity.",
+    url: "https://hnb-inc.site",
+    siteName: "HNB Hub",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport = {
