@@ -5,7 +5,7 @@ import { b2 } from "@/lib/b2/b2";
 import { createClient } from "@/lib/supabase/server";
 import { STATUS_CODE } from "@/constants/enums";
 import { getCurrentUserId } from "@/app/auth/actions";
-import { FileUtils } from "@/utils/file.utils";
+import { FileTypeEnum, FileUtils } from "@/utils/file.utils";
 import { s3 } from "@/lib/s3/s3";
 
 const bucket = process.env.B2_BUCKET_NAME!;
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const uploadedFiles: { url: string; filename: string }[] = [];
+    const uploadedFiles: { url: string; filename: string; blurHash?: string }[] = [];
 
     for (const file of files) {
       const fileBuffer = Buffer.from(await file.arrayBuffer());
@@ -49,7 +49,11 @@ export async function POST(req: Request) {
       );
 
       const url = `https://${bucket}.s3.${region}.backblazeb2.com/${filename}`;
-      uploadedFiles.push({ url, filename });
+      const fileType = FileUtils.detectFileType(url);
+      const blurHash =
+        fileType === FileTypeEnum.IMAGE ? await FileUtils.generateBlurHash(fileBuffer) : undefined;
+
+      uploadedFiles.push({ url, filename, blurHash });
     }
 
     const { data, error } = await supabase
@@ -58,6 +62,7 @@ export async function POST(req: Request) {
         uploadedFiles.map((file) => ({
           upload_by: userId,
           url: file.url,
+          blurHash: file.blurHash,
           type: FileUtils.detectFileType(file.url),
           folder,
           title,

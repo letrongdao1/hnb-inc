@@ -1,3 +1,8 @@
+import { encode, isBlurhashValid } from "blurhash";
+import { fileTypeFromBuffer } from "file-type";
+import { intToRGBA, Jimp, JimpMime } from "jimp";
+import sharp from "sharp";
+
 export enum FileTypeEnum {
   IMAGE = "img",
   VIDEO = "vid",
@@ -121,5 +126,40 @@ export const FileUtils = {
 
     const parts = path.split("/").filter((p) => p && p.trim().length > 0);
     return parts[parts.length - 1];
+  },
+  generateBlurHash: async (imageBuffer: Buffer) => {
+    let img;
+
+    const fileMime = await fileTypeFromBuffer(imageBuffer);
+
+    if (fileMime?.mime && !Object.values(JimpMime).includes(fileMime.mime as any)) {
+      return undefined;
+    } else {
+      img = await Jimp.read(imageBuffer);
+    }
+
+    const targetWidth = 32;
+    const ratio = img.bitmap.height / img.bitmap.width;
+    const targetHeight = Math.round(targetWidth * ratio);
+
+    img = img.resize({ w: targetWidth, h: targetHeight });
+
+    const { width, height } = img.bitmap;
+
+    const rgbPixels = new Uint8ClampedArray(width * height * 4);
+
+    let p = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const { r, g, b } = intToRGBA(img.getPixelColor(x, y));
+        rgbPixels[p++] = r;
+        rgbPixels[p++] = g;
+        rgbPixels[p++] = b;
+        rgbPixels[p++] = 255;
+      }
+    }
+
+    const hash = encode(rgbPixels, width, height, 4, 4);
+    return isBlurhashValid(hash) ? hash : undefined;
   },
 };

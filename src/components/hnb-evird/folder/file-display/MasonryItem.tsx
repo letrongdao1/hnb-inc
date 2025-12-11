@@ -6,6 +6,8 @@ import { FileTypeEnum, FileUtils } from "@/utils/file.utils";
 import { Image, Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
 import ERROR_IMAGE from "@/assets/images/fallback/error-image-fallback.png";
+import BlurHashImage from "./BlurHashImage";
+import Loader from "@/components/loader";
 
 export default function MasonryItem({
   file,
@@ -23,17 +25,7 @@ export default function MasonryItem({
       switch (file.type) {
         case FileTypeEnum.IMAGE:
           setContentByType(
-            <Image
-              src={currentSrc}
-              alt={file.title ?? ""}
-              loading="lazy"
-              radius="sm"
-              removeWrapper
-              onError={() => {
-                setCurrentSrc(ERROR_IMAGE.src);
-              }}
-              className="h-auto w-full object-cover"
-            />
+            <BlurHashImage src={file.url} alt={file.title || ""} blurHash={file.blurHash} />
           );
           break;
 
@@ -75,15 +67,13 @@ export default function MasonryItem({
   }, [file, currentSrc]);
 
   return (
-    <div className="group relative h-full w-full">
+    <div onClick={onPreviewOpen} className="group relative h-full w-full">
       {isLoadingContent ? (
         <div className="border-default-300 flex h-24 w-full items-center justify-center rounded-lg border md:h-40">
-          <Spinner variant="simple" color="default" size="sm" />
+          <Loader />
         </div>
       ) : (
-        <div onClick={onPreviewOpen} className="h-auto w-full cursor-pointer">
-          {contentByType}
-        </div>
+        contentByType
       )}
 
       <div className="absolute bottom-0 left-0 z-10 truncate rounded-tr-md rounded-bl-md bg-white/70 p-2 text-xs text-black opacity-0 duration-200 group-hover:opacity-100 dark:bg-black/50 dark:text-white">

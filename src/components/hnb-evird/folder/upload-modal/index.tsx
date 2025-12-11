@@ -9,9 +9,9 @@ import {
   addToast,
   Progress,
   useDisclosure,
-  ModalFooter,
+  Spinner,
 } from "@heroui/react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import UploadFileSection from "./UploadFileSection";
 import FileInfoSection from "./FileInfoSection";
 import { useRouter } from "next/navigation";
@@ -40,8 +40,6 @@ export default function UploadAssetsModal({
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const progressModal = useDisclosure();
-
-  const controller = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -81,7 +79,6 @@ export default function UploadAssetsModal({
 
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      controller.current = new AbortController();
 
       xhr.open("POST", "/api/b2/upload");
 
@@ -121,13 +118,6 @@ export default function UploadAssetsModal({
     setUploadProgress(0);
     progressModal.onClose();
     onClose();
-  };
-
-  const cancelUpload = () => {
-    controller.current?.abort();
-    progressModal.onClose();
-    setUploadProgress(0);
-    addToast({ title: "Đã dừng upload!", color: "default" });
   };
 
   return (
@@ -179,13 +169,12 @@ export default function UploadAssetsModal({
                         <Progress
                           label={
                             <p className="text-sm font-light">
-                              {uploadProgress < 100
-                                ? "Đang tải ảnh lên..."
-                                : "Đang hoàn tất quá trình..."}
+                              {uploadProgress < 100 ? "Đang chuẩn bị..." : "Đang upload file..."}
                             </p>
                           }
                           value={uploadProgress}
                           showValueLabel={true}
+                          valueLabel={<Spinner color="success" variant="gradient" size="sm" />}
                           size="sm"
                           radius="sm"
                           classNames={{
@@ -197,16 +186,6 @@ export default function UploadAssetsModal({
                           }}
                         />
                       </ModalBody>
-                      <ModalFooter className="w-full">
-                        <Button
-                          variant="light"
-                          color="default"
-                          onPress={cancelUpload}
-                          className="ml-auto"
-                        >
-                          Hủy bỏ
-                        </Button>
-                      </ModalFooter>
                     </>
                   )}
                 </ModalContent>

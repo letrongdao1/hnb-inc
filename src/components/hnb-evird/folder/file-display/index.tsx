@@ -13,6 +13,7 @@ import EmptyComponent from "@/components/empty/empty";
 import { FolderNode } from "@/lib/s3/folders";
 import { DEFAULT_IMAGE_PAGE_SIZE } from "@/constants/constants";
 import InfiniteScroll from "react-infinite-scroll-component";
+import Loader from "@/components/loader";
 
 const Masonry = dynamic(() => import("react-responsive-masonry"), { ssr: false });
 
@@ -30,10 +31,10 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
 
   const pageIndexRef = useRef(1);
   const doneRef = useRef(false);
-  const loadingRef = useRef(false);
+  const loadingRef = useRef(true);
 
   const fetchFiles = useCallback(async () => {
-    if (!folder || doneRef.current || loadingRef.current) return;
+    if (!folder || doneRef.current) return;
 
     loadingRef.current = true;
 
@@ -94,7 +95,13 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
         hasMore={!doneRef.current}
         loader={
           <div className="flex w-full items-center justify-center pt-16 pb-8">
-            <Spinner color="default" variant="simple" />
+            <svg
+              className="h-8 w-8 animate-spin text-sky-600"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12,23a9.63,9.63,0,0,1-8-9.5,9.51,9.51,0,0,1,6.79-9.1A1.66,1.66,0,0,0,12,2.81h0a1.67,1.67,0,0,0-1.94-1.64A11,11,0,0,0,12,23Z" />
+            </svg>
           </div>
         }
         style={{ overflowX: "hidden" }}
