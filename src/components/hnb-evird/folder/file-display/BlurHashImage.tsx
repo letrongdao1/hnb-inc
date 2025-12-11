@@ -1,6 +1,6 @@
-import { Image } from "@heroui/react";
-import { useMemo, useState } from "react";
-import { decode } from "blurhash";
+import { Image as HeroImage } from "@heroui/react";
+import { useEffect, useMemo, useState } from "react";
+import { Blurhash } from "react-blurhash";
 import ERROR_IMAGE from "@/assets/images/fallback/error-image-fallback.png";
 
 type BlurHashImageProps = {
@@ -21,46 +21,40 @@ export default function BlurHashImage({
   const [loaded, setLoaded] = useState(false);
   const [currentSrc, setCurrentSrc] = useState<string>(src);
 
-  const blurUrl = useMemo(() => {
-    if (!blurHash) return "";
-
-    const pixels = decode(blurHash, width, height);
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return "";
-
-    const imgData = new ImageData(pixels, width, height);
-    ctx.putImageData(imgData, 0, 0);
-
-    return canvas.toDataURL("image/png");
-  }, [blurHash, width, height]);
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setLoaded(true);
+    };
+    img.src = src;
+  }, [src]);
 
   return (
-    <div className="relative h-auto w-full cursor-pointer overflow-hidden">
-      {blurUrl && (
-        <Image
-          src={blurUrl}
-          alt={`${alt}-blur`}
-          className={`absolute inset-0 h-full min-h-[${height / 4}px] w-full min-w-[${width / 4}px] scale-110 object-cover blur-xl transition-opacity duration-500 ${loaded ? "opacity-0" : "opacity-100"} `}
+    <div className="relative h-auto w-full cursor-pointer overflow-hidden rounded-md">
+      {blurHash && !loaded && (
+        <Blurhash
+          hash={blurHash}
+          width={400}
+          height={200}
+          resolutionX={32}
+          resolutionY={32}
+          punch={1}
         />
       )}
 
-      <Image
-        src={currentSrc}
-        alt={alt}
-        loading="lazy"
-        radius="sm"
-        removeWrapper
-        onLoad={() => setTimeout(() => setLoaded(true), 100)}
-        onError={() => {
-          setCurrentSrc(ERROR_IMAGE.src);
-        }}
-        className={`h-auto w-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
-      />
+      {loaded && (
+        <HeroImage
+          src={currentSrc}
+          alt={alt}
+          loading="lazy"
+          radius="sm"
+          removeWrapper
+          onError={() => {
+            setCurrentSrc(ERROR_IMAGE.src);
+          }}
+          className={`h-auto w-full object-cover`}
+        />
+      )}
     </div>
   );
 }
