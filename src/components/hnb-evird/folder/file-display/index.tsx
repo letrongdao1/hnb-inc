@@ -57,7 +57,7 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
           if (reachedEnd) {
             doneRef.current = true;
           } else {
-            pageIndexRef.current += 0.5;
+            pageIndexRef.current += 1;
           }
 
           return merged;
