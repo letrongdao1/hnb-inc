@@ -1,6 +1,6 @@
 import { CommonUtils } from "@/utils/common.utils";
 import { ROLE, STATUS_CODE } from "@/constants/enums";
-import { FolderNode } from "@/lib/s3/folders";
+import { FolderNode, listAllFolders } from "@/lib/s3/folders";
 import Forbidden403 from "@/components/403";
 import { RoleUtils } from "@/utils/role.utils";
 import { getCurrentUserInfo } from "@/app/auth/actions";
@@ -25,15 +25,11 @@ export default async function Evird() {
 }
 
 export async function getFolderList(folder: string = "") {
-  return await fetch(`${process.env.NEXT_SITE_URL}/api/b2/folders?folder=${folder}`)
-    .then((res) => res.json())
-    .then((result) => {
-      if (result.status === STATUS_CODE.OK) {
-        return result.data as FolderNode[];
-      }
-    })
-    .catch((err) => {
-      console.log({ err });
-      return [];
-    });
+  const folders = await listAllFolders(folder);
+
+  return folders.map((full) => {
+    const parts = full.split("/").filter(Boolean);
+    const subFolderName = parts[parts.length - 1];
+    return { label: subFolderName, path: subFolderName, relativePath: full };
+  });
 }
