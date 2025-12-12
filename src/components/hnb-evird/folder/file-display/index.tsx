@@ -13,7 +13,7 @@ import EmptyComponent from "@/components/empty/empty";
 import { FolderNode } from "@/lib/s3/folders";
 import { DEFAULT_IMAGE_PAGE_SIZE } from "@/constants/constants";
 import InfiniteScroll from "react-infinite-scroll-component";
-import Loader from "@/components/loader";
+import { LoaderIcon } from "@/components/loader";
 
 const Masonry = dynamic(() => import("react-responsive-masonry"), { ssr: false });
 
@@ -25,6 +25,7 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
   const { path } = useParams();
   const folder = NodeUtils.generateFolderNodeFromPath(Array.isArray(path) ? path.join("/") : "");
 
+  const [initialLoaded, setInitialLoaded] = useState<boolean>(false);
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [currentPreviewFile, setCurrentPreviewFile] = useState<UploadFile>();
   const previewModal = useDisclosure();
@@ -34,7 +35,10 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
   const loadingRef = useRef(true);
 
   const fetchFiles = useCallback(async () => {
-    if (!folder || doneRef.current) return;
+    if (!folder || doneRef.current) {
+      loadingRef.current = false;
+      return;
+    }
 
     loadingRef.current = true;
 
@@ -80,8 +84,11 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
     setFiles([]);
     doneRef.current = false;
     pageIndexRef.current = 1;
+    setInitialLoaded(false);
 
-    fetchFiles();
+    fetchFiles().then(() => {
+      setInitialLoaded(true);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderList]);
 
@@ -90,18 +97,12 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
       {!loadingRef.current && !files.length && <EmptyComponent margin={20} />}
 
       <InfiniteScroll
-        next={fetchFiles}
+        next={initialLoaded ? fetchFiles : () => {}}
+        hasMore={initialLoaded && !doneRef.current}
         dataLength={files.length}
-        hasMore={!doneRef.current}
         loader={
           <div className="flex w-full items-center justify-center pt-16 pb-8">
-            <svg
-              className="h-8 w-8 animate-spin text-sky-600"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12,23a9.63,9.63,0,0,1-8-9.5,9.51,9.51,0,0,1,6.79-9.1A1.66,1.66,0,0,0,12,2.81h0a1.67,1.67,0,0,0-1.94-1.64A11,11,0,0,0,12,23Z" />
-            </svg>
+            <LoaderIcon />
           </div>
         }
         style={{ overflowX: "hidden" }}

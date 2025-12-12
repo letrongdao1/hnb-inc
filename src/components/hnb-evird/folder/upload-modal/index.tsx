@@ -60,57 +60,65 @@ export default function UploadAssetsModal({
       return;
     }
 
-    const form = new FormData();
-    form.append("folder", props.folderPath || "");
-    form.append("title", props.title || "");
-    form.append("description", props.description || "");
-
-    let totalSize = 0;
-
-    uploadFileList.forEach((file, index) => {
-      form.append("files", file);
-
-      form.append(`paths[${index}]`, file.webkitRelativePath || file.name);
-
-      totalSize += file.size;
-    });
+    const totalSize = uploadFileList.reduce((acc, f) => acc + f.size, 0);
+    let totalUploaded = 0;
 
     progressModal.onOpen();
 
-    await new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
+    const uploadSingle = (file: File, index: number) =>
+      new Promise<void>((resolve, reject) => {
+        const form = new FormData();
+        form.append("folder", props.folderPath || "");
+        form.append("title", props.title || "");
+        form.append("description", props.description || "");
+        form.append("files", file);
+        form.append(`paths[0]`, file.webkitRelativePath || file.name);
 
-      xhr.open("POST", "/api/b2/upload");
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/b2/upload");
 
-      xhr.upload.onprogress = (event) => {
-        if (!event.lengthComputable) return;
+        let prevLoaded = 0;
 
-        const percent = Math.floor((event.loaded / totalSize) * 100);
-        setUploadProgress(percent);
-      };
+        xhr.upload.onprogress = (event) => {
+          if (!event.lengthComputable) return;
 
-      xhr.onload = () => {
-        if (xhr.status === 200) resolve();
-        else reject(xhr.statusText);
-      };
+          const delta = event.loaded - prevLoaded;
+          prevLoaded = event.loaded;
 
-      xhr.onerror = () => reject("Upload file thất bại!");
+          totalUploaded += delta;
 
-      xhr.send(form);
-    })
-      .then(() => {
-        addToast({
-          title: "Upload file lên cloud thành công!",
-          description: `${uploadFileList.length} file`,
-          color: "success",
-        });
-        handleClose();
-        router.refresh();
-      })
-      .catch((err) => {
+          const percent = Math.floor((totalUploaded / totalSize) * 100);
+          setUploadProgress(percent);
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(xhr.statusText);
+        };
+
+        xhr.onerror = () => reject("Upload file thất bại!");
+
+        xhr.send(form);
+      });
+
+    for (let i = 0; i < uploadFileList.length; i++) {
+      try {
+        await uploadSingle(uploadFileList[i], i);
+      } catch (err) {
         addToast({ title: "Upload file thất bại!", color: "danger" });
         handleClose();
-      });
+        return;
+      }
+    }
+
+    addToast({
+      title: "Upload file lên cloud thành công!",
+      description: `${uploadFileList.length} file`,
+      color: "success",
+    });
+
+    handleClose();
+    router.refresh();
   };
 
   const handleClose = () => {
@@ -169,12 +177,11 @@ export default function UploadAssetsModal({
                         <Progress
                           label={
                             <p className="text-sm font-light">
-                              {uploadProgress < 100 ? "Đang chuẩn bị..." : "Đang upload file..."}
+                              {uploadProgress < 100 ? "Đang upload file..." : "Đang hoàn tất..."}
                             </p>
                           }
                           value={uploadProgress}
                           showValueLabel={true}
-                          valueLabel={<Spinner color="success" variant="gradient" size="sm" />}
                           size="sm"
                           radius="sm"
                           classNames={{
