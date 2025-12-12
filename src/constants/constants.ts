@@ -11,6 +11,8 @@ export const GLOBAL_DATE_FORMAT = "DD/MM/YYYY";
 export const DEFAULT_PAGE_SIZE = 20;
 export const DEFAULT_IMAGE_PAGE_SIZE = 50;
 
+export const UPLOAD_REQUIRED_TIME_PER_FILE = 1;
+
 export const MAX_BANK_ACCOUNT_CAPACITY = 4;
 
 export const VIETNAMESE_WEEK_DAYS: { [key: string]: string } = {

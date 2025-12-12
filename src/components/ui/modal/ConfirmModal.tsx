@@ -52,7 +52,7 @@ export default function ConfirmModal({
         <ModalBody>
           <div className="flex w-full flex-col items-start justify-start gap-2">
             {description}
-            {extra && <p className="text-sm font-light italic">{extra}</p>}
+            {extra && <span className="text-sm font-light italic">{extra}</span>}
           </div>
         </ModalBody>
         <ModalFooter>

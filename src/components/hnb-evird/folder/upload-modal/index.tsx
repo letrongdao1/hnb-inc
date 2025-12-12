@@ -11,10 +11,11 @@ import {
   useDisclosure,
   Spinner,
 } from "@heroui/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import UploadFileSection from "./UploadFileSection";
 import FileInfoSection from "./FileInfoSection";
 import { useRouter } from "next/navigation";
+import { UPLOAD_REQUIRED_TIME_PER_FILE } from "@/constants/constants";
 
 type UploadAssetsModalProps = {
   isOpen: boolean;
@@ -40,6 +41,16 @@ export default function UploadAssetsModal({
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const progressModal = useDisclosure();
+
+  const remainingUploadTime = useMemo(
+    () =>
+      Math.ceil(
+        ((uploadFileList.length - (uploadFileList.length * uploadProgress) / 100) *
+          UPLOAD_REQUIRED_TIME_PER_FILE) /
+          60
+      ),
+    [uploadFileList, uploadProgress]
+  );
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -153,7 +164,11 @@ export default function UploadAssetsModal({
                 />
 
                 {uploadFileList.length > 0 && (
-                  <FileInfoSection handleUpload={handleUpload} uploadProgress={uploadProgress} />
+                  <FileInfoSection
+                    handleUpload={handleUpload}
+                    uploadFileList={uploadFileList}
+                    uploadProgress={uploadProgress}
+                  />
                 )}
               </div>
 
@@ -173,7 +188,7 @@ export default function UploadAssetsModal({
                 <ModalContent>
                   {() => (
                     <>
-                      <ModalBody className="px-2 py-4">
+                      <ModalBody className="space-y-4 px-2 py-4">
                         <Progress
                           label={
                             <p className="text-sm font-light">
@@ -182,6 +197,13 @@ export default function UploadAssetsModal({
                           }
                           value={uploadProgress}
                           showValueLabel={true}
+                          valueLabel={
+                            uploadProgress < 100 ? (
+                              `${uploadProgress}%`
+                            ) : (
+                              <Spinner color="success" variant="gradient" size="sm" />
+                            )
+                          }
                           size="sm"
                           radius="sm"
                           classNames={{
@@ -192,6 +214,12 @@ export default function UploadAssetsModal({
                             value: "text-foreground/60",
                           }}
                         />
+
+                        <p
+                          className={`text-sm font-light opacity-50 ${remainingUploadTime <= 0 && "invisible"}`}
+                        >
+                          Thời gian còn lại ước tính: ~ {remainingUploadTime} phút
+                        </p>
                       </ModalBody>
                     </>
                   )}

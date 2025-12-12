@@ -3,11 +3,9 @@
 import { FileIcon, FileUnknownIcon, VideoPlayIcon } from "@/components/svg";
 import { UploadFile } from "@/interfaces/common";
 import { FileTypeEnum, FileUtils } from "@/utils/file.utils";
-import { Image, Spinner } from "@heroui/react";
 import { useEffect, useState } from "react";
-import ERROR_IMAGE from "@/assets/images/fallback/error-image-fallback.png";
 import BlurHashImage from "./BlurHashImage";
-import Loader from "@/components/loader";
+import { Spinner } from "@heroui/react";
 
 export default function MasonryItem({
   file,
@@ -16,7 +14,6 @@ export default function MasonryItem({
   file: UploadFile;
   onPreviewOpen: () => void;
 }) {
-  const [currentSrc, setCurrentSrc] = useState<string>(file.url);
   const [isLoadingContent, setIsLoadingContent] = useState<boolean>(false);
   const [contentByType, setContentByType] = useState<React.JSX.Element | null>(null);
 
@@ -37,7 +34,8 @@ export default function MasonryItem({
               className="group relative h-32 w-full rounded-lg bg-cover bg-center bg-no-repeat md:h-48"
               style={{ backgroundImage: `url(${thumbnail})` }}
             >
-              <span className="absolute inset-0 z-10 flex items-center justify-center text-white duration-200 group-hover:scale-110">
+              <div className="absolute inset-0 z-10 bg-black/30" />
+              <span className="absolute inset-0 z-20 flex items-center justify-center text-white duration-200 group-hover:scale-110">
                 <VideoPlayIcon size={40} />
               </span>
             </div>
@@ -64,13 +62,13 @@ export default function MasonryItem({
     };
 
     load();
-  }, [file, currentSrc]);
+  }, [file]);
 
   return (
     <div onClick={onPreviewOpen} className="group relative h-full w-full">
       {isLoadingContent ? (
         <div className="border-default-300 flex h-24 w-full items-center justify-center rounded-lg border md:h-40">
-          <Loader />
+          <Spinner color="default" variant="gradient" size="sm" />
         </div>
       ) : (
         contentByType

@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { CLOUD_UPLOAD_FOLDER_TYPE } from "@/constants/b2_folder";
 import { UploadFile } from "@/interfaces/common";
-import { addToast, Button, Form, Input, Select, SelectItem, Textarea } from "@heroui/react";
+import {
+  addToast,
+  Button,
+  Form,
+  Input,
+  Select,
+  SelectItem,
+  Textarea,
+  useDisclosure,
+} from "@heroui/react";
 import "react-datepicker/dist/react-datepicker.css";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
@@ -11,22 +20,37 @@ import { CheckIcon } from "@/components/svg";
 import CustomDatepicker from "@/components/ui/datepicker/CustomDatepicker";
 import { FileUtils } from "@/utils/file.utils";
 import { UploadProps } from ".";
+import ConfirmModal from "@/components/ui/modal/ConfirmModal";
+import { UPLOAD_REQUIRED_TIME_PER_FILE } from "@/constants/constants";
 
 dayjs.extend(customParseFormat);
 
 type FileInfoSectionProps = {
   handleUpload: (props: UploadProps) => Promise<void>;
+  uploadFileList: File[];
   uploadProgress: number;
 };
 
 const keepRawFolderTypeList = ["MEME"];
 const hideDescriptionFolderTypeList = ["GRADUATION"];
 
-export default function FileInfoSection({ handleUpload, uploadProgress }: FileInfoSectionProps) {
+export default function FileInfoSection({
+  handleUpload,
+  uploadFileList,
+  uploadProgress,
+}: FileInfoSectionProps) {
   const [selectedFolderType, setSelectedFolderType] = useState<string>();
   const [currentFolderTime, setCurrentFolderTime] = useState<Date | null>(new Date(Date.now()));
+  const [validatedInfo, setValidatedInfo] = useState<UploadProps>();
 
-  const handleCheckValidation = (e: React.FormEvent<HTMLFormElement>) => {
+  const confirmModal = useDisclosure();
+
+  const totalUploadSize = useMemo(
+    () => uploadFileList.reduce((prev, file) => prev + file.size, 0),
+    [uploadFileList]
+  );
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget));
 
@@ -57,12 +81,14 @@ export default function FileInfoSection({ handleUpload, uploadProgress }: FileIn
       return;
     }
 
-    handleUpload({
+    setValidatedInfo({
       title: String(data.title || ""),
       folderName: folderName,
       folderPath: finalFolderPath,
       description: String(data.description || ""),
     });
+
+    confirmModal.onOpen();
   };
 
   const renderExtraInfoFields = () => {
@@ -226,7 +252,8 @@ export default function FileInfoSection({ handleUpload, uploadProgress }: FileIn
 
       {Boolean(selectedFolderType) && (
         <Form
-          onSubmit={handleCheckValidation}
+          onSubmit={handleSubmit}
+          autoComplete="off"
           className="flex w-full flex-1 flex-col items-stretch"
         >
           {renderExtraInfoFields()}
@@ -254,6 +281,27 @@ export default function FileInfoSection({ handleUpload, uploadProgress }: FileIn
           </Button>
         </Form>
       )}
+
+      <ConfirmModal
+        title={"Xác nhận upload file"}
+        open={confirmModal.isOpen}
+        onOpenChange={confirmModal.onOpenChange}
+        onClose={() => {
+          setValidatedInfo(undefined);
+          confirmModal.onClose();
+        }}
+        onConfirm={() => {
+          if (!validatedInfo) {
+            addToast({ title: "Thông tin upload không hợp lệ", color: "danger" });
+            return;
+          }
+          handleUpload(validatedInfo);
+        }}
+        description={`Tổng: ${uploadFileList.length} file (${FileUtils.formatFileSize(totalUploadSize)})`}
+        extra={`Thời gian upload dự kiến: ~ ${Math.ceil(
+          (uploadFileList.length * UPLOAD_REQUIRED_TIME_PER_FILE) / 60
+        )} phút`}
+      />
     </div>
   );
 }
