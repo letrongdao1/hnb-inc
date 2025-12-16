@@ -35,7 +35,7 @@ export default function MasonryItem({
               style={{ backgroundImage: `url(${thumbnail})` }}
             >
               <div className="absolute inset-0 z-10 bg-black/30" />
-              <span className="absolute inset-0 z-20 flex items-center justify-center text-white duration-200 group-hover:scale-110">
+              <span className="absolute inset-0 z-20 flex items-center justify-center text-white duration-200 group-hover:shadow-2xl">
                 <VideoPlayIcon size={40} />
               </span>
             </div>

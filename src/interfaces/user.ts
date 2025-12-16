@@ -12,6 +12,7 @@ export interface UserInfo extends BaseUserInfo {
   phone: string;
   roles: RoleInfo[];
   status: number;
+  last_active: string;
   created_at: string;
 }
 

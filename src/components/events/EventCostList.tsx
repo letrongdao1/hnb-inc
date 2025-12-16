@@ -133,59 +133,63 @@ export default function EventCostList({ event }: { event: Event }) {
     },
   ];
 
-  const renderCell = useCallback((eventCost: EventCost, columnKey: any) => {
-    switch (columnKey) {
-      case "action":
-        return eventCost.user.id === user?.id ? (
-          <Button
-            isIconOnly
-            color="danger"
-            startContent={<DeleteIcon size={16} />}
-            onPress={() => {
-              setSelectedCost(eventCost);
-              deleteCostModal.onOpen();
-            }}
-          />
-        ) : (
-          <></>
-        );
-      case "user":
-        return (
-          <User
-            avatarProps={{ radius: "lg", src: eventCost.user.avatar }}
-            name={eventCost.user.display_name}
-          >
-            {eventCost.user.display_name}
-          </User>
-        );
-      case "type":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-sm capitalize">{eventCost.type}</p>
-          </div>
-        );
-      case "amount":
-        return (
-          <Chip color={"success"} size="sm" variant="flat">
-            {CommonUtils.formatMoneyVND(eventCost.amount)}
-          </Chip>
-        );
-      case "created_at":
-        return (
-          <time dateTime={eventCost.created_at} className="ml-1">
-            {new Date(eventCost.created_at).toLocaleDateString("vi", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </time>
-        );
-      default:
-        return "-";
-    }
-  }, [deleteCostModal, user]);
+  const renderCell = useCallback(
+    (eventCost: EventCost, columnKey: any) => {
+      switch (columnKey) {
+        case "action":
+          return eventCost.user.id === user?.id ? (
+            <Button
+              isIconOnly
+              variant="flat"
+              color="danger"
+              startContent={<DeleteIcon size={16} />}
+              onPress={() => {
+                setSelectedCost(eventCost);
+                deleteCostModal.onOpen();
+              }}
+            />
+          ) : (
+            <></>
+          );
+        case "user":
+          return (
+            <User
+              avatarProps={{ radius: "lg", src: eventCost.user.avatar }}
+              name={eventCost.user.display_name}
+            >
+              {eventCost.user.display_name}
+            </User>
+          );
+        case "type":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-sm capitalize">{eventCost.type}</p>
+            </div>
+          );
+        case "amount":
+          return (
+            <Chip color={"success"} size="sm" variant="light">
+              {CommonUtils.formatMoneyVND(eventCost.amount)}
+            </Chip>
+          );
+        case "created_at":
+          return (
+            <time dateTime={eventCost.created_at} className="ml-1">
+              {new Date(eventCost.created_at).toLocaleDateString("vi", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </time>
+          );
+        default:
+          return "-";
+      }
+    },
+    [deleteCostModal, user]
+  );
 
   useEffect(() => {
     fetchEventCostList();
@@ -280,7 +284,10 @@ export default function EventCostList({ event }: { event: Event }) {
                 onPress={() => {
                   addCostModal.onOpen();
                 }}
-                hidden={event.is_ended || (!event.is_cost_split && event.will_pay_user && !event.is_will_pay_user)}
+                hidden={
+                  event.is_ended ||
+                  (!event.is_cost_split && event.will_pay_user && !event.is_will_pay_user)
+                }
               >
                 <p className="hidden md:inline">Tạo khoản chi phí</p>
               </Button>
@@ -317,7 +324,8 @@ export default function EventCostList({ event }: { event: Event }) {
         </Table>
       ) : (
         <div className="flex w-full flex-col items-center justify-center gap-2 py-8">
-          {!event.is_ended && ((event.is_cost_split && !event.will_pay_user) || event.is_will_pay_user) ? (
+          {!event.is_ended &&
+          ((event.is_cost_split && !event.will_pay_user) || event.is_will_pay_user) ? (
             <Button
               startContent={<PlusIcon />}
               color="success"
@@ -331,7 +339,9 @@ export default function EventCostList({ event }: { event: Event }) {
             <div className="flex items-center gap-1">
               <Avatar src={event.will_pay_user?.avatar} alt="" className="mr-1" />
               <p className="font-semibold">{event.will_pay_user?.display_name}</p>
-              <span className="font-light">{event.is_ended ? "đã" : "sẽ"} chi trả toàn bộ chi phí cho sự kiện này</span>
+              <span className="font-light">
+                {event.is_ended ? "đã" : "sẽ"} chi trả toàn bộ chi phí cho sự kiện này
+              </span>
             </div>
           )}
           <p className="text-sm font-light opacity-75">Chưa có khoản chi phí nào</p>

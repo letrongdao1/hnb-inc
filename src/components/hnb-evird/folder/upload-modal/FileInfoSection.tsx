@@ -21,7 +21,7 @@ import CustomDatepicker from "@/components/ui/datepicker/CustomDatepicker";
 import { FileUtils } from "@/utils/file.utils";
 import { UploadProps } from ".";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
-import { UPLOAD_REQUIRED_TIME_PER_FILE } from "@/constants/constants";
+import { UPLOAD_REQUIRED_SECOND_PER_MB } from "@/constants/constants";
 
 dayjs.extend(customParseFormat);
 
@@ -299,7 +299,9 @@ export default function FileInfoSection({
         }}
         description={`Tổng: ${uploadFileList.length} file (${FileUtils.formatFileSize(totalUploadSize)})`}
         extra={`Thời gian upload dự kiến: ~ ${Math.ceil(
-          (uploadFileList.length * UPLOAD_REQUIRED_TIME_PER_FILE) / 60
+          ((uploadFileList.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024)) *
+            UPLOAD_REQUIRED_SECOND_PER_MB) /
+            60
         )} phút`}
       />
     </div>

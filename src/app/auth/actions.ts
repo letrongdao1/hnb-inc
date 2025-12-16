@@ -215,3 +215,15 @@ export async function getCurrentUserInfo() {
     }
   }
 }
+
+export async function getAllAvailableUsers() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .gte("status", 1)
+    .order("created_at", { ascending: false });
+
+  return error || !data ? [] : data;
+}

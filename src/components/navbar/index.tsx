@@ -47,10 +47,12 @@ import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 import { RoleUtils } from "@/utils/role.utils";
 import NotificationList from "./notificationList";
+import FriendListDrawer from "./friendList";
+import { UserInfo } from "@/interfaces/user";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
-export default function Navbar() {
+export default function Navbar({ availableUserList }: { availableUserList: UserInfo[] }) {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
@@ -315,13 +317,14 @@ export default function Navbar() {
       <NavbarContent justify="end">
         <NotificationList />
 
+        <FriendListDrawer availableUserList={availableUserList} />
+
         {user ? (
           <Dropdown>
             <DropdownTrigger>
               <Button
                 variant="bordered"
                 startContent={<Avatar isBordered src={user.avatar} alt="" />}
-                endContent={<ArrowDownSLineIcon />}
                 className="h-full border-none px-0 sm:px-1"
               >
                 <p className="hidden h-fit max-w-24 overflow-hidden px-1 text-ellipsis whitespace-nowrap sm:inline">

@@ -50,7 +50,7 @@ export default function NotificationList() {
               className="absolute"
               hidden={!unreadCount}
             >
-              <BellIcon className="text-default-700 h-6 w-6" />
+              <BellIcon className="h-6 w-6" />
             </Badge>
           </button>
         </DropdownTrigger>

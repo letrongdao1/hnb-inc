@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Alfa_Slab_One, Montserrat } from "next/font/google";
 import { ClientProviders } from "../providers/client.provider";
 import ClientLayout from "./client-layout";
-import { getCurrentUserInfo } from "./auth/actions";
+import { getAllAvailableUsers, getCurrentUserInfo } from "./auth/actions";
 import { cache, Suspense } from "react";
 import Loader from "@/components/loader";
 
@@ -45,6 +45,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     return await getCurrentUserInfo();
   })();
 
+  const availableUserList = await cache(async () => {
+    return await getAllAvailableUsers();
+  })();
+
   return (
     <html
       lang="en"
@@ -53,7 +57,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="text-foreground bg-background font-sans">
         <ClientProviders>
-          <ClientLayout user={userData}>
+          <ClientLayout user={userData} availableUserList={availableUserList}>
             <Suspense fallback={<Loader />}>{children}</Suspense>
           </ClientLayout>
         </ClientProviders>

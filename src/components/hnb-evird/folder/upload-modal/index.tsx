@@ -15,7 +15,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import UploadFileSection from "./UploadFileSection";
 import FileInfoSection from "./FileInfoSection";
 import { useRouter } from "next/navigation";
-import { UPLOAD_REQUIRED_TIME_PER_FILE } from "@/constants/constants";
+import { UPLOAD_REQUIRED_SECOND_PER_MB } from "@/constants/constants";
+import { CHUNK_SIZE, MULTIPART_THRESHOLD } from "@/constants/b2_folder";
+import { STATUS_CODE } from "@/constants/enums";
 
 type UploadAssetsModalProps = {
   isOpen: boolean;
@@ -42,15 +44,13 @@ export default function UploadAssetsModal({
 
   const progressModal = useDisclosure();
 
-  const remainingUploadTime = useMemo(
-    () =>
-      Math.ceil(
-        ((uploadFileList.length - (uploadFileList.length * uploadProgress) / 100) *
-          UPLOAD_REQUIRED_TIME_PER_FILE) /
-          60
-      ),
-    [uploadFileList, uploadProgress]
-  );
+  const remainingUploadTime = useMemo(() => {
+    const totalSize = uploadFileList.reduce((acc, f) => acc + f.size, 0) / (1024 * 1024);
+
+    return Math.ceil(
+      ((totalSize - (totalSize * uploadProgress) / 100) * UPLOAD_REQUIRED_SECOND_PER_MB) / 60
+    );
+  }, [uploadFileList, uploadProgress]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -65,6 +65,122 @@ export default function UploadAssetsModal({
     return () => window.removeEventListener("beforeunload", handler);
   }, [isOpen, uploadProgress]);
 
+  const buildMetaFormData = (props: UploadProps, file: File) => {
+    const form = new FormData();
+    form.append("folder", props.folderPath || "");
+    form.append("title", props.title || "");
+    form.append("description", props.description || "");
+    form.append("files", file);
+    form.append(`paths[0]`, file.webkitRelativePath || file.name);
+    return form;
+  };
+
+  const handleUploadNormalFile = (
+    file: File,
+    props: UploadProps,
+    updateTotalProgress: (delta: number) => void
+  ) =>
+    new Promise<void>((resolve, reject) => {
+      const form = buildMetaFormData(props, file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/b2/upload");
+
+      let prevLoaded = 0;
+
+      xhr.upload.onprogress = (event) => {
+        if (!event.lengthComputable) return;
+
+        const delta = event.loaded - prevLoaded;
+        prevLoaded = event.loaded;
+
+        updateTotalProgress(delta);
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === STATUS_CODE.OK) {
+          resolve();
+        } else reject(xhr.statusText);
+      };
+
+      xhr.onerror = () => reject("Upload file thất bại!");
+      xhr.send(form);
+    });
+
+  const handleUploadLargeFile = async (
+    file: File,
+    props: UploadProps,
+    updateTotalProgress: (delta: number) => void
+  ) => {
+    const meta = buildMetaFormData(props, file);
+
+    const startRes = await fetch("/api/b2/upload/multipart/start", {
+      method: "POST",
+      body: meta,
+    });
+
+    const { uploadId, key } = await startRes.json();
+
+    const parts: { ETag: string; PartNumber: number }[] = [];
+    let uploaded = 0;
+    let partNumber = 1;
+
+    for (let offset = 0; offset < file.size; offset += CHUNK_SIZE) {
+      const chunk = file.slice(offset, offset + CHUNK_SIZE);
+
+      const signRes = await fetch("/api/b2/upload/multipart/part", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, uploadId, partNumber }),
+      });
+
+      const { url } = await signRes.json();
+
+      const res = await fetch(url, {
+        method: "PUT",
+        body: chunk,
+      });
+
+      if (!res.ok) throw new Error("Upload part failed");
+
+      uploaded += chunk.size;
+      updateTotalProgress(chunk.size);
+
+      parts.push({
+        ETag: res.headers.get("etag")!,
+        PartNumber: partNumber,
+      });
+
+      partNumber++;
+    }
+
+    const completeRes = await fetch("/api/b2/upload/multipart/complete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key,
+        uploadId,
+        parts,
+        folder: props.folderPath,
+        title: props.title,
+        description: props.description,
+      }),
+    });
+
+    if (!completeRes.ok) {
+      addToast({
+        title:
+          "Không thể hoàn tất quá trình upload file. Vui lòng thông báo phòng IT để được hỗ trợ!",
+        color: "danger",
+      });
+
+      return null;
+    }
+
+    const { url } = await completeRes.json();
+    return url;
+  };
+
   const handleUpload = async (props: UploadProps) => {
     if (!uploadFileList.length) {
       addToast({ title: "Vui lòng tải lên ít nhất 1 file!", color: "warning" });
@@ -74,62 +190,35 @@ export default function UploadAssetsModal({
     const totalSize = uploadFileList.reduce((acc, f) => acc + f.size, 0);
     let totalUploaded = 0;
 
+    const updateTotalProgress = (delta: number) => {
+      totalUploaded += delta;
+      const percent = Math.floor((totalUploaded / totalSize) * 100);
+      setUploadProgress(percent);
+    };
+
     progressModal.onOpen();
 
-    const uploadSingle = (file: File, index: number) =>
-      new Promise<void>((resolve, reject) => {
-        const form = new FormData();
-        form.append("folder", props.folderPath || "");
-        form.append("title", props.title || "");
-        form.append("description", props.description || "");
-        form.append("files", file);
-        form.append(`paths[0]`, file.webkitRelativePath || file.name);
+    try {
+      for (const file of uploadFileList) {
+        if (file.size >= MULTIPART_THRESHOLD) {
+          await handleUploadLargeFile(file, props, updateTotalProgress);
+        } else {
+          await handleUploadNormalFile(file, props, updateTotalProgress);
+        }
+      }
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/b2/upload");
-
-        let prevLoaded = 0;
-
-        xhr.upload.onprogress = (event) => {
-          if (!event.lengthComputable) return;
-
-          const delta = event.loaded - prevLoaded;
-          prevLoaded = event.loaded;
-
-          totalUploaded += delta;
-
-          const percent = Math.floor((totalUploaded / totalSize) * 100);
-          setUploadProgress(percent);
-        };
-
-        xhr.onload = () => {
-          if (xhr.status === 200) resolve();
-          else reject(xhr.statusText);
-        };
-
-        xhr.onerror = () => reject("Upload file thất bại!");
-
-        xhr.send(form);
+      addToast({
+        title: "Upload file lên cloud thành công!",
+        description: `${uploadFileList.length} file`,
+        color: "success",
       });
 
-    for (let i = 0; i < uploadFileList.length; i++) {
-      try {
-        await uploadSingle(uploadFileList[i], i);
-      } catch (err) {
-        addToast({ title: "Upload file thất bại!", color: "danger" });
-        handleClose();
-        return;
-      }
+      handleClose();
+      router.refresh();
+    } catch (err) {
+      addToast({ title: "Upload file thất bại!", color: "danger" });
+      handleClose();
     }
-
-    addToast({
-      title: "Upload file lên cloud thành công!",
-      description: `${uploadFileList.length} file`,
-      color: "success",
-    });
-
-    handleClose();
-    router.refresh();
   };
 
   const handleClose = () => {

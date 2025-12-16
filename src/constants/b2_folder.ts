@@ -1,5 +1,11 @@
 import { FileUtils } from "@/utils/file.utils";
 
+export const B2_BUCKET_NAME = process.env.B2_BUCKET_NAME!;
+export const B2_REGION = process.env.B2_REGION!;
+
+export const CHUNK_SIZE = 50 * 1024 * 1024;
+export const MULTIPART_THRESHOLD = 500 * 1024 * 1024;
+
 const CLOUD_MAIN_MEDIA_FOLDER_PATH = "TAT_CA_ANH";
 export const CLOUD_LOGS_ERROR_FOLDER_PATH = "LOGS/ERROR";
 

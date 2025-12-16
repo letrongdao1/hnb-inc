@@ -7,9 +7,7 @@ import { STATUS_CODE } from "@/constants/enums";
 import { getCurrentUserId } from "@/app/auth/actions";
 import { FileTypeEnum, FileUtils } from "@/utils/file.utils";
 import { s3 } from "@/lib/s3/s3";
-
-const bucket = process.env.B2_BUCKET_NAME!;
-const region = process.env.B2_REGION!;
+import { B2_BUCKET_NAME, B2_REGION } from "@/constants/b2_folder";
 
 export async function POST(req: Request) {
   try {
@@ -41,14 +39,14 @@ export async function POST(req: Request) {
 
       await b2.send(
         new PutObjectCommand({
-          Bucket: bucket,
+          Bucket: B2_BUCKET_NAME,
           Key: filename,
           Body: fileBuffer,
           ContentType: file.type,
         })
       );
 
-      const url = `https://${bucket}.s3.${region}.backblazeb2.com/${filename}`;
+      const url = `https://${B2_BUCKET_NAME}.s3.${B2_REGION}.backblazeb2.com/${filename}`;
       const fileType = FileUtils.detectFileType(url);
       const blurHash =
         fileType === FileTypeEnum.IMAGE ? await FileUtils.generateBlurHash(fileBuffer) : undefined;
@@ -126,7 +124,7 @@ export async function DELETE(req: Request) {
 
         await s3.send(
           new DeleteObjectCommand({
-            Bucket: bucket,
+            Bucket: B2_BUCKET_NAME,
             Key: filePath,
           })
         );
