@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 
 export type ActivityStatus = "online" | "away";
 
-const AWAY_TIMEOUT = 5 * 1000;
+const AWAY_TIMEOUT = 5 * 60 * 1000;
 
 export function useOnlineStatusWithActivity(userId?: string) {
   const [presenceState, setPresenceState] = useState<Record<string, any[]>>({});
