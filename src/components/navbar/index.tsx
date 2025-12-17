@@ -52,7 +52,7 @@ import { UserInfo } from "@/interfaces/user";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
-export default function Navbar({ availableUserList }: { availableUserList: UserInfo[] }) {
+export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
@@ -317,20 +317,12 @@ export default function Navbar({ availableUserList }: { availableUserList: UserI
       <NavbarContent justify="end">
         <NotificationList />
 
-        <FriendListDrawer availableUserList={availableUserList} />
+        <FriendListDrawer />
 
         {user ? (
           <Dropdown>
             <DropdownTrigger>
-              <Button
-                variant="bordered"
-                startContent={<Avatar isBordered src={user.avatar} alt="" />}
-                className="h-full border-none px-0 sm:px-1"
-              >
-                <p className="hidden h-fit max-w-24 overflow-hidden px-1 text-ellipsis whitespace-nowrap sm:inline">
-                  {user.display_name}
-                </p>
-              </Button>
+              <Avatar isBordered src={user.avatar} alt="" className="mx-2 cursor-pointer" />
             </DropdownTrigger>
             <DropdownMenu aria-label="User menu" variant="faded">
               {userMenuItems &&
@@ -439,7 +431,7 @@ export default function Navbar({ availableUserList }: { availableUserList: UserI
                       item.onClick();
                     }}
                   >
-                    {item.label}
+                    <p className="font-semibold">{item.label}</p>
                   </Link>
                 </NavbarMenuItem>
               );

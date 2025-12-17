@@ -13,20 +13,18 @@ import {
 import { UserGroupIcon } from "../svg";
 import { useOnlineStatusContext } from "@/providers/online-status.provider";
 import { UserInfo } from "@/interfaces/user";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useUser } from "@/providers/user.provider";
 import { ActivityStatus } from "@/hooks/useOnlineStatusWithActivity";
 import { CommonUtils } from "@/utils/common.utils";
 
-export default function FriendListDrawer({ availableUserList }: { availableUserList: UserInfo[] }) {
-  const [currentUserList, setCurrentUserList] = useState<UserInfo[]>(availableUserList);
-
+export default function FriendListDrawer() {
   const { user } = useUser();
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
-  const { onlineUserIds, myStatus, getStatus } = useOnlineStatusContext();
+  const { availableUserList, onlineUserIds, myStatus, getStatus } = useOnlineStatusContext();
 
   const onlineOtherUserIds = useMemo(
-    () => onlineUserIds.filter((id) => user && id !== user.id),
+    () => onlineUserIds.filter((id) => id !== String(user?.id)),
     [onlineUserIds, user]
   );
 
@@ -59,7 +57,6 @@ export default function FriendListDrawer({ availableUserList }: { availableUserL
       >
         <Badge
           color="success"
-          size="sm"
           content={onlineOtherUserIds.length}
           hidden={!onlineOtherUserIds.length}
         >
@@ -69,61 +66,57 @@ export default function FriendListDrawer({ availableUserList }: { availableUserL
 
       <Drawer isOpen={isOpen} onOpenChange={onOpenChange} size="xs">
         <DrawerContent>
-          {() => (
-            <>
-              <DrawerHeader className="flex gap-2 py-6">
-                <UserGroupIcon />
-                <p>Danh sách nhân viên</p>
-              </DrawerHeader>
-              <DrawerBody>
-                <div className="flex items-center gap-2 px-1 py-2">
-                  <Badge
-                    content=""
-                    color={getStatusDisplay(myStatus).color}
-                    placement="bottom-right"
-                    shape="circle"
-                  >
-                    <Avatar src={user.avatar} alt={user.display_name} />
-                  </Badge>
+          <>
+            <DrawerHeader className="flex gap-2 py-6">
+              <UserGroupIcon />
+              <p>Danh sách nhân viên</p>
+            </DrawerHeader>
+            <DrawerBody>
+              <div className="flex items-center gap-2 px-1 py-2">
+                <Badge
+                  content=""
+                  color={getStatusDisplay(myStatus).color}
+                  placement="bottom-right"
+                  shape="circle"
+                >
+                  <Avatar src={user.avatar} alt={user.display_name} />
+                </Badge>
 
-                  <div className="flex-1">
-                    <span className="flex items-center gap-1 font-semibold">
-                      {user.display_name}
-                    </span>
-                    <p className="text-xs font-light">{getStatusDisplay(myStatus).text}</p>
-                  </div>
+                <div className="flex-1">
+                  <span className="flex items-center gap-1 font-semibold">{user.display_name}</span>
+                  <p className="text-xs font-light">{getStatusDisplay(myStatus).text}</p>
                 </div>
+              </div>
 
-                <Divider />
+              <Divider />
 
-                <div className="flex flex-col items-stretch justify-start gap-2">
-                  {currentUserList
-                    .filter((u) => user && u.id !== user.id)
-                    .map((user) => {
-                      const onlineStatusDisplay = getStatusDisplay(getStatus(user.id), user);
+              <div className="flex flex-col items-stretch justify-start gap-2">
+                {availableUserList
+                  .filter((u) => user && u.id !== user.id)
+                  .map((user) => {
+                    const onlineStatusDisplay = getStatusDisplay(getStatus(user.id), user);
 
-                      return (
-                        <div key={user.id} className="flex items-center gap-2 px-1 py-2">
-                          <Badge
-                            content=""
-                            color={onlineStatusDisplay.color}
-                            placement="bottom-right"
-                            shape="circle"
-                          >
-                            <Avatar src={user.avatar} alt={user.display_name} />
-                          </Badge>
+                    return (
+                      <div key={user.id} className="flex items-center gap-2 px-1 py-2">
+                        <Badge
+                          content=""
+                          color={onlineStatusDisplay.color}
+                          placement="bottom-right"
+                          shape="circle"
+                        >
+                          <Avatar src={user.avatar} alt={user.display_name} />
+                        </Badge>
 
-                          <div className="flex-1">
-                            <p className="line-clamp-1 font-semibold">{user.display_name}</p>
-                            <p className="text-xs font-light">{onlineStatusDisplay.text}</p>
-                          </div>
+                        <div className="flex-1">
+                          <p className="line-clamp-1 font-semibold">{user.display_name}</p>
+                          <p className="text-xs font-light">{onlineStatusDisplay.text}</p>
                         </div>
-                      );
-                    })}
-                </div>
-              </DrawerBody>
-            </>
-          )}
+                      </div>
+                    );
+                  })}
+              </div>
+            </DrawerBody>
+          </>
         </DrawerContent>
       </Drawer>
     </>

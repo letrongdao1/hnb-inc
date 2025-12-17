@@ -45,10 +45,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     return await getCurrentUserInfo();
   })();
 
-  const availableUserList = await cache(async () => {
-    return await getAllAvailableUsers();
-  })();
-
   return (
     <html
       lang="en"
@@ -57,7 +53,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body className="text-foreground bg-background font-sans">
         <ClientProviders>
-          <ClientLayout user={userData} availableUserList={availableUserList}>
+          <ClientLayout user={userData}>
             <Suspense fallback={<Loader />}>{children}</Suspense>
           </ClientLayout>
         </ClientProviders>

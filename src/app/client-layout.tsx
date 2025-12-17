@@ -20,11 +20,9 @@ const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
 export default function ClientLayout({
   user,
-  availableUserList,
   children,
 }: {
   user: UserInfo | null;
-  availableUserList: UserInfo[];
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -76,7 +74,7 @@ export default function ClientLayout({
                   </AnimatePresence>
                 )}
 
-                <Navbar availableUserList={availableUserList} />
+                <Navbar />
               </div>
             )}
 
