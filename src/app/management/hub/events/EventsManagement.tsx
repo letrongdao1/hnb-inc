@@ -32,7 +32,7 @@ import {
 import { CommonUtils } from "@/utils/common.utils";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Countdown from "react-countdown";
-import { Event } from "@/interfaces/events";
+import { Event, EventStatusEnum } from "@/interfaces/events";
 import CreateUpdateEventForm from "@/components/management/hub/events/CreateUpdateEventForm";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import ImagePreviewModal from "@/components/preview-modal";
@@ -46,8 +46,8 @@ export default function EventsManagement() {
   const deleteModal = useDisclosure();
   const deleteLoading = useLoading();
 
-  const endNowModal = useDisclosure();
-  const endNowLoading = useLoading();
+  const startFinalizingModal = useDisclosure();
+  const startFinalizingLoading = useLoading();
 
   const previewModal = useDisclosure();
 
@@ -59,12 +59,12 @@ export default function EventsManagement() {
   const actionMenuItems = [
     {
       key: "end_now",
-      label: "Kết thúc sự kiện",
+      label: "Bắt đầu tổng kết sự kiện",
       icon: <CheckIcon size={16} />,
       color: "success",
       onClick: (event: Event) => {
         setSelectedEvent(event);
-        endNowModal.onOpen();
+        startFinalizingModal.onOpen();
       },
     },
     {
@@ -135,10 +135,10 @@ export default function EventsManagement() {
     };
   };
 
-  const handleEndEvent = async (eventId: string) => {
-    endNowLoading.setLoading(true);
+  const handleFinalizeEvent = async (eventId: string) => {
+    startFinalizingLoading.setLoading(true);
 
-    await fetch(`/api/events/end?eventId=${eventId}`, {
+    await fetch(`/api/events/finalize?eventId=${eventId}`, {
       method: "PATCH",
     })
       .then((res) => res.json())
@@ -147,16 +147,17 @@ export default function EventsManagement() {
           fetchEventList();
           addToast({
             title: result.message,
-            description: "Cảm ơn bạn đã dành thời gian cho sự kiện!",
-            color: "primary",
+            description:
+              "Hệ thống đã gửi thông báo đến tất cả thành viên tham gia sự kiện để tiến hành tổng kết.",
+            color: "success",
           });
         } else {
           addToast({ title: result.message, color: "danger" });
         }
       })
       .finally(() => {
-        endNowLoading.setLoading(false);
-        endNowModal.onClose();
+        startFinalizingLoading.setLoading(false);
+        startFinalizingModal.onClose();
       });
   };
 
@@ -215,7 +216,9 @@ export default function EventsManagement() {
         eventList.map((event, index) => {
           const isDateHidden =
             index > 0 && CommonUtils.compareDate(eventList[index - 1].start_at, event.start_at);
-          const isOngoing = !event.is_ended && new Date(event.start_at) < new Date(Date.now());
+          const isOngoing =
+            event.status !== EventStatusEnum.ENDED &&
+            new Date(event.start_at) < new Date(Date.now());
           return (
             <div key={event.id} className={`flex w-full items-stretch justify-start px-2 py-4`}>
               <Tooltip content={"Ngày sự kiện diễn ra"}>
@@ -268,7 +271,7 @@ export default function EventsManagement() {
                 </div>
 
                 <span className={`flex flex-1 justify-center`}>
-                  {event.is_ended ? (
+                  {event.status === EventStatusEnum.ENDED ? (
                     <Tooltip content={"Sự kiện đã kết thúc."}>
                       <Chip size="sm" color="success" variant="shadow">
                         <CalendarCheckIcon size={16} />
@@ -279,8 +282,22 @@ export default function EventsManagement() {
                       date={event.start_at}
                       renderer={({ days, hours, minutes, seconds, completed }) =>
                         completed ? (
-                          <Tooltip content={"Sự kiện đang diễn ra."}>
-                            <Chip size="sm" color="primary" variant="shadow">
+                          <Tooltip
+                            content={
+                              event.status === EventStatusEnum.IN_PROGRESS
+                                ? "Sự kiện đang diễn ra"
+                                : "Sự kiện đang trong quá trình tổng kết"
+                            }
+                          >
+                            <Chip
+                              size="sm"
+                              color={
+                                event.status === EventStatusEnum.IN_PROGRESS
+                                  ? "primary"
+                                  : "secondary"
+                              }
+                              variant="shadow"
+                            >
                               <svg
                                 className="h-4 w-4 animate-spin"
                                 viewBox="0 0 24 24"
@@ -361,21 +378,21 @@ export default function EventsManagement() {
       )}
 
       <ConfirmModal
-        open={endNowModal.isOpen}
-        onOpenChange={endNowModal.onOpenChange}
-        onClose={endNowModal.onClose}
-        title="Xác nhận kết thúc sự kiện"
+        open={startFinalizingModal.isOpen}
+        onOpenChange={startFinalizingModal.onOpenChange}
+        onClose={startFinalizingModal.onClose}
+        title="Xác nhận bắt đầu tổng kết sự kiện"
         description=""
         extra="Thao tác này không thể được hoàn tác"
         onConfirm={() => {
-          if (selectedEvent) handleEndEvent(selectedEvent.id);
+          if (selectedEvent) handleFinalizeEvent(selectedEvent.id);
         }}
-        confirmText="Kết thúc sự kiện"
+        confirmText="Xác nhận"
         okButtonProps={{
           color: "success",
-          startContent: !endNowLoading.loading && <CheckIcon />,
+          startContent: !startFinalizingLoading.loading && <CheckIcon />,
         }}
-        loading={endNowLoading.loading}
+        loading={startFinalizingLoading.loading}
       />
 
       <ConfirmModal

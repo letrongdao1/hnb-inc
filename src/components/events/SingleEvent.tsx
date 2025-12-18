@@ -1,6 +1,6 @@
 "use client";
 
-import { Event } from "@/interfaces/events";
+import { Event, EventStatusEnum } from "@/interfaces/events";
 import React, { useMemo, useState } from "react";
 import {
   CalendarCheckIcon,
@@ -47,7 +47,8 @@ export default function SingleEvent({ event }: { event: Event }) {
 
   const tagList = useMemo(() => (event.tags ? event.tags.split(",") : []), [event]);
 
-  const isEventInProgress = !event.is_ended && new Date() > new Date(event.start_at);
+  const isEventInProgress =
+    event.status !== EventStatusEnum.ENDED && new Date() > new Date(event.start_at);
 
   const handleViewDetail = () => {
     router.push(`${pathName}/${event.slug}`);
@@ -141,13 +142,8 @@ export default function SingleEvent({ event }: { event: Event }) {
             {event.title}
           </p>
 
-          {event.is_ended ? (
-            <Chip
-              size="sm"
-              color="success"
-              variant="shadow"
-              startContent={<CalendarCheckIcon size={16} />}
-            >
+          {event.status === EventStatusEnum.ENDED ? (
+            <Chip color="success" variant="shadow" startContent={<CalendarCheckIcon size={16} />}>
               Đã kết thúc
             </Chip>
           ) : (
@@ -155,8 +151,14 @@ export default function SingleEvent({ event }: { event: Event }) {
               date={event.start_at}
               renderer={({ days, completed }) =>
                 completed ? (
-                  <Chip size="sm" color="primary" variant="shadow" startContent={<SpinningGlass />}>
-                    Đang diễn ra
+                  <Chip
+                    color={event.status === EventStatusEnum.IN_PROGRESS ? "primary" : "secondary"}
+                    variant="shadow"
+                    startContent={<SpinningGlass />}
+                  >
+                    {event.status === EventStatusEnum.IN_PROGRESS
+                      ? "Đang diễn ra"
+                      : "Đang tổng kết"}
                   </Chip>
                 ) : days > 0 ? (
                   <FlipClockCountdown
@@ -179,12 +181,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                     }}
                     separatorStyle={{ size: 2 }}
                   >
-                    <Chip
-                      size="sm"
-                      color="primary"
-                      variant="shadow"
-                      startContent={<SpinningGlass />}
-                    >
+                    <Chip color="primary" variant="shadow" startContent={<SpinningGlass />}>
                       Đang diễn ra
                     </Chip>
                   </FlipClockCountdown>
@@ -302,7 +299,7 @@ export default function SingleEvent({ event }: { event: Event }) {
                   handleJoinEvent();
                 }
               }}
-              hidden={isEventInProgress || event.is_ended}
+              hidden={isEventInProgress || event.status === EventStatusEnum.ENDED}
               isLoading={joinLoading.loading}
             >
               {isJoinedStatus ? "Đã tham gia" : "Đăng ký tham gia"}

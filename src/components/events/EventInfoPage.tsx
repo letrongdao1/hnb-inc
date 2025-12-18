@@ -17,7 +17,7 @@ import {
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { STATUS_CODE } from "@/constants/enums";
 import { useLoading } from "@/hooks/useLoading";
-import { Event } from "@/interfaces/events";
+import { Event, EventStatusEnum } from "@/interfaces/events";
 import { useUser } from "@/providers/user.provider";
 import {
   Accordion,
@@ -53,7 +53,8 @@ export default function EventInfoPage({ event }: { event: Event }) {
   );
   const [isJoinedStatus, setIsJoinedStatus] = useState<boolean>(Boolean(event.is_joined));
 
-  const isEventInProgress = !event.is_ended && new Date() > new Date(event.start_at);
+  const isEventInProgress =
+    event.status !== EventStatusEnum.ENDED && new Date() > new Date(event.start_at);
 
   const handleJoinEvent = async () => {
     if (!currentUser) return;
@@ -158,7 +159,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
           {event.title}
         </div>
 
-        {event.is_ended ? (
+        {event.status === EventStatusEnum.ENDED ? (
           <Chip
             size="sm"
             color="success"
@@ -172,8 +173,12 @@ export default function EventInfoPage({ event }: { event: Event }) {
             date={event.start_at}
             renderer={({ days, completed }) =>
               completed ? (
-                <Chip size="lg" color="primary" variant="shadow" startContent={<SpinningGlass />}>
-                  Đang diễn ra
+                <Chip
+                  color={event.status === EventStatusEnum.IN_PROGRESS ? "primary" : "secondary"}
+                  variant="shadow"
+                  startContent={<SpinningGlass />}
+                >
+                  {event.status === EventStatusEnum.IN_PROGRESS ? "Đang diễn ra" : "Đang tổng kết"}
                 </Chip>
               ) : days > 0 ? (
                 <FlipClockCountdown
@@ -299,7 +304,10 @@ export default function EventInfoPage({ event }: { event: Event }) {
             ) : (
               <p className="text-tiny font-semibold text-green-500">
                 {event.will_pay_user.display_name}{" "}
-                <span className="font-light">{event.is_ended ? "đã" : "sẽ"} chi trả toàn bộ chi phí cho sự kiện này</span>
+                <span className="font-light">
+                  {event.status === EventStatusEnum.ENDED ? "đã" : "sẽ"} chi trả toàn bộ chi phí cho
+                  sự kiện này
+                </span>
               </p>
             )
           }
@@ -335,7 +343,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
               handleJoinEvent();
             }
           }}
-          hidden={isEventInProgress || event.is_ended}
+          hidden={isEventInProgress || event.status === EventStatusEnum.ENDED}
           isLoading={joinLoading.loading}
           className="font-semibold"
         >

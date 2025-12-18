@@ -161,7 +161,7 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
                   await fetchBankList();
                 }}
                 color="success"
-                variant="light"
+                variant="flat"
                 startContent={<PlusIcon size={16} />}
               >
                 <p className="hidden lg:inline">Thêm tài khoản</p>
@@ -174,22 +174,7 @@ export default function BankAccountManagement({ user }: PersonalInfoProps) {
           {loading ? (
             <Loader margin={10} />
           ) : accountList.length === 0 ? (
-            <EmptyComponent
-              title="Chưa có tài khoản"
-              description={
-                <Button
-                  onPress={async () => {
-                    setIsAddingAccount(true);
-                    await fetchBankList();
-                  }}
-                  color="success"
-                  startContent={<PlusIcon size={16} />}
-                >
-                  <p className="hidden not-italic lg:inline">Thêm tài khoản</p>
-                </Button>
-              }
-              margin={2}
-            />
+            <EmptyComponent title="Chưa có tài khoản" imageSize={80} />
           ) : (
             <>
               <div className="grid grid-cols-1 items-stretch gap-2 md:grid-cols-2">
@@ -405,59 +390,66 @@ const AddAccount = ({
           onSubmit={handleSubmit(handleCreateBankAccount)}
           className="flex flex-col items-stretch gap-4 md:px-16"
         >
-          <Autocomplete
-            isRequired
-            name="bank"
-            label="Ngân hàng"
-            placeholder="Chọn ngân hàng"
-            defaultItems={bankList}
-            size="lg"
-            onSelectionChange={(value) => {
-              setSelectedBank(value);
-            }}
-            classNames={{
-              listboxWrapper: "max-h-[320px]",
-              selectorButton: "text-default-500",
-            }}
-            listboxProps={{
-              itemClasses: {
-                base: [
-                  "rounded-medium",
-                  "text-default-500",
-                  "transition-opacity",
-                  "data-[hover=true]:text-foreground",
-                  "dark:data-[hover=true]:bg-default-50",
-                  "data-[pressed=true]:opacity-70",
-                  "data-[hover=true]:bg-default-200",
-                  "data-[selectable=true]:focus:bg-default-100",
-                  "data-[focus-visible=true]:ring-default-500",
-                ],
-              },
-            }}
-            popoverProps={{
-              offset: 10,
-              classNames: {
-                base: "rounded-large",
-                content: "p-1 border-small border-default-100 bg-background",
-              },
-            }}
-          >
-            {(bank: Bank) => (
-              <AutocompleteItem key={bank.id} textValue={bank.shortName + " - " + bank.name}>
-                <div className="flex items-center gap-2">
-                  <Image
-                    src={bank.logo}
-                    alt={bank.shortName}
-                    className="aspect-square max-w-8 min-w-8 rounded-full border bg-white object-contain"
-                  />
-                  <p className="line-clamp-1 font-semibold">
-                    {bank.shortName}
-                    <span className="ml-2 text-xs font-light">{bank.name}</span>
-                  </p>
-                </div>
-              </AutocompleteItem>
-            )}
-          </Autocomplete>
+          <div className="space-y-0.5">
+            <Autocomplete
+              isRequired
+              name="bank"
+              label="Ngân hàng"
+              placeholder="Chọn ngân hàng"
+              defaultItems={bankList}
+              size="lg"
+              onSelectionChange={(value) => {
+                setSelectedBank(value);
+              }}
+              classNames={{
+                listboxWrapper: "max-h-[320px]",
+                selectorButton: "text-default-500",
+              }}
+              listboxProps={{
+                itemClasses: {
+                  base: [
+                    "rounded-medium",
+                    "text-default-500",
+                    "transition-opacity",
+                    "data-[hover=true]:text-foreground",
+                    "dark:data-[hover=true]:bg-default-50",
+                    "data-[pressed=true]:opacity-70",
+                    "data-[hover=true]:bg-default-200",
+                    "data-[selectable=true]:focus:bg-default-100",
+                    "data-[focus-visible=true]:ring-default-500",
+                  ],
+                },
+              }}
+              popoverProps={{
+                offset: 0,
+                classNames: {
+                  base: "rounded-large",
+                  content: "p-1 border-small border-default-100 bg-background",
+                },
+              }}
+              description={
+                <p className="text-warning-600 text-sm">
+                  *Hệ thống hiện tại KHÔNG hỗ trợ liên kết ví điện tử như Momo, Zalopay, VNPay...
+                </p>
+              }
+            >
+              {(bank: Bank) => (
+                <AutocompleteItem key={bank.id} textValue={bank.shortName + " - " + bank.name}>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src={bank.logo}
+                      alt={bank.shortName}
+                      className="aspect-square max-w-8 min-w-8 rounded-full border bg-white object-contain"
+                    />
+                    <p className="line-clamp-1 font-semibold">
+                      {bank.shortName}
+                      <span className="ml-2 text-xs font-light">{bank.name}</span>
+                    </p>
+                  </div>
+                </AutocompleteItem>
+              )}
+            </Autocomplete>
+          </div>
 
           <div className="space-y-0.5">
             <Input
