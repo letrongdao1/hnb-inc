@@ -23,9 +23,32 @@ export default function FriendListDrawer() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const { availableUserList, onlineUserIds, myStatus, getStatus } = useOnlineStatusContext();
 
-  const onlineOtherUserIds = useMemo(
+  const currentFriendList = useMemo(
+    () => availableUserList.filter((u) => user && u.id !== user.id),
+    [availableUserList, user]
+  );
+
+  const onlineFriendIds = useMemo(
     () => onlineUserIds.filter((id) => id !== String(user?.id)),
     [onlineUserIds, user]
+  );
+
+  const onlineFriendList = useMemo(
+    () => currentFriendList.filter((user) => onlineFriendIds.includes(user.id)),
+    [currentFriendList, onlineFriendIds]
+  );
+
+  const offlineFriendList = useMemo(
+    () =>
+      currentFriendList
+        .filter((user) => !onlineFriendIds.includes(user.id))
+        .sort((a, b) => {
+          const aTime = a.last_active ? Date.parse(a.last_active) : -Infinity;
+          const bTime = b.last_active ? Date.parse(b.last_active) : -Infinity;
+
+          return bTime - aTime;
+        }),
+    [currentFriendList, onlineFriendIds]
   );
 
   const getStatusDisplay = (status: ActivityStatus | null, user?: UserInfo) => {
@@ -55,11 +78,7 @@ export default function FriendListDrawer() {
         onClick={onOpen}
         className="hover:bg-default-50 relative cursor-pointer rounded-md p-2 duration-200 focus:outline-none"
       >
-        <Badge
-          color="success"
-          content={onlineOtherUserIds.length}
-          hidden={!onlineOtherUserIds.length}
-        >
+        <Badge color="success" content={onlineFriendIds.length} hidden={!onlineFriendIds.length}>
           <UserGroupIcon className="h-6 w-6" />
         </Badge>
       </button>
@@ -91,29 +110,19 @@ export default function FriendListDrawer() {
               <Divider />
 
               <div className="flex flex-col items-stretch justify-start gap-2">
-                {availableUserList
-                  .filter((u) => user && u.id !== user.id)
-                  .map((user) => {
-                    const onlineStatusDisplay = getStatusDisplay(getStatus(user.id), user);
+                <FriendListDisplay
+                  currentFriendList={onlineFriendList}
+                  getStatus={getStatus}
+                  getStatusDisplay={getStatusDisplay}
+                />
 
-                    return (
-                      <div key={user.id} className="flex items-center gap-2 px-1 py-2">
-                        <Badge
-                          content=""
-                          color={onlineStatusDisplay.color}
-                          placement="bottom-right"
-                          shape="circle"
-                        >
-                          <Avatar src={user.avatar} alt={user.display_name} />
-                        </Badge>
+                {onlineFriendList.length > 0 && offlineFriendList.length > 0 && <Divider />}
 
-                        <div className="flex-1">
-                          <p className="line-clamp-1 font-semibold">{user.display_name}</p>
-                          <p className="text-xs font-light">{onlineStatusDisplay.text}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <FriendListDisplay
+                  currentFriendList={offlineFriendList}
+                  getStatus={getStatus}
+                  getStatusDisplay={getStatusDisplay}
+                />
               </div>
             </DrawerBody>
           </>
@@ -122,3 +131,36 @@ export default function FriendListDrawer() {
     </>
   );
 }
+
+const FriendListDisplay = ({
+  currentFriendList,
+  getStatusDisplay,
+  getStatus,
+}: {
+  currentFriendList: UserInfo[];
+  getStatusDisplay: (
+    status: ActivityStatus | null,
+    user?: UserInfo
+  ) => {
+    color: any;
+    text: string;
+  };
+  getStatus: (targetUserId: string) => ActivityStatus | null;
+}) => {
+  return currentFriendList.map((user) => {
+    const onlineStatusDisplay = getStatusDisplay(getStatus(user.id), user);
+
+    return (
+      <div key={user.id} className="flex items-center gap-2 px-1 py-2">
+        <Badge content="" color={onlineStatusDisplay.color} placement="bottom-right" shape="circle">
+          <Avatar src={user.avatar} alt={user.display_name} />
+        </Badge>
+
+        <div className="flex-1">
+          <p className="line-clamp-1 font-semibold">{user.display_name}</p>
+          <p className="text-xs font-light">{onlineStatusDisplay.text}</p>
+        </div>
+      </div>
+    );
+  });
+};
