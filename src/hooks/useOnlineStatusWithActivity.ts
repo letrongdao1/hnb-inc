@@ -21,6 +21,7 @@ export function useOnlineStatusWithActivity(userId?: string) {
 
   const awayTimer = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<any>(null);
+  const lastActiveRef = useRef(0);
 
   const fetchAvailableUserList = useCallback(async () => {
     await fetch("/api/users/available")
@@ -83,15 +84,27 @@ export function useOnlineStatusWithActivity(userId?: string) {
 
   useEffect(() => {
     const updateLastActive = () => {
+      const now = Date.now();
+      if (now - lastActiveRef.current < 1000 * 60 * 1) {
+        return;
+      }
+
+      lastActiveRef.current = now;
       navigator.sendBeacon("/api/users/last-active");
     };
 
-    window.addEventListener("beforeunload", updateLastActive);
+    const handleVisibilityChange = () => {
+      if (document.hidden) updateLastActive();
+    };
+
+    window.addEventListener("pagehide", updateLastActive);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener("beforeunload", updateLastActive);
+      window.removeEventListener("pagehide", updateLastActive);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [userId]);
+  }, []);
 
   const trackStatus = useCallback(
     (status: ActivityStatus) => {

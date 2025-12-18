@@ -20,8 +20,6 @@ export async function POST() {
       return NextResponse.json({ status: STATUS_CODE.ERROR });
     }
 
-    console.log("last-active");
-
     return NextResponse.json({ status: STATUS_CODE.OK });
   } catch (err) {
     console.error("Unexpected error:", err);
