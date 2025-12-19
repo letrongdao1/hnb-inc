@@ -49,6 +49,7 @@ import { RoleUtils } from "@/utils/role.utils";
 import NotificationList from "./notificationList";
 import FriendListDrawer from "./friendList";
 import { UserInfo } from "@/interfaces/user";
+import ChatModal from "../chat";
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 
@@ -316,6 +317,8 @@ export default function Navbar() {
 
       <NavbarContent justify="end">
         <NotificationList />
+
+        <ChatModal />
 
         <FriendListDrawer />
 
