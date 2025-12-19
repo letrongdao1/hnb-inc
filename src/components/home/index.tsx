@@ -113,7 +113,7 @@ export default function HomePage({ userStreak }: HomeProps) {
                 </Chip>
 
                 <Chip radius="sm" startContent={<LocationIcon size={16} />} variant="bordered">
-                  <p className="xs:max-w-64 max-w-40 overflow-hidden text-ellipsis whitespace-nowrap md:max-w-full">
+                  <p className="xs:max-w-64 max-w-40 overflow-hidden text-ellipsis whitespace-nowrap md:max-w-[500px]">
                     {homeData.event.venue_name}
                   </p>
                 </Chip>

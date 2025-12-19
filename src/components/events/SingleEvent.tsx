@@ -138,7 +138,10 @@ export default function SingleEvent({ event }: { event: Event }) {
 
       <div className="relative z-10 space-y-2 text-white">
         <div className="flex flex-col items-center justify-between gap-2 md:flex-row">
-          <p className="line-clamp-1 max-w-[20em] text-lg font-bold uppercase group-hover:underline md:text-2xl">
+          <p
+            onClick={handleViewDetail}
+            className="line-clamp-1 max-w-[20em] text-lg font-bold uppercase group-hover:underline md:text-2xl"
+          >
             {event.title}
           </p>
 

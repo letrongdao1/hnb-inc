@@ -129,6 +129,71 @@ export default function EventInfoPage({ event }: { event: Event }) {
       });
   };
 
+  const renderActionButton = () => {
+    switch (event.status) {
+      case EventStatusEnum.IN_PROGRESS:
+        return (
+          <div
+            className={`${!isJoinedStatus && "sticky bottom-1 z-10 mt-auto"} flex justify-center self-stretch bg-inherit`}
+          >
+            <Button
+              fullWidth
+              variant={isJoinedStatus ? "faded" : "solid"}
+              color="success"
+              startContent={
+                joinLoading.loading ? null : isJoinedStatus ? (
+                  <CheckIcon size={16} />
+                ) : (
+                  <StarIcon size={16} />
+                )
+              }
+              onPress={() => {
+                if (isJoinedStatus) {
+                  confirmNotJoin.onOpen();
+                } else {
+                  handleJoinEvent();
+                }
+              }}
+              hidden={isEventInProgress}
+              isLoading={joinLoading.loading}
+              className="font-semibold"
+            >
+              {isJoinedStatus ? "Đã tham gia" : "Đăng ký tham gia"}
+            </Button>
+          </div>
+        );
+      case EventStatusEnum.FINALIZING:
+        return (
+          <Button
+            fullWidth
+            variant={isJoinedStatus ? "faded" : "solid"}
+            color="secondary"
+            startContent={
+              joinLoading.loading ? null : isJoinedStatus ? (
+                <CheckIcon size={16} />
+              ) : (
+                <StarIcon size={16} />
+              )
+            }
+            onPress={() => {
+              if (isJoinedStatus) {
+                confirmNotJoin.onOpen();
+              } else {
+                handleJoinEvent();
+              }
+            }}
+            hidden={isEventInProgress}
+            isLoading={joinLoading.loading}
+            className="font-semibold"
+          >
+            Tổng kết sự kiện
+          </Button>
+        );
+      case EventStatusEnum.ENDED:
+        return null;
+    }
+  };
+
   if (!event)
     return (
       <EmptyComponent
@@ -322,34 +387,7 @@ export default function EventInfoPage({ event }: { event: Event }) {
         ></AccordionItem>
       </Accordion>
 
-      <div
-        className={`${!isJoinedStatus && "sticky bottom-1 z-10 mt-auto"} flex justify-center self-stretch bg-inherit`}
-      >
-        <Button
-          fullWidth
-          variant={isJoinedStatus ? "faded" : "solid"}
-          color="success"
-          startContent={
-            joinLoading.loading ? null : isJoinedStatus ? (
-              <CheckIcon size={16} />
-            ) : (
-              <StarIcon size={16} />
-            )
-          }
-          onPress={() => {
-            if (isJoinedStatus) {
-              confirmNotJoin.onOpen();
-            } else {
-              handleJoinEvent();
-            }
-          }}
-          hidden={isEventInProgress || event.status === EventStatusEnum.ENDED}
-          isLoading={joinLoading.loading}
-          className="font-semibold"
-        >
-          {isJoinedStatus ? "Đã tham gia" : "Đăng ký tham gia"}
-        </Button>
-      </div>
+      {renderActionButton()}
 
       <ConfirmModal
         open={confirmNotJoin.isOpen}
