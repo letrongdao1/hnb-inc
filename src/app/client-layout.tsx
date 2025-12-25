@@ -14,7 +14,10 @@ import { TopBanner as ITopBanner } from "@/interfaces/common";
 import { LOCAL_STORAGE_KEY, STATUS_CODE } from "@/constants/enums";
 import TopBanner from "@/components/top-banner";
 import { OnlineStatusProvider } from "@/providers/online-status.provider";
-import { createClient } from "@/lib/supabase/client";
+import "dayjs/locale/vi";
+import dayjs from "dayjs";
+
+dayjs.locale("vi");
 
 const pageToHide = ["/auth/login", "/auth/signup", "/get-start"];
 

@@ -1,16 +1,17 @@
 import { BaseUserInfo } from "./user";
 
 export enum ChatMessageTypeEnum {
-  TEXT = "text",
-  IMAGE = "img",
-  SYSTEM = "sys",
+  SYSTEM = 0,
+  TEXT = 1,
+  IMAGE = 2,
+  VIDEO = 3,
+  FILE = 4,
 }
 
 export enum ChatMessageStatusEnum {
+  SENT_FAILED = -1,
   SENDING = 0,
   SENT = 1,
-  DELIVERED = 2,
-  SEEN = 3,
 }
 
 export enum ChatThreadStatusEnum {
@@ -34,6 +35,18 @@ export type ChatMessage = {
   deleted_at?: string;
 
   is_mine?: boolean;
+};
+
+export type ChatGroupedMessage = {
+  senderId?: string;
+  sender?: BaseUserInfo;
+  sentAt: Date;
+  messages: ChatMessage[];
+};
+
+export type ChatDateGroupedMessage = {
+  date: Date;
+  groups: ChatGroupedMessage[];
 };
 
 export type ChatThread = {

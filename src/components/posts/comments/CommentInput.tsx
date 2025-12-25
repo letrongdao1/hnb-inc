@@ -4,6 +4,7 @@ import { SendIcon } from "@/components/svg";
 import { STATUS_CODE, SYSTEM_MESSAGE } from "@/constants/enums";
 import { BasePostInfo, PostComment } from "@/interfaces/news";
 import { useUser } from "@/providers/user.provider";
+import { CommonUtils } from "@/utils/common.utils";
 import { addToast, Avatar, Button, Textarea } from "@heroui/react";
 import React, { useMemo, useRef, useState } from "react";
 
@@ -33,6 +34,19 @@ export default function CommentInput({
   const sendRef = useRef<HTMLButtonElement>(null);
 
   const isCommentError = useMemo(() => maxLength && value.length > maxLength, [value, maxLength]);
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (CommonUtils.isMobile()) {
+      return;
+    }
+
+    if (e.key === "Enter") {
+      if (e.shiftKey || e.altKey) return;
+
+      e.preventDefault();
+      handleSend();
+    }
+  };
 
   const handleSend = async () => {
     const newComment = {
@@ -80,23 +94,7 @@ export default function CommentInput({
         maxRows={8}
         isInvalid={Boolean(isCommentError)}
         errorMessage={"Bình luận quá dài. Vui lòng sử dụng ngôn từ ngắn gọn, xúc xích 🌭"}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            if (e.altKey) {
-              const { selectionStart, selectionEnd } = e.currentTarget;
-              const newValue =
-                value.substring(0, selectionStart) + "\n" + value.substring(selectionEnd);
-              setValue(newValue);
-
-              requestAnimationFrame(() => {
-                e.currentTarget.selectionStart = e.currentTarget.selectionEnd = selectionStart + 1;
-              });
-            } else {
-              e.preventDefault();
-              sendRef.current?.click();
-            }
-          }
-        }}
+        onKeyDown={handleInputKeyDown}
         className="flex-1"
       />
       <Button

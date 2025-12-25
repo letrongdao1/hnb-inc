@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { ChatMessage } from "@/interfaces/chat";
+import { DEFAULT_MESSAGE_PAGE_SIZE } from "@/constants/constants";
 
 interface ChatState {
   messages: ChatMessage[];
@@ -9,11 +10,12 @@ interface ChatState {
   reactions: Record<string, Record<string, string>>;
   seenBy: Record<string, string[]>;
   hasMore: boolean;
+  isFetching: boolean;
 
-  setMessages: (msgs: ChatMessage[]) => void;
+  setMessages: (fn: (prev: ChatMessage[]) => ChatMessage[]) => void;
 
   addMessage: (msg: ChatMessage) => void;
-  updateMessageStatus: (messageId: string, status: ChatMessage["status"]) => void;
+  updateMessage: (data: ChatMessage) => void;
 
   addReaction: (messageId: string, userId: string, reaction: string) => void;
   removeReaction: (messageId: string, userId: string) => void;
@@ -31,10 +33,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
   reactions: {},
   seenBy: {},
   hasMore: true,
+  isFetching: false,
 
-  setMessages: (msgs) =>
-    set(() => ({
-      messages: msgs,
+  setMessages: (fn) =>
+    set((state) => ({
+      messages: fn(state.messages),
     })),
 
   addMessage: (msg) =>
@@ -42,10 +45,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
       messages: [...state.messages, msg],
     })),
 
-  updateMessageStatus: (messageId, status) =>
-    set((state) => ({
-      messages: state.messages.map((m) => (m.id === messageId ? { ...m, status } : m)),
-    })),
+  updateMessage: (data) =>
+    set((state) => {
+      if (!data || !data.id) return {};
+
+      const id = data.id;
+
+      const index = state.messages.findIndex((msg) => msg.id === id);
+      if (index === -1) return {};
+
+      const newMessages = [...state.messages];
+      newMessages[index] = { ...newMessages[index], ...data };
+
+      return { messages: newMessages };
+    }),
 
   addReaction: (messageId, userId, reaction) =>
     set((state) => {
@@ -96,14 +109,28 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }),
 
   fetchMessages: async () => {
-    const state = get();
-    const oldest = state.messages[0]?.created_at || new Date().toISOString();
+    const { messages, hasMore, isFetching } = get();
 
-    const older = await fetch(`/api/chat/messages?before=${oldest}`).then((r) => r.json());
+    if (isFetching || !hasMore) return; // 👈 guard
 
-    set({
-      messages: [...(older.data || []), ...state.messages],
-      hasMore: older.length > 0,
-    });
+    const oldest = messages[0]?.created_at ?? new Date().toISOString();
+
+    set({ isFetching: true });
+
+    try {
+      const res = await fetch(`/api/chat/messages?before=${encodeURIComponent(oldest)}`);
+      const json = await res.json();
+
+      const olderMessages = (json.data ?? []).reverse();
+
+      set((state) => ({
+        messages: [...olderMessages, ...state.messages],
+        hasMore: olderMessages.length === DEFAULT_MESSAGE_PAGE_SIZE,
+      }));
+    } catch (err) {
+      console.error("fetchMessages failed", err);
+    } finally {
+      set({ isFetching: false });
+    }
   },
 }));

@@ -95,7 +95,7 @@ export default function Footer() {
         <LogoComponent />
 
         <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-          &copy; 2025 HNB Inc. All rights reserved.
+          &copy; 2025 HNB Inc. Chỉ còn bên trái.
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 text-sm">

@@ -1,15 +1,98 @@
 "use client";
 
-import { Badge, Modal, ModalBody, ModalContent, ModalHeader, useDisclosure } from "@heroui/react";
+import {
+  addToast,
+  Badge,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+  useDisclosure,
+} from "@heroui/react";
 import { ChatTalkIcon } from "../svg";
 import { useChatStore } from "@/stores/chat.store";
 import ChatMessageList from "./message-list";
 import ChatActionSection from "./action-section";
+import "./chat.scss";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { useUser } from "@/providers/user.provider";
+import { ChatMessage } from "@/interfaces/chat";
+import ChatUploadModal from "./chat-upload/ChatUploadModal";
+import { STATUS_CODE } from "@/constants/enums";
+import ChatModalHeader from "./header";
+
+const supabase = createClient();
 
 export default function ChatModal() {
-  const messages = useChatStore((s) => s.messages);
+  const { user } = useUser();
+  const { messages, setMessages, fetchMessages } = useChatStore();
+
+  const [pastedFile, setPastedFile] = useState<File>();
 
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
+  const chatUploadModal = useDisclosure();
+
+  useEffect(() => {
+    fetchMessages();
+  }, [fetchMessages]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("realtime-chat_messages")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "chat_messages",
+        },
+        async (payload) => {
+          const newMessage = payload.new as ChatMessage;
+
+          if (!messages.some((msg) => msg.id === newMessage.id)) {
+            await fetch(`/api/chat/messages/${newMessage.id}`)
+              .then((res) => res.json())
+              .then((result) => {
+                if (result.status !== STATUS_CODE.OK) {
+                  addToast({ title: "Lỗi tải tin nhắn!", color: "danger" });
+                  return;
+                }
+
+                const data: ChatMessage = result.data;
+                setMessages((prev) => [...prev, data]);
+              });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, messages, setMessages]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePaste = (e: any) => {
+      const items = e.clipboardData.items;
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          setPastedFile(file);
+          chatUploadModal.onOpen();
+          e.preventDefault();
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [isOpen, chatUploadModal]);
 
   return (
     <div>
@@ -34,12 +117,25 @@ export default function ChatModal() {
         }}
       >
         <ModalContent>
-          <ModalHeader>HNB Talk</ModalHeader>
+          <ModalHeader>
+            <ChatModalHeader />
+          </ModalHeader>
 
-          <ModalBody className="px-2 py-1 md:px-6">
+          <ModalBody className="overflow-hidden px-0 py-1">
             <ChatMessageList />
+
             <ChatActionSection />
           </ModalBody>
+
+          <ChatUploadModal
+            file={pastedFile}
+            isOpen={chatUploadModal.isOpen}
+            onOpenChange={chatUploadModal.onOpenChange}
+            onClose={() => {
+              setPastedFile(undefined);
+              chatUploadModal.onClose();
+            }}
+          />
         </ModalContent>
       </Modal>
     </div>

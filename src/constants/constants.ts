@@ -11,8 +11,7 @@ export const GLOBAL_DATE_FORMAT = "DD/MM/YYYY";
 export const DEFAULT_PAGE_SIZE = 20;
 export const DEFAULT_IMAGE_PAGE_SIZE = 50;
 
-export const DEFAULT_MESSAGE_PAGE_SIZE = 50;
-export const SPLIT_IMAGE_INTERVAL = 1000 * 60 * 1;
+export const DEFAULT_MESSAGE_PAGE_SIZE = 30;
 
 export const UPLOAD_REQUIRED_SECOND_PER_MB = 0.5;
 

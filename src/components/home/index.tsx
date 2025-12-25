@@ -86,7 +86,7 @@ export default function HomePage({ userStreak }: HomeProps) {
                 backgroundImage: homeData.event.image ? `url(${homeData.event.image})` : "none",
               }}
             />
-            <div className="absolute inset-0 z-0 h-full w-full bg-black/70 group-hover:bg-black/50" />
+            <div className="absolute inset-0 z-0 h-full w-full bg-black/10 duration-200 group-hover:bg-black/20 dark:bg-black/70 group-hover:dark:bg-black/50" />
             <div className="z-10 space-y-4 md:flex-1">
               <p className="text-center text-lg font-bold wrap-anywhere uppercase group-hover:underline md:text-start md:text-2xl">
                 {homeData.event.title}

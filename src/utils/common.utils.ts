@@ -6,10 +6,13 @@ export const cn = (...classes: (string | boolean | undefined | null)[]) => {
 };
 
 export const CommonUtils = {
+  isMobile: () => typeof window !== "undefined" && /Mobi|Android/i.test(navigator.userAgent),
+
   formatMetaData: (title?: string) => {
     const mainTitle = "HNB Hub";
     return [title, mainTitle].filter(Boolean).join(" | ");
   },
+
   getSingleDataFromUnknown: (data: any) => {
     if (!data) return data;
     if (typeof data === "object") return data;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { DEFAULT_MESSAGE_PAGE_SIZE } from "@/constants/constants";
 import { STATUS_CODE } from "@/constants/enums";
-import { ChatMessage } from "@/interfaces/chat";
+import { ChatMessage, ChatMessageStatusEnum } from "@/interfaces/chat";
 import { getCurrentUserId } from "@/app/auth/actions";
 
 export async function GET(request: NextRequest) {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
       )
       .lt("created_at", before)
       .limit(DEFAULT_MESSAGE_PAGE_SIZE)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.log({ error });
@@ -36,6 +36,39 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json({ data: parsedData, status: STATUS_CODE.OK });
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    return NextResponse.json({ error: "Lỗi không xác định!" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    const userId = await getCurrentUserId();
+
+    const payload = await request.json();
+
+    const newMessage = {
+      ...payload,
+      sender: userId,
+      status: ChatMessageStatusEnum.SENT,
+    };
+
+    const { data, error } = await supabase
+      .from("chat_messages")
+      .insert(newMessage)
+      .select(
+        "*, thread:chat_messages_thread_fkey(*), sender:chat_messages_sender_fkey(id, display_name, avatar)"
+      )
+      .maybeSingle();
+
+    if (error) {
+      console.log({ error });
+      return NextResponse.json({ data: null, status: STATUS_CODE.BAD_REQUEST });
+    }
+
+    return NextResponse.json({ data, status: STATUS_CODE.CREATED });
   } catch (err) {
     console.error("Unexpected error:", err);
     return NextResponse.json({ error: "Lỗi không xác định!" }, { status: 500 });
