@@ -178,7 +178,9 @@ export default function SingleEvent({ event }: { event: Event }) {
                   <FlipClockCountdown
                     to={event.start_at}
                     showLabels={false}
+                    renderMap={[false, true, true, true]}
                     digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
+                    dividerStyle={{ color: "transparent" }}
                     spacing={{
                       clock: 2,
                     }}
