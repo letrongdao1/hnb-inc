@@ -101,7 +101,7 @@ export default function StreakModal({
       size="3xl"
     >
       <ModalContent>
-        <ModalBody className="max-h-[80vh] overflow-auto">
+        <ModalBody className="overflow-auto md:max-h-[80vh]">
           <div className="flex flex-col items-stretch gap-4 md:flex-row md:gap-16">
             <div className="flex flex-1 flex-col items-stretch justify-center gap-2">
               <div className="flex items-center justify-center gap-4 py-8">
@@ -121,7 +121,9 @@ export default function StreakModal({
                 </div>
               )}
 
-              <p className="text-xs opacity-75 text-center mt-4">Đăng nhập vào HNB Hub hàng ngày để giữ streak!</p>
+              <p className="mt-4 text-center text-xs opacity-75">
+                Đăng nhập vào HNB Hub hàng ngày để giữ streak!
+              </p>
             </div>
 
             <div className="flex flex-1 flex-col items-stretch gap-2 py-4">
@@ -140,7 +142,7 @@ export default function StreakModal({
                 <CardBody>
                   {isLoading ? (
                     <div className="flex flex-col items-stretch gap-2">
-                      {Array.from({ length: streakList.length || 5 }).map((_, i) => (
+                      {Array.from({ length: 6 }).map((_, i) => (
                         <div key={i} className="flex items-center gap-4">
                           <Skeleton className="aspect-square w-10 rounded-full" />
                           <Skeleton className="h-10 flex-3 rounded-md" />
