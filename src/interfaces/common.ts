@@ -90,10 +90,8 @@ export interface UploadFile {
   id: string;
   upload_by?: BaseUserInfo;
   url: string;
-  blurHash: string;
-  type: FileTypeEnum;
   folder?: string;
-  title?: string;
-  description?: string;
+  blurHash?: string;
+  type: FileTypeEnum;
   created_at: string;
 }

@@ -1,6 +1,5 @@
-// app/api/b2/folders/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { FolderNode, listAllFolders } from "@/lib/s3/folders";
+import { FolderNode, listFolders } from "@/lib/s3/folders";
 import { STATUS_CODE } from "@/constants/enums";
 
 export async function GET(req: NextRequest) {
@@ -9,12 +8,12 @@ export async function GET(req: NextRequest) {
 
     const folder = searchParams.get("folder") ?? "";
 
-    const folders = await listAllFolders(folder);
+    const folders = await listFolders(folder);
 
-    const data: FolderNode[] = folders.map((full) => {
-      const parts = full.split("/").filter(Boolean);
+    const data: FolderNode[] = folders.map((path) => {
+      const parts = path.split("/").filter(Boolean);
       const subFolderName = parts[parts.length - 1];
-      return { label: subFolderName, path: subFolderName, relativePath: full };
+      return { label: subFolderName, path };
     });
 
     return NextResponse.json({ data, status: STATUS_CODE.OK });

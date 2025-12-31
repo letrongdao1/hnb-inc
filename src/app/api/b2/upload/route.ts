@@ -18,8 +18,6 @@ export async function POST(req: Request) {
 
     const files = form.getAll("files") as File[];
     const folder = (form.get("folder") as string) || "";
-    const title = form.get("title") as string;
-    const description = form.get("description") as string;
 
     if (!files || !files.length) {
       return NextResponse.json(
@@ -63,8 +61,6 @@ export async function POST(req: Request) {
           blurHash: file.blurHash,
           type: FileUtils.detectFileType(file.url),
           folder,
-          title,
-          description,
         }))
       )
       .select();

@@ -45,7 +45,7 @@ export default function FileDisplayPage({ folderList }: FileDisplayPageProps) {
     const params = new URLSearchParams({
       pageIndex: String(pageIndexRef.current),
       pageSize: String(fileSizePerBatch),
-      folder: folder.relativePath || "",
+      folder: folder.path || "",
     });
 
     await fetch(`/api/upload/list?${params}`, { cache: "no-store" })

@@ -13,8 +13,7 @@ export const NodeUtils = {
       if (!node) {
         node = {
           label: name,
-          path: name,
-          relativePath: fullPath,
+          path: fullPath,
           children: undefined,
         };
         nodes.push(node);
@@ -52,6 +51,6 @@ export const NodeUtils = {
     const parts = path.split("/").filter((p) => p && p.trim().length > 0);
     const name = parts[parts.length - 1];
 
-    return { label: name, path: name, relativePath: path };
+    return { label: name, path };
   },
 };

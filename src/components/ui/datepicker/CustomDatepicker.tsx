@@ -34,6 +34,14 @@ export default function CustomDatepicker({
   ...datePickerProps
 }: CustomDatepickerProps) {
   return (
-    <DatePicker locale={"vi"} {...datePickerProps} customInput={<HeroUIInput {...inputProps} />} />
+    <DatePicker
+      locale={"vi"}
+      popperProps={{
+        strategy: "absolute",
+        placement: "bottom-start"
+      }}
+      {...datePickerProps}
+      customInput={<HeroUIInput {...inputProps} />}
+    />
   );
 }

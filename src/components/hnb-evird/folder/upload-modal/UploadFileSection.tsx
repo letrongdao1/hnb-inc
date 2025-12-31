@@ -71,18 +71,18 @@ export default function UploadFileSection({
 
   if (!uploadFileList.length)
     return (
-      <div className="flex flex-1 flex-col items-stretch justify-center gap-2 md:flex-row">
-        <div className="flex-1">
+      <div className="flex max-h-96 flex-1 flex-col items-stretch justify-start gap-2 md:min-h-96">
+        <div className="">
           <button
             onClick={() => {
               if (fileInputRef.current) {
                 fileInputRef.current.click();
               }
             }}
-            className={`bg-default-200 hover:bg-default-300 flex h-40 w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg duration-200`}
+            className={`bg-default-200 hover:bg-default-300 flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg duration-200`}
           >
-            <FileIcon size={32} />
-            <p>Chọn file</p>
+            <FileIcon />
+            <p className="text-sm">Chọn file</p>
           </button>
           <input
             ref={fileInputRef}
@@ -94,17 +94,17 @@ export default function UploadFileSection({
           />
         </div>
 
-        <div className="flex-1">
+        <div className="">
           <button
             onClick={() => {
               if (folderInputRef.current) {
                 folderInputRef.current.click();
               }
             }}
-            className={`hover:bg-default-100 border-default-300 flex h-40 w-full cursor-pointer flex-col items-center justify-center gap-4 rounded-lg border-2 duration-200`}
+            className={`hover:bg-default-100 border-default-300 flex h-24 w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 duration-200`}
           >
-            <FolderIcon size={32} />
-            Chọn thư mục
+            <FolderIcon />
+            <p className="text-sm">Chọn thư mục</p>
           </button>
           <input
             ref={folderInputRef}
@@ -120,7 +120,7 @@ export default function UploadFileSection({
 
   return (
     <div className="z-0 flex flex-1 flex-col items-stretch gap-1">
-      <div className="flex max-h-96 flex-col items-stretch justify-start gap-1 overflow-y-auto">
+      <div className="flex max-h-40 flex-col items-stretch justify-start gap-1 overflow-y-auto md:max-h-96 md:min-h-96">
         {uploadFileList.map((file, index) => (
           <div
             key={index}
@@ -148,19 +148,21 @@ export default function UploadFileSection({
                 <VideoCameraIcon />
               </button>
             )}
-            <div className="flex flex-1 items-center justify-start gap-2">
-              <p className="line-clamp-1">{file.name}</p>
-              <button
-                onClick={() => {
-                  setUploadFileList((prev) => prev.filter((_, i) => index !== i));
-                }}
-                className="inline cursor-pointer text-red-500 duration-200 group-hover:inline hover:scale-110 md:hidden"
-              >
-                <DeleteIcon size={16} />
-              </button>
-            </div>
 
-            <p className="font-extralight">{FileUtils.formatFileSize(file.size)}</p>
+            <p className="line-clamp-1 flex-1">{file.name}</p>
+
+            <p className="font-extralight text-nowrap whitespace-nowrap">
+              {FileUtils.formatFileSize(file.size)}
+            </p>
+
+            <button
+              onClick={() => {
+                setUploadFileList((prev) => prev.filter((_, i) => index !== i));
+              }}
+              className="inline cursor-pointer text-red-500 transition-transform duration-200 hover:scale-110 md:invisible group-hover:md:visible"
+            >
+              <DeleteIcon size={16} />
+            </button>
           </div>
         ))}
       </div>

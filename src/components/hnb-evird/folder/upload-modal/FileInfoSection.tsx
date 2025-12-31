@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CLOUD_UPLOAD_FOLDER_TYPE } from "@/constants/b2_folder";
-import { UploadFile } from "@/interfaces/common";
 import {
   addToast,
   Button,
   Form,
   Input,
+  Radio,
+  RadioGroup,
   Select,
   SelectItem,
   Textarea,
@@ -22,6 +23,9 @@ import { FileUtils } from "@/utils/file.utils";
 import { UploadProps } from ".";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import { UPLOAD_REQUIRED_SECOND_PER_MB } from "@/constants/constants";
+import { FolderNode } from "@/lib/s3/folders";
+import FolderTreeSelect, { FolderTreeSkeleton } from "./FolderTreeSelect";
+import { useParams } from "next/navigation";
 
 dayjs.extend(customParseFormat);
 
@@ -32,16 +36,23 @@ type FileInfoSectionProps = {
 };
 
 const keepRawFolderTypeList = ["MEME"];
-const hideDescriptionFolderTypeList = ["GRADUATION"];
 
 export default function FileInfoSection({
   handleUpload,
   uploadFileList,
   uploadProgress,
 }: FileInfoSectionProps) {
+  const { path } = useParams();
+
+  const [isUploadToExistedFolder, setIsUploadToExistedFolder] = useState<boolean>(true);
+  const [currentFolderList, setCurrentFolderList] = useState<FolderNode[]>([]);
   const [selectedFolderType, setSelectedFolderType] = useState<string>();
-  const [currentFolderTime, setCurrentFolderTime] = useState<Date | null>(new Date(Date.now()));
+  const [currentFolderTime, setCurrentFolderTime] = useState<Date | null>(null);
   const [validatedInfo, setValidatedInfo] = useState<UploadProps>();
+
+  const [isLoadingFolder, setIsLoadingFolder] = useState<boolean>(false);
+  const [selectedFolder, setSelectedFolder] = useState<string>("");
+  const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
   const confirmModal = useDisclosure();
 
@@ -50,8 +61,57 @@ export default function FileInfoSection({
     [uploadFileList]
   );
 
+  const fetchFolders = useCallback(async () => {
+    setIsLoadingFolder(true);
+    await fetch(`/api/b2/folders/all`)
+      .then((res) => res.json())
+      .then((result) => {
+        setCurrentFolderList(result.data);
+      })
+      .finally(() => {
+        setIsLoadingFolder(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetchFolders();
+  }, [fetchFolders]);
+
+  useEffect(() => {
+    setSelectedFolderType(undefined);
+
+    if (!path || !path.length) {
+      setSelectedFolder("");
+    } else {
+      if (Array.isArray(path)) {
+        setSelectedFolder(path.join("/"));
+        toggleOpenMap(path);
+      }
+    }
+  }, [path, isUploadToExistedFolder]);
+
+  const handleUploadToExistedFolder = () => {
+    if (!uploadFileList.length) {
+      addToast({ title: "Vui lòng tải lên ít nhất 1 file", color: "warning" });
+      return;
+    }
+
+    setValidatedInfo({
+      folderName: FileUtils.getCurrentFolderNameByRelativePath(selectedFolder),
+      folderPath: selectedFolder,
+    });
+
+    confirmModal.onOpen();
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!uploadFileList.length) {
+      addToast({ title: "Vui lòng tải lên ít nhất 1 file", color: "warning" });
+      return;
+    }
+
     const data = Object.fromEntries(new FormData(e.currentTarget));
 
     if (!selectedFolderType) {
@@ -82,26 +142,38 @@ export default function FileInfoSection({
     }
 
     setValidatedInfo({
-      title: String(data.title || ""),
       folderName: folderName,
       folderPath: finalFolderPath,
-      description: String(data.description || ""),
     });
 
     confirmModal.onOpen();
+  };
+
+  const toggleOpenMap = (path: string | string[]) => {
+    if (Array.isArray(path)) {
+      setOpenMap((prev) => {
+        const next = { ...prev };
+
+        path.forEach((p) => {
+          next[p] = true;
+        });
+
+        return next;
+      });
+    } else setOpenMap((p) => ({ ...p, [path]: !p[path] }));
   };
 
   const renderExtraInfoFields = () => {
     if (!selectedFolderType) return null;
 
     switch (selectedFolderType.toUpperCase()) {
-      case "MEME": {
-        return (
-          <>
-            <Input label="Tên meme" name="title" placeholder="Nhập tên meme ..." isRequired />
-          </>
-        );
-      }
+      // case "MEME": {
+      //   return (
+      //     <>
+      //       <Input label="Tên meme" name="title" placeholder="Nhập tên meme ..." isRequired />
+      //     </>
+      //   );
+      // }
       case "GRADUATION": {
         return (
           <Textarea
@@ -112,6 +184,7 @@ export default function FileInfoSection({
             isRequired
             minRows={1}
             maxRows={3}
+            errorMessage={"Vui lòng nhập tên đầy đủ."}
           />
         );
       }
@@ -125,6 +198,7 @@ export default function FileInfoSection({
               isRequired
               minRows={1}
               maxRows={3}
+              errorMessage={"Vui lòng nhập tên chuyến đi."}
             />
 
             <CustomDatepicker
@@ -136,6 +210,7 @@ export default function FileInfoSection({
               inputProps={{
                 label: "Thời điểm",
                 isRequired: true,
+                errorMessage: "Vui lòng chọn thời điểm diễn ra.",
               }}
               className="w-full"
             />
@@ -152,6 +227,7 @@ export default function FileInfoSection({
               isRequired
               minRows={1}
               maxRows={3}
+              errorMessage={"Vui lòng nhập tên cuộc họp."}
             />
 
             <CustomDatepicker
@@ -167,6 +243,7 @@ export default function FileInfoSection({
               inputProps={{
                 label: "Ngày",
                 isRequired: true,
+                errorMessage: "Vui lòng chọn thời điểm diễn ra.",
               }}
               className="w-full"
             />
@@ -177,12 +254,13 @@ export default function FileInfoSection({
         return (
           <>
             <Textarea
-              label="Tên thư mục"
+              label="Tên sự kiện"
               name="title"
               placeholder="..."
               isRequired
               minRows={1}
               maxRows={3}
+              errorMessage={"Vui lòng nhập tên sự kiện."}
             />
 
             <CustomDatepicker
@@ -198,6 +276,7 @@ export default function FileInfoSection({
               inputProps={{
                 label: "Ngày",
                 isRequired: true,
+                errorMessage: "Vui lòng chọn thời điểm diễn ra.",
               }}
               className="w-full"
             />
@@ -208,78 +287,122 @@ export default function FileInfoSection({
   };
 
   return (
-    <div className="flex flex-1 flex-col items-stretch justify-start gap-2">
-      {!Boolean(selectedFolderType) && (
-        <p className="text-warning-500 text-sm italic">Vui lòng chọn thư mục lưu</p>
-      )}
-      <Select
-        classNames={{
-          trigger: "h-12",
-        }}
-        items={Object.entries(CLOUD_UPLOAD_FOLDER_TYPE).map(([key, obj]) => ({
-          key,
-          ...obj,
-        }))}
-        label="Thư mục lưu"
-        labelPlacement="inside"
-        value={selectedFolderType}
+    <div className="flex min-h-64 flex-1 flex-col items-stretch justify-start gap-2">
+      <RadioGroup
+        orientation="horizontal"
+        color="success"
+        defaultValue={isUploadToExistedFolder ? "1" : "0"}
         onChange={(e) => {
-          const folderType = e.target.value;
-
-          setSelectedFolderType(folderType);
+          setIsUploadToExistedFolder(e.target.value === "1");
         }}
-        placeholder="Chọn thư mục lưu"
-        isRequired
-        renderValue={(items) => {
-          return items.map((item) => (
-            <div key={item.key} className="flex items-center gap-2">
-              <span className="text-small">{item.data?.label}</span>
-            </div>
-          ));
-        }}
+        className="pb-2"
       >
-        {(type) => (
-          <SelectItem key={type.key} textValue={type.folderPath}>
-            <div className="flex items-center gap-2">
-              <div className="flex flex-col">
-                <span className="text-small">{type.label}</span>
-                <span className="text-tiny text-default-400">{type.description}</span>
-              </div>
-            </div>
-          </SelectItem>
-        )}
-      </Select>
+        <Radio value="1">Thư mục có sẵn</Radio>
+        <Radio value="0">Tạo thư mục mới</Radio>
+      </RadioGroup>
 
-      {Boolean(selectedFolderType) && (
-        <Form
-          onSubmit={handleSubmit}
-          autoComplete="off"
-          className="flex w-full flex-1 flex-col items-stretch"
-        >
-          {renderExtraInfoFields()}
+      <p
+        className={`text-warning-500 text-sm italic ${!selectedFolder && !selectedFolderType ? "visible" : "invisible"}`}
+      >
+        Vui lòng chọn thư mục lưu
+      </p>
 
-          {!hideDescriptionFolderTypeList.some((type) => type === selectedFolderType) && (
-            <Textarea
-              label="Mô tả"
-              name="description"
-              placeholder="Nhập mô tả nội dung..."
-              description={"*Không bắt buộc"}
-            />
+      {isUploadToExistedFolder ? (
+        <>
+          {isLoadingFolder ? (
+            <FolderTreeSkeleton />
+          ) : (
+            <>
+              <FolderTreeSelect
+                folderTree={currentFolderList}
+                selectedFolder={selectedFolder}
+                setSelectedFolder={setSelectedFolder}
+                openMap={openMap}
+                toggleOpenMap={toggleOpenMap}
+              />
+
+              <span className="flex-1" />
+
+              <span className={`text-xs ${selectedFolder ? "visible" : "invisible"}`}>
+                Thư mục lưu:&emsp;
+                <span className="text-success-500 text-sm font-semibold">{selectedFolder}</span>
+              </span>
+              <Button
+                isDisabled={!selectedFolder}
+                color={"success"}
+                fullWidth
+                startContent={<CheckIcon size={16} />}
+                onPress={handleUploadToExistedFolder}
+                className="shrink-0"
+              >
+                Hoàn tất
+              </Button>
+            </>
           )}
+        </>
+      ) : (
+        <>
+          <Select
+            classNames={{
+              trigger: "h-12",
+            }}
+            items={Object.entries(CLOUD_UPLOAD_FOLDER_TYPE).map(([key, obj]) => ({
+              key,
+              ...obj,
+            }))}
+            label="Thư mục lưu"
+            labelPlacement="inside"
+            value={selectedFolderType}
+            onChange={(e) => {
+              const folderType = e.target.value;
 
-          <span className="flex-1" />
-
-          <Button
-            type="submit"
-            color={"success"}
-            fullWidth
-            startContent={<CheckIcon size={16} />}
-            hidden={uploadProgress > 0}
-            className="shrink-0"
+              setSelectedFolderType(folderType);
+            }}
+            placeholder="Chọn thư mục lưu"
+            isRequired
+            renderValue={(items) => {
+              return items.map((item) => (
+                <div key={item.key} className="flex items-center gap-2">
+                  <span className="text-small">{item.data?.label}</span>
+                </div>
+              ));
+            }}
           >
-            Hoàn tất
-          </Button>
-        </Form>
+            {(type) => (
+              <SelectItem key={type.key} textValue={type.folderPath}>
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    <span className="text-small">{type.label}</span>
+                    <span className="text-tiny text-default-400">{type.description}</span>
+                  </div>
+                </div>
+              </SelectItem>
+            )}
+          </Select>
+
+          {Boolean(selectedFolderType) && (
+            <Form
+              onSubmit={handleSubmit}
+              autoComplete="off"
+              className="flex w-full flex-1 flex-col items-stretch"
+            >
+              {renderExtraInfoFields()}
+
+              <span className="flex-1" />
+
+              <Button
+                type="submit"
+                color={"success"}
+                fullWidth
+                startContent={<CheckIcon size={16} />}
+                hidden={uploadProgress > 0}
+                className="shrink-0"
+              >
+                Hoàn tất
+              </Button>
+            </Form>
+          )}
+        </>
       )}
 
       <ConfirmModal
