@@ -148,11 +148,13 @@ export default function HomePage({ userStreak }: HomeProps) {
                     <FlipClockCountdown
                       to={homeData.event!.start_at!}
                       showLabels={false}
+                      renderMap={[false, true, true, true]}
                       digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
+                      dividerStyle={{ color: "transparent" }}
                       spacing={{
-                        clock: 2,
+                        clock: 4,
                       }}
-                      separatorStyle={{ size: 2 }}
+                      separatorStyle={{ size: 3 }}
                     >
                       <Chip
                         size="lg"
