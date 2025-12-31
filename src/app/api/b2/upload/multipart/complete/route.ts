@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
-  const { key, uploadId, parts, folder, title, description } = await req.json();
+  const { key, uploadId, parts, folder } = await req.json();
 
   await b2.send(
     new CompleteMultipartUploadCommand({
@@ -33,8 +33,6 @@ export async function POST(req: Request) {
       blurHash: null,
       type: fileType,
       folder,
-      title,
-      description,
     })
     .select();
 

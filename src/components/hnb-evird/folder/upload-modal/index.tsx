@@ -28,8 +28,6 @@ type UploadAssetsModalProps = {
 export type UploadProps = {
   folderName: string;
   folderPath: string;
-  title?: string;
-  description?: string;
 };
 
 export default function UploadAssetsModal({
@@ -68,10 +66,7 @@ export default function UploadAssetsModal({
   const buildMetaFormData = (props: UploadProps, file: File) => {
     const form = new FormData();
     form.append("folder", props.folderPath || "");
-    form.append("title", props.title || "");
-    form.append("description", props.description || "");
     form.append("files", file);
-    form.append(`paths[0]`, file.webkitRelativePath || file.name);
     return form;
   };
 
@@ -162,8 +157,6 @@ export default function UploadAssetsModal({
         uploadId,
         parts,
         folder: props.folderPath,
-        title: props.title,
-        description: props.description,
       }),
     });
 
@@ -235,8 +228,7 @@ export default function UploadAssetsModal({
       onClose={handleClose}
       size="5xl"
       placement="center"
-      scrollBehavior="inside"
-      isDismissable={false}
+      isDismissable={!uploadFileList.length}
     >
       <ModalContent>
         {() => (
@@ -245,25 +237,19 @@ export default function UploadAssetsModal({
 
             <ModalBody className="relative space-y-4">
               <div
-                className={`flex ${uploadFileList.length > 0 && "lg:min-h-[30vh]"} flex-col-reverse items-stretch justify-center gap-4 md:flex-row md:gap-2`}
+                className={`flex ${uploadFileList.length > 0 && "lg:min-h-[30vh]"} flex-col items-stretch justify-center gap-4 md:flex-row-reverse md:gap-8`}
               >
+                <FileInfoSection
+                  handleUpload={handleUpload}
+                  uploadFileList={uploadFileList}
+                  uploadProgress={uploadProgress}
+                />
+
                 <UploadFileSection
                   uploadFileList={uploadFileList}
                   setUploadFileList={setUploadFileList}
                 />
-
-                {uploadFileList.length > 0 && (
-                  <FileInfoSection
-                    handleUpload={handleUpload}
-                    uploadFileList={uploadFileList}
-                    uploadProgress={uploadProgress}
-                  />
-                )}
               </div>
-
-              <Button color="default" variant="flat" className="ml-auto" onPress={handleClose}>
-                Đóng
-              </Button>
 
               <Modal
                 isOpen={progressModal.isOpen}

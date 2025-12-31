@@ -17,6 +17,10 @@ export default function MasonryItem({
   const [isLoadingContent, setIsLoadingContent] = useState<boolean>(false);
   const [contentByType, setContentByType] = useState<React.JSX.Element | null>(null);
 
+  const fileFullName = file.url.split("/").pop();
+  const fileName = fileFullName?.split(".").at(0);
+  const fileExt = fileFullName?.split(".").at(-1);
+
   useEffect(() => {
     const load = async () => {
       switch (file.type) {
@@ -65,7 +69,7 @@ export default function MasonryItem({
   }, [file]);
 
   return (
-    <div onClick={onPreviewOpen} className="group relative h-full w-full">
+    <div onClick={onPreviewOpen} className="group relative h-full w-full overflow-x-hidden">
       {isLoadingContent ? (
         <div className="border-default-300 flex h-24 w-full items-center justify-center rounded-lg border md:h-40">
           <Spinner color="default" variant="gradient" size="sm" />
@@ -74,8 +78,9 @@ export default function MasonryItem({
         contentByType
       )}
 
-      <div className="absolute bottom-0 left-0 z-10 truncate rounded-tr-md rounded-bl-md bg-white/70 p-2 text-xs text-black opacity-0 duration-200 group-hover:opacity-100 dark:bg-black/50 dark:text-white">
-        {file.url.split("/").pop() || "unidentified"}
+      <div className="absolute bottom-0 left-0 z-10 flex max-w-full items-center rounded-bl-md bg-white/70 p-2 text-xs text-black opacity-0 duration-200 group-hover:opacity-100 dark:bg-black/50 dark:text-white">
+        <span className="min-w-0 truncate">{fileName}</span>
+        <span className="shrink-0">{"." + fileExt}</span>
       </div>
     </div>
   );
