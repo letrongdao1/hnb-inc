@@ -38,7 +38,7 @@ export default function EvirdFilePreviewModal({
               {file.type === FileTypeEnum.IMAGE ? (
                 <Image
                   src={file.url}
-                  alt={file.title}
+                  alt={file.url}
                   className="max-h-[90vh] max-w-[90vw] object-contain"
                 />
               ) : (
@@ -51,7 +51,7 @@ export default function EvirdFilePreviewModal({
                     controls
                     className="max-h-[90vh] max-w-[90vw] object-contain"
                   >
-                    {file.title && <track kind="descriptions" label={file.title} />}
+                    {file.url && <track kind="descriptions" label={file.url} />}
                   </video>
                 )
               )}
