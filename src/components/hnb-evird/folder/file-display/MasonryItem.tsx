@@ -26,7 +26,7 @@ export default function MasonryItem({
       switch (file.type) {
         case FileTypeEnum.IMAGE:
           setContentByType(
-            <BlurHashImage src={file.url} alt={file.title || ""} blurHash={file.blurHash} />
+            <BlurHashImage src={file.url} alt={file.url || ""} blurHash={file.blurHash} />
           );
           break;
 
