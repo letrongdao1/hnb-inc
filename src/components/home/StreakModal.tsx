@@ -101,7 +101,7 @@ export default function StreakModal({
       size="3xl"
     >
       <ModalContent>
-        <ModalBody className="overflow-auto md:max-h-[80vh]">
+        <ModalBody className="max-h-[80vh] overflow-auto">
           <div className="flex flex-col items-stretch gap-4 md:flex-row md:gap-16">
             <div className="flex flex-1 flex-col items-stretch justify-center gap-2">
               <div className="flex items-center justify-center gap-4 py-8">
@@ -193,7 +193,7 @@ const LeaderboardTable = ({
     return <p className="py-8 text-center text-sm font-light opacity-75">Chưa có streak</p>;
 
   return (
-    <div className="relative flex max-h-96 flex-col items-stretch justify-start gap-2">
+    <div className="relative flex flex-col items-stretch justify-start gap-2 md:max-h-96">
       {list.map((streak: UserStreak, index) => (
         <span
           key={index}
