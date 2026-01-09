@@ -7,17 +7,18 @@ const bucket = process.env.B2_BUCKET_NAME!;
 
 export async function POST(req: Request) {
   const form = await req.formData();
-  const file = form.get("files") as File;
+  const fileName = (form.get("fileName") as string) || "";
   const folder = (form.get("folder") as string) || "";
+  const fileType = (form.get("fileType") as string) || "";
 
-  if (!file) {
+  if (!fileName) {
     return NextResponse.json(
       { error: "Không tìm thấy file!" },
       { status: STATUS_CODE.BAD_REQUEST }
     );
   }
 
-  const originFileName = file.name.split("/").pop()!;
+  const originFileName = fileName.split("/").pop() || "";
   const filename = folder
     ? `${folder}/${Date.now()}-${originFileName}`
     : `${Date.now()}-${originFileName}`;
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
     new CreateMultipartUploadCommand({
       Bucket: bucket,
       Key: filename,
-      ContentType: file.type,
+      ContentType: fileType,
     })
   );
 
