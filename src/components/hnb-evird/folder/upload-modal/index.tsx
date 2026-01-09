@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { UPLOAD_REQUIRED_SECOND_PER_MB } from "@/constants/constants";
 import { CHUNK_SIZE, MULTIPART_THRESHOLD } from "@/constants/b2_folder";
 import { STATUS_CODE } from "@/constants/enums";
+import { FileUtils } from "@/utils/file.utils";
 
 type UploadAssetsModalProps = {
   isOpen: boolean;
@@ -63,55 +64,84 @@ export default function UploadAssetsModal({
     return () => window.removeEventListener("beforeunload", handler);
   }, [isOpen, uploadProgress]);
 
-  const buildMetaFormData = (props: UploadProps, file: File) => {
-    const form = new FormData();
-    form.append("folder", props.folderPath || "");
-    form.append("files", file);
-    return form;
-  };
-
-  const handleUploadNormalFile = (
+  const handleUploadNormalFile = async (
     file: File,
     props: UploadProps,
     updateTotalProgress: (delta: number) => void
-  ) =>
-    new Promise<void>((resolve, reject) => {
-      const form = buildMetaFormData(props, file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/b2/upload");
-
-      let prevLoaded = 0;
-
-      xhr.upload.onprogress = (event) => {
-        if (!event.lengthComputable) return;
-
-        const delta = event.loaded - prevLoaded;
-        prevLoaded = event.loaded;
-
-        updateTotalProgress(delta);
-      };
-
-      xhr.onload = () => {
-        if (xhr.status === STATUS_CODE.OK) {
-          resolve();
-        } else reject(xhr.statusText);
-      };
-
-      xhr.onerror = () => reject("Upload file thất bại!");
-      xhr.send(form);
+  ) => {
+    const startRes = await fetch("/api/b2/upload/sign", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: file.name,
+        folder: props.folderPath,
+        contentType: file.type,
+      }),
     });
+
+    const { uploadUrl, fileUrl, key } = await startRes.json();
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl);
+    xhr.setRequestHeader("Content-Type", file.type);
+
+    let prev = 0;
+    xhr.upload.onprogress = (e) => {
+      const delta = e.loaded - prev;
+      prev = e.loaded;
+      updateTotalProgress(delta);
+    };
+
+    await new Promise((resolve, reject) => {
+      xhr.onload = () =>
+        xhr.status < 300 ? resolve(null) : reject(`Upload thất bại: ${xhr.statusText}`);
+      xhr.onerror = () => reject("Có lỗi xảy ra trong quá trình upload!");
+      xhr.send(file);
+    });
+
+    await fetch("/api/b2/upload/commit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        key,
+        fileUrl,
+        folder: props.folderPath,
+      }),
+    })
+      .then((res) => res.json())
+      .then(async (result) => {
+        if (result.status === STATUS_CODE.OK) {
+          if (result.data && result.data.id) {
+            const arrayBuffer = await file.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            const blurHash = await FileUtils.generateBlurHash(buffer);
+
+            await fetch("/api/b2/upload/update-blurHash", {
+              method: "PUT",
+              body: JSON.stringify({
+                blurHash,
+                id: result.data.id,
+              }),
+            });
+          }
+        }
+      });
+
+    return fileUrl;
+  };
 
   const handleUploadLargeFile = async (
     file: File,
     props: UploadProps,
     updateTotalProgress: (delta: number) => void
   ) => {
-    const meta = buildMetaFormData(props, file);
-
     const startRes = await fetch("/api/b2/upload/multipart/start", {
       method: "POST",
-      body: meta,
+      body: JSON.stringify({
+        fileName: file.name,
+        folder: props.folderPath,
+        fileType: file.type,
+      }),
     });
 
     const { uploadId, key } = await startRes.json();
@@ -209,7 +239,11 @@ export default function UploadAssetsModal({
       handleClose();
       router.refresh();
     } catch (err) {
-      addToast({ title: "Upload file thất bại!", color: "danger" });
+      addToast({
+        title: "Upload file thất bại.",
+        description: "Vui lòng liên hệ phòng IT về vấn đề này để kịp thời khắc phục!",
+        color: "danger",
+      });
       handleClose();
     }
   };
