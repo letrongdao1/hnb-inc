@@ -45,8 +45,9 @@ export default function TopBannerManagement() {
   const deleteLoading = useLoading();
   const deleteModal = useDisclosure();
 
-  const activateLoading = useLoading();
+  const updateStatusLoading = useLoading();
   const activateConfirmModal = useDisclosure();
+  const deactivateConfirmModal = useDisclosure();
 
   const previewModal = useDisclosure();
 
@@ -64,6 +65,17 @@ export default function TopBannerManagement() {
       onClick: (banner: TopBanner) => {
         setSelectedBanner(banner);
         activateConfirmModal.onOpen();
+      },
+      disabled: false,
+    },
+    {
+      key: "deactivate",
+      label: "Ngừng hiển thị",
+      icon: <CheckIcon size={16} />,
+      color: "warning",
+      onClick: (banner: TopBanner) => {
+        setSelectedBanner(banner);
+        deactivateConfirmModal.onOpen();
       },
       disabled: false,
     },
@@ -135,24 +147,28 @@ export default function TopBannerManagement() {
     };
   };
 
-  const handleActivateBanner = async (bannerId: number) => {
-    activateLoading.setLoading(true);
+  const handleUpdateBannerStatus = async (bannerId: number, status: boolean) => {
+    updateStatusLoading.setLoading(true);
 
-    await fetch(`/api/top-banners/activate?bannerId=${bannerId}`, {
-      method: "PATCH",
-    })
+    await fetch(
+      `/api/top-banners/activate?bannerId=${bannerId}&status=${status ? "true" : "false"}`,
+      {
+        method: "PATCH",
+      }
+    )
       .then((res) => res.json())
       .then((result) => {
         if (result.status === STATUS_CODE.OK) {
-          addToast({ title: result.message, color: "success" });
+          addToast({ title: result.message, color: "primary" });
           fetchBannerList();
         } else {
           addToast({ title: result.message, color: "danger" });
         }
       })
       .finally(() => {
-        activateLoading.setLoading(false);
+        updateStatusLoading.setLoading(false);
         activateConfirmModal.onClose();
+        deactivateConfirmModal.onClose();
       });
   };
 
@@ -210,7 +226,7 @@ export default function TopBannerManagement() {
       {!topBannerList.length ? (
         <EmptyComponent title={"Chưa có banner nào"} />
       ) : (
-        topBannerList.map((banner, index) => {
+        topBannerList.map((banner) => {
           const isInUse = banner.status;
           return (
             <div
@@ -333,7 +349,11 @@ export default function TopBannerManagement() {
                           color={(item.color as any) || "default"}
                           startContent={item.icon}
                           onClick={() => item.onClick?.(banner)}
-                          hidden={isInUse && ["activate", "delete"].some((key) => key === item.key)}
+                          hidden={
+                            isInUse
+                              ? ["activate", "delete"].some((key) => key === item.key)
+                              : ["deactivate"].some((key) => key === item.key)
+                          }
                         >
                           {item.label}
                         </DropdownItem>
@@ -369,12 +389,26 @@ export default function TopBannerManagement() {
         title="Xác nhận chọn hiển thị banner"
         extra="Chỉ 1 banner được hiển thị một lúc."
         onConfirm={() => {
-          if (selectedBanner) handleActivateBanner(selectedBanner.id);
+          if (selectedBanner) handleUpdateBannerStatus(selectedBanner.id, true);
         }}
         okButtonProps={{
           color: "success",
         }}
-        loading={activateLoading.loading}
+        loading={updateStatusLoading.loading}
+      />
+
+      <ConfirmModal
+        open={deactivateConfirmModal.isOpen}
+        onOpenChange={deactivateConfirmModal.onOpenChange}
+        onClose={deactivateConfirmModal.onClose}
+        title="Xác nhận ngừng hiển thị banner"
+        onConfirm={() => {
+          if (selectedBanner) handleUpdateBannerStatus(selectedBanner.id, false);
+        }}
+        okButtonProps={{
+          color: "warning",
+        }}
+        loading={updateStatusLoading.loading}
       />
 
       <ConfirmModal

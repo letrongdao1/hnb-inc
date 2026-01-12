@@ -167,7 +167,7 @@ export default function CreateUpdateEventForm({
     setImages(parsedImageList);
   };
 
-  const hanldeCreateEvent = async (data: CreateEventFieldProps) => {
+  const handleCreateEvent = async (data: CreateEventFieldProps) => {
     setLoading(true);
 
     let image: string = "";
@@ -203,6 +203,7 @@ export default function CreateUpdateEventForm({
       image,
       slug: CommonUtils.generateSlug(data.title),
       tags: Array.from(selectedTags).join(","),
+      start_at: CommonUtils.toGMT7TimeString(data.start_at),
     };
 
     await fetch("/api/events", {
@@ -234,7 +235,7 @@ export default function CreateUpdateEventForm({
       });
   };
 
-  const hanldeUpdateEvent = async (data: CreateEventFieldProps) => {
+  const handleUpdateEvent = async (data: CreateEventFieldProps) => {
     if (!editedEvent) {
       return addToast({
         title: "Không tìm thấy sự kiện!",
@@ -337,7 +338,7 @@ export default function CreateUpdateEventForm({
       </div>
 
       <form
-        onSubmit={handleSubmit(editedEvent ? hanldeUpdateEvent : hanldeCreateEvent)}
+        onSubmit={handleSubmit(editedEvent ? handleUpdateEvent : handleCreateEvent)}
         className="space-y-4"
       >
         <div className="space-y-2">

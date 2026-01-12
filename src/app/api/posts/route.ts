@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
 
     const from = (pageIndex - 1) * pageSize;
     const to = from + pageSize - 1;
+    const NOW = new Date(Date.now()).toISOString();
 
     const {
       data: postData,
@@ -25,8 +26,9 @@ export async function GET(request: NextRequest) {
     } = await supabase
       .from("posts")
       .select("*, user:posts_user_fkey(id, display_name, avatar)", { count: "exact" })
-      .range(from, to)
-      .order("active_at", { ascending: false });
+      .lte("active_at", NOW)
+      .order("active_at", { ascending: false })
+      .range(from, to);
 
     if (error || !postData) {
       console.error("Error fetching posts:", error);

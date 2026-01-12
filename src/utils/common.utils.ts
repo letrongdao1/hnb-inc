@@ -1,5 +1,11 @@
 import { PostComment } from "@/interfaces/news";
 import { createClient } from "@/lib/supabase/client";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const cn = (...classes: (string | boolean | undefined | null)[]) => {
   return classes.filter(Boolean).join(" ");
@@ -183,5 +189,8 @@ export const CommonUtils = {
     });
 
     return roots;
+  },
+  toGMT7TimeString: (date: Date | string) => {
+    return dayjs(date).tz("Asia/Bangkok").format();
   },
 };
