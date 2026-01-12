@@ -1,11 +1,7 @@
-"use server";
-
 import { createClient } from "@/lib/supabase/server";
 import React from "react";
 import NewsFeed from "./NewsFeed";
 import { PostInfo } from "@/interfaces/news";
-import { checkPermission } from "../auth/users";
-import { ROLE } from "@/constants/enums";
 import { PaginationProps } from "@/interfaces/common";
 import { DEFAULT_PAGE_SIZE } from "@/constants/constants";
 import { CommonUtils } from "@/utils/common.utils";
@@ -23,35 +19,37 @@ export async function generateMetadata() {
 export default async function NewsPage() {
   const supabase = await createClient();
 
-  const posts = await getPosts(supabase, { pageIndex: 1, pageSize: DEFAULT_PAGE_SIZE });
+  const { posts, count } = await getInitialPosts(supabase);
 
-  return <NewsFeed posts={posts} />;
+  return <NewsFeed posts={posts} count={count || 0} />;
 }
 
-export async function getPosts(supabase: SupabaseClient, { pageIndex, pageSize }: PaginationProps) {
-  const from = (pageIndex - 1) * pageSize;
-  const to = from - 1 + pageSize;
-
-  const NOW = new Date(Date.now()).toISOString();
-
-  const { data: postData, error } = await supabase
+export async function getInitialPosts(supabase: SupabaseClient) {
+  const { data, count, error } = await supabase
     .from("posts")
-    .select("*, user:posts_user_fkey(id, display_name, avatar)")
-    .range(from, to)
+    .select("*, user:posts_user_fkey(id, display_name, avatar)", { count: "exact" })
     .eq("status", 1)
-    .lte("active_at", NOW)
     .order("active_at", { ascending: false })
-    .order("is_hot", { ascending: false });
+    .order("is_hot", { ascending: false })
+    .range(0, DEFAULT_PAGE_SIZE - 1);
 
-  if (error || !postData) {
-    console.log({ error });
-    return [];
+  if (error || !data) {
+    return { posts: [], count: 0 };
   }
 
-  const posts: PostResponse = postData.map((post) => ({
-    ...post,
-    user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
-  }));
+  const posts = await Promise.all(
+    data.map(async (post: any) => ({
+      ...post,
+      user: post.user ? CommonUtils.getSingleDataFromUnknown(post.user) : null,
+      seenBy:
+        (
+          await supabase
+            .from("post_seen")
+            .select("*, user:post_seen_user_fkey(id, display_name, avatar)")
+            .eq("post", post.id)
+        ).data || [],
+    }))
+  );
 
-  return posts;
+  return { posts, count };
 }

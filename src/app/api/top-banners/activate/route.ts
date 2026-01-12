@@ -17,22 +17,26 @@ export async function PATCH(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const bannerId = searchParams.get("bannerId");
+    const status = searchParams.get("status");
 
-    const { error } = await supabase.rpc("set_active_top_banner", {
-      p_id: bannerId,
-    });
+    const { error } =
+      status === "true"
+        ? await supabase.rpc("set_active_top_banner", {
+            p_id: bannerId,
+          })
+        : await supabase.from("top_banners").update({ status: false }).eq("id", bannerId);
 
     if (error) {
       console.log({ error });
       return NextResponse.json({
         status: STATUS_CODE.ERROR,
-        message: "Cập nhật hiển thị banner thất bại. Vui lòng thử lại sau!",
+        message: "Cập nhật trạng thái hiển thị banner thất bại. Vui lòng thử lại sau!",
       });
     }
 
     return NextResponse.json({
       status: STATUS_CODE.OK,
-      message: "Cập nhật hiển thị banner thành công.",
+      message: "Cập nhật trạng thái hiển thị banner thành công.",
     });
   } catch {
     return NextResponse.json({
