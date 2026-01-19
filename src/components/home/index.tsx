@@ -147,8 +147,8 @@ export default function HomePage({ userStreak }: HomeProps) {
                   ) : (
                     <FlipClockCountdown
                       to={homeData.event!.start_at!}
-                      showLabels={false}
                       renderMap={[false, true, true, true]}
+                      labels={["Ngày", "Giờ", "Phút", "Giây"]}
                       digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
                       dividerStyle={{ color: "transparent" }}
                       spacing={{
