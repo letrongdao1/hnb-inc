@@ -5,7 +5,8 @@ export enum ChatMessageTypeEnum {
   TEXT = 1,
   IMAGE = 2,
   VIDEO = 3,
-  FILE = 4,
+  MEME = 4,
+  FILE = 5,
 }
 
 export enum ChatMessageStatusEnum {
@@ -20,13 +21,13 @@ export enum ChatThreadStatusEnum {
 }
 
 export type ChatMessage = {
-  id: string;
+  id: number | string;
   sender?: BaseUserInfo;
   thread?: string;
   content?: string;
   attachment_url?: string;
   metadata?: any;
-  replied_to?: string;
+  replied_to?: number;
   is_pinned: boolean;
   type: ChatMessageTypeEnum;
   status: ChatMessageStatusEnum;

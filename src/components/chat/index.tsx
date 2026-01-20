@@ -122,7 +122,7 @@ export default function ChatModal() {
           </ModalHeader>
 
           <ModalBody className="overflow-hidden px-0 py-1">
-            <ChatMessageList />
+            <ChatMessageList isModalOpen={isOpen} />
 
             <ChatActionSection />
           </ModalBody>

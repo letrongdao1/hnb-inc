@@ -33,16 +33,15 @@ export default function ChatActionSection() {
 
     if (!trim.length || !user) return;
 
-    const id = uuidv4();
+    const tempId = uuidv4();
 
     const payload: Partial<ChatMessage> = {
-      id,
       content: trim,
       type: ChatMessageTypeEnum.TEXT,
     };
 
     const tempMessage: ChatMessage = {
-      id,
+      id: tempId,
       content: trim,
       type: ChatMessageTypeEnum.TEXT,
       sender: {
@@ -67,16 +66,26 @@ export default function ChatActionSection() {
       .then((res) => res.json())
       .then((result) => {
         if (result.status !== STATUS_CODE.CREATED) {
-          addToast({ title: "Gửi tin nhắn lỗi. Vui lòng liên hệ phòng IT để được hỗ trợ!" });
+          addToast({
+            title: "Gửi tin nhắn lỗi. Vui lòng liên hệ phòng IT để được hỗ trợ!",
+            color: "danger",
+          });
+          setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
+
+          return;
         }
 
         const data = result.data;
         if (!data) return;
 
-        updateMessage(data);
+        updateMessage(data, tempId);
       })
       .catch(() => {
-        console.log("Lỗi gửi tin nhắn");
+        addToast({
+          title: "Gửi tin nhắn lỗi. Vui lòng liên hệ phòng IT để được hỗ trợ!",
+          color: "danger",
+        });
+        setMessages((prev) => prev.filter((msg) => msg.id !== tempId));
       });
   };
 

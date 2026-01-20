@@ -2,7 +2,7 @@
 
 import { ChatMessage, ChatMessageStatusEnum, ChatMessageTypeEnum } from "@/interfaces/chat";
 import { ChatUtils } from "@/utils/chat.utils";
-import { Avatar, Chip, Image, Spinner } from "@heroui/react";
+import { Avatar, Image, Spinner } from "@heroui/react";
 import dayjs from "dayjs";
 import React from "react";
 
@@ -22,7 +22,7 @@ export default function SingleMessage({ message, isTopMessage }: SingleMessagePr
         );
       case ChatMessageTypeEnum.IMAGE:
         return (
-          <span className={`shrink space-y-0.5 overflow-hidden rounded-xl`}>
+          <span className={`shrink space-y-1 overflow-hidden rounded-xl`}>
             <p className="text-wrap">{message.content}</p>
             {message.attachment_url ? (
               <Image

@@ -15,7 +15,7 @@ interface ChatState {
   setMessages: (fn: (prev: ChatMessage[]) => ChatMessage[]) => void;
 
   addMessage: (msg: ChatMessage) => void;
-  updateMessage: (data: ChatMessage) => void;
+  updateMessage: (data: ChatMessage, tempId: string) => void;
 
   addReaction: (messageId: string, userId: string, reaction: string) => void;
   removeReaction: (messageId: string, userId: string) => void;
@@ -45,13 +45,11 @@ export const useChatStore = create<ChatState>((set, get) => ({
       messages: [...state.messages, msg],
     })),
 
-  updateMessage: (data) =>
+  updateMessage: (data, tempId) =>
     set((state) => {
-      if (!data || !data.id) return {};
+      if (!data || !tempId) return {};
 
-      const id = data.id;
-
-      const index = state.messages.findIndex((msg) => msg.id === id);
+      const index = state.messages.findIndex((msg) => msg.id === tempId);
       if (index === -1) return {};
 
       const newMessages = [...state.messages];
@@ -111,7 +109,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
   fetchMessages: async () => {
     const { messages, hasMore, isFetching } = get();
 
-    if (isFetching || !hasMore) return; // 👈 guard
+    if (isFetching || !hasMore) return;
 
     const oldest = messages[0]?.created_at ?? new Date().toISOString();
 
