@@ -1,5 +1,5 @@
-const QUIZ_START_AT_HOUR = 12;
-const QUIZ_END_AFTER_HOUR = 23;
+const QUIZ_START_AT_HOUR = 5;
+const QUIZ_END_AFTER_HOUR = 16;
 
 export const DHBCUtils = {
   getNextStartTime: () => {
