@@ -16,6 +16,7 @@ export const CommonUtils = {
     const mainTitle = "HNB Hub";
     return [title, mainTitle].filter(Boolean).join(" | ");
   },
+
   getSingleDataFromUnknown: (data: any) => {
     if (!data) return data;
     if (typeof data === "object") return data;
@@ -51,6 +52,7 @@ export const CommonUtils = {
       return phone;
     }
   },
+
   formatMoneyVND(value: number | string): string {
     if (value === null || value === undefined || value === "") return "";
     const number = Number(value);
@@ -62,6 +64,7 @@ export const CommonUtils = {
       maximumFractionDigits: 0,
     }).format(number);
   },
+
   generateSlug(title: string = "hnb"): string {
     const fromVietnamese = title
       .normalize("NFD")
@@ -81,6 +84,7 @@ export const CommonUtils = {
 
     return `${base}-${randomNumId}`;
   },
+
   getHiddenEmail: (email: string) => {
     if (!email) return "";
 
@@ -91,11 +95,13 @@ export const CommonUtils = {
       return [emailParts[0].slice(0, 2), "*****", "@", emailParts[1]].join("");
     }
   },
+
   getHiddenNumber: (num: string | number) => {
     if (!num) return "";
 
     return String(num).slice(0, 3) + "***********";
   },
+
   generateRandomCode: (length: number = 6, prefix: string = "") => {
     const digits = "0123456789";
     let result = prefix;
@@ -105,6 +111,7 @@ export const CommonUtils = {
     }
     return result;
   },
+
   parseMentions: (text: string) => {
     const regex = /@\[(.*?)\]\(id:(.*?)\)/g;
     const mentions: { id: string; display: string }[] = [];
@@ -116,10 +123,17 @@ export const CommonUtils = {
 
     return mentions;
   },
+
   getDateString: (date: Date) => {
     if (!date) return null;
     else return date.toISOString().split("T")[0];
   },
+
+  getTodayAsDate: () => {
+    const d = new Date();
+    return d.toISOString().split("T")[0];
+  },
+
   compareDate: (date1: string | Date, date2: string | Date) => {
     const d1 = new Date(date1);
     const d2 = new Date(date2);
@@ -129,6 +143,7 @@ export const CommonUtils = {
       d1.getDate() === d2.getDate()
     );
   },
+
   getTimeComparedToNow(timestamp: string | Date, shortened?: boolean): string {
     const date = new Date(timestamp);
     const now = new Date();
@@ -161,6 +176,7 @@ export const CommonUtils = {
 
     return shortened ? short(diffYear, "y") : full(diffYear, "năm");
   },
+
   formatComments: (comments: any[]): PostComment[] => {
     const map = new Map<string, PostComment>();
     const roots: PostComment[] = [];
@@ -187,7 +203,13 @@ export const CommonUtils = {
 
     return roots;
   },
+
   toGMT7TimeString: (date: Date | string) => {
     return dayjs(date).tz("Asia/Bangkok").format();
+  },
+
+  formatDecimal: (value?: number | null, fractionDigits = 2): string => {
+    if (!value || !Number.isFinite(value)) return "-";
+    return value.toFixed(fractionDigits).replace(/\.?0+$/, "");
   },
 };

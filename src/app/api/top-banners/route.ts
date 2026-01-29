@@ -21,7 +21,6 @@ export async function GET() {
       .single();
 
     if (error || !data) {
-      console.log({ error });
       return NextResponse.json({ data: null, status: STATUS_CODE.NOT_FOUND });
     }
 

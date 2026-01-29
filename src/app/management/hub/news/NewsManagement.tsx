@@ -40,7 +40,7 @@ import CreateUpdatePostForm from "@/components/management/hub/news/CreateUpdateP
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
 import Countdown from "react-countdown";
 import { useUser } from "@/providers/user.provider";
-import ImagePreviewModal from "@/components/preview-modal";
+import ImagePreviewModal from "@/components/ui/preview-modal";
 
 export default function NewsManagement() {
   const { user } = useUser();
