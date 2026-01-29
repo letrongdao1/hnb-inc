@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
 import { SupabaseClient } from "@supabase/supabase-js";
-import { getCurrentUserId } from "../auth/actions";
+import { getCurrentUserId, getCurrentUserInfo } from "../auth/actions";
 import DHBCWaitSection from "@/components/dhbc/WaitSection";
 import { DHBCUtils } from "@/utils/dhbc.utils";
 import { DHBCQuizSubmissionStatus } from "@/interfaces/dhbc";
 import DHBCMainSection from "@/components/dhbc/MainSection";
+import { RoleUtils } from "@/utils/role.utils";
+import { ROLE } from "@/constants/enums";
 
 export async function generateMetadata() {
   return {
@@ -16,11 +18,14 @@ export async function generateMetadata() {
 
 export default async function DHBCPage() {
   const supabase = await createClient();
+  const user = await getCurrentUserInfo();
+
+ 
 
   const { nextQuizStartTime, isAvailable } = getDHBCTime();
   const userTodayQuiz = await getUserTodayQuizSubmission(supabase);
 
-  if (!isAvailable) {
+  if (!isAvailable || (user && RoleUtils.checkIsRole(user, ROLE.IT))) {
     return <DHBCWaitSection nextQuizStartTime={nextQuizStartTime} />;
   }
 
