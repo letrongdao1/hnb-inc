@@ -99,19 +99,25 @@ export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }:
                 ))}
               </AvatarGroup>
               <div
-                className={`${birthdayCakeCommonClassName} flex h-16 w-1/2 items-end justify-evenly rounded-t-xl border-b-0 border-red-400 text-3xl font-bold`}
+                className={`${birthdayCakeCommonClassName} flex h-16 w-1/2 items-end justify-evenly rounded-t-xl border-b-0 border-red-400 text-3xl`}
               >
                 <CandleIcon size={32} className="text-yellow-400" />
                 <CandleIcon size={32} className="text-lime-400" />
               </div>
               <div
-                className={`${birthdayCakeCommonClassName} flex h-20 w-2/3 items-end justify-evenly rounded-t-xl border-b-0 border-green-400 text-3xl font-bold`}
+                className={`${birthdayCakeCommonClassName} flex h-20 w-2/3 items-center justify-evenly rounded-t-xl border-b-0 border-green-400 text-3xl`}
               >
                 {new Date().toLocaleDateString("vi", { month: "long" })}
               </div>
               <div
-                className={`${birthdayCakeCommonClassName} h-24 w-64 rounded-xl border-blue-400 p-2 text-center sm:w-80`}
-              ></div>
+                className={`${birthdayCakeCommonClassName} flex h-24 w-64 items-end justify-evenly rounded-xl border-blue-400 sm:w-80`}
+              >
+                <CandleIcon size={32} className="text-teal-400" />
+                <CandleIcon size={32} className="text-amber-400" />
+                <CandleIcon size={32} className="text-violet-400" />
+                <CandleIcon size={32} className="text-emerald-400" />
+                <CandleIcon size={32} className="text-rose-400" />
+              </div>
             </div>
           )}
         </div>
