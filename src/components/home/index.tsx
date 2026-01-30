@@ -147,7 +147,7 @@ export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }:
       </div>
 
       <div className="flex w-full flex-1 flex-col items-stretch justify-center gap-2 sm:flex-row">
-        <div className="h-full w-1/2">
+        <div className="h-full sm:w-1/2">
           {!homeData.event ? (
             <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-12 text-center text-sm font-light opacity-50">
               <CalendarIcon size={40} />
@@ -234,7 +234,7 @@ export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }:
           )}
         </div>
 
-        <div className="h-full w-1/2">
+        <div className="h-full sm:w-1/2">
           {homeData.post ? (
             <Link
               href={`/news/${homeData.post.slug}`}
