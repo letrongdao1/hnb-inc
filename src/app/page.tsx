@@ -9,14 +9,14 @@ export default async function Home() {
 
   const userStreak = await getCurrentUserStreak(supabase);
 
-  const nextBirthdayUser = await getNextBirthday(supabase);
+  const nextBirthdayUsers = await getNextBirthday(supabase);
 
   const randomImage = await getRandomImage(supabase);
 
   return (
     <HomePage
       userStreak={userStreak}
-      nextBirthdayUser={nextBirthdayUser}
+      nextBirthdayUsers={nextBirthdayUsers}
       randomImage={randomImage}
     />
   );
@@ -40,9 +40,9 @@ export async function getCurrentUserStreak(supabase: SupabaseClient) {
 }
 
 export async function getNextBirthday(supabase: SupabaseClient) {
-  const { data } = await supabase.rpc("get_next_birthday_user");
+  const { data } = await supabase.rpc("get_current_month_birthday_users");
 
-  return data ? data?.[0] || data : null;
+  return data || [];
 }
 
 export async function getRandomImage(supabase: SupabaseClient) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { UploadFile, UserStreak } from "@/interfaces/common";
-import { Avatar, Badge, Chip, Image, Skeleton, Tooltip } from "@heroui/react";
+import { Avatar, AvatarGroup, Badge, Chip, Image, Skeleton, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { PostInfo } from "@/interfaces/news";
 import { Event } from "@/interfaces/events";
@@ -24,11 +24,11 @@ const sriracha = Sriracha({ subsets: ["latin"], weight: "400" });
 
 type HomeProps = {
   userStreak: UserStreak | null;
-  nextBirthdayUser: UserInfo | null;
+  nextBirthdayUsers: UserInfo[];
   randomImage: UploadFile | null;
 };
 
-export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: HomeProps) {
+export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }: HomeProps) {
   const router = useRouter();
 
   const [homeData, setHomeData] = useState<{
@@ -56,33 +56,6 @@ export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: 
     fetchHomeData();
   }, [setLoading]);
 
-  const formatCountdownDays = () => {
-    if (!nextBirthdayUser) return { text: "", isToday: false };
-
-    const targetDate = new Date(nextBirthdayUser.dob);
-
-    const today = new Date(
-      new Date().toLocaleString("en-US", {
-        timeZone: "Asia/Ho_Chi_Minh",
-      })
-    );
-    today.setHours(0, 0, 0, 0);
-
-    const nextBirthday = new Date(today.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-    nextBirthday.setHours(0, 0, 0, 0);
-
-    if (nextBirthday < today) {
-      nextBirthday.setFullYear(nextBirthday.getFullYear() + 1);
-    }
-
-    const diffMs = nextBirthday.getTime() - today.getTime();
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return { text: "CHÚC MỪNG SINH NHẬT 🎂", isToday: true };
-
-    return { text: `${diffDays} ngày`, isToday: false };
-  };
-
   const birthdayCakeCommonClassName = `mx-auto flex items-center justify-center border-6 shadow-[0_0_20px_rgba(236,72,153,0.6)] ${sriracha.className}`;
 
   if (loading)
@@ -109,26 +82,22 @@ export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: 
 
       <div className="flex min-h-40 w-full flex-col items-stretch justify-between gap-2 overflow-hidden sm:flex-row">
         <div className="border-default-400 flex h-full flex-1 items-center justify-center rounded-xl border-2">
-          {!nextBirthdayUser ? (
+          {!nextBirthdayUsers.length ? (
             <></>
           ) : (
             <div className="flex flex-col items-stretch justify-end px-2 py-4">
-              <Tooltip content={nextBirthdayUser.display_name}>
-                <div className="flex cursor-pointer items-center justify-center">
-                  <Badge
-                    isOneChar
-                    showOutline={false}
-                    content={<span className="rotate-180 text-2xl">🎉</span>}
-                  >
+              <AvatarGroup isBordered max={8} className="mx-auto">
+                {nextBirthdayUsers.map((user) => (
+                  <Tooltip key={user.id} content={user.display_name}>
                     <Avatar
-                      src={nextBirthdayUser.avatar}
+                      src={user.avatar}
                       alt=""
-                      size="lg"
-                      className="mx-auto mb-2"
+                      size="md"
+                      className="mx-auto mb-2 lg:scale-125"
                     />
-                  </Badge>
-                </div>
-              </Tooltip>
+                  </Tooltip>
+                ))}
+              </AvatarGroup>
               <div
                 className={`${birthdayCakeCommonClassName} flex h-16 w-1/2 items-end justify-evenly rounded-t-xl border-b-0 border-red-400 text-3xl font-bold`}
               >
@@ -143,28 +112,26 @@ export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: 
                 <CandleIcon size={32} className="text-purple-400" />
               </div>
               <div
-                className={`${birthdayCakeCommonClassName} h-24 w-64 rounded-xl border-blue-400 p-2 text-center sm:w-80 ${formatCountdownDays().isToday ? "text-medium sm:text-xl" : "text-3xl"}`}
-              >
-                {formatCountdownDays().text}
-              </div>
+                className={`${birthdayCakeCommonClassName} h-24 w-64 rounded-xl border-blue-400 p-2 text-center sm:w-80`}
+              ></div>
             </div>
           )}
         </div>
 
         <Link
-          href={`/hnb-evird/folder/${randomImage?.folder}`}
+          href={randomImage?.folder ? `/hnb-evird/folder/${randomImage?.folder}` : `#`}
           className="group border-default-400 relative flex-1 cursor-pointer overflow-hidden rounded-xl border-2"
         >
           <div
-            className="h-full min-h-64 rounded-xl bg-cover bg-center bg-no-repeat transition-transform duration-300 ease-out group-hover:scale-110 md:min-h-80"
+            className="z-10 h-full min-h-64 rounded-xl bg-cover bg-center bg-no-repeat transition-transform duration-300 ease-out group-hover:scale-110 md:min-h-80"
             style={{ backgroundImage: `url(${randomImage?.url})` }}
           />
 
           {randomImage ? (
             <>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 opacity-0 duration-200 group-hover:opacity-100" />
+              <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/50 via-transparent to-black/50 opacity-0 duration-200 group-hover:opacity-100" />
 
-              <div className="absolute inset-0 flex h-full w-full flex-col items-stretch justify-start gap-2 p-2 opacity-0 duration-200 group-hover:opacity-100">
+              <div className="absolute inset-0 z-30 flex h-full w-full flex-col items-stretch justify-start gap-2 p-2 opacity-0 duration-200 group-hover:opacity-100">
                 <p className="text-default-800 text-sm font-semibold">Daily Random Memory</p>
                 <p className="mt-auto text-end text-xs font-light">
                   {dayjs(randomImage.created_at).format("DD/MM/YYYY")}
@@ -180,14 +147,14 @@ export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: 
       <div className="flex w-full flex-1 flex-col items-stretch justify-center gap-2 sm:flex-row">
         <div className="h-full w-1/2">
           {!homeData.event ? (
-            <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-md border-2 py-12 text-center text-sm font-light opacity-50">
+            <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-12 text-center text-sm font-light opacity-50">
               <CalendarIcon size={40} />
               <p>Sắp tới chưa có sự kiện</p>
             </div>
           ) : (
             <Link
               href={`/events/${homeData.event.slug}`}
-              className="group border-default-400 relative flex h-full min-h-40 w-full cursor-pointer flex-col items-stretch justify-center gap-2 overflow-hidden rounded-md border-2 p-2 md:flex-row md:justify-between"
+              className="group border-default-400 relative flex h-full min-h-40 w-full cursor-pointer flex-col items-stretch justify-center gap-2 overflow-hidden rounded-xl border-2 p-2 md:flex-row md:justify-between"
             >
               <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat duration-200 group-hover:scale-110"
@@ -269,7 +236,7 @@ export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: 
           {homeData.post ? (
             <Link
               href={`/news/${homeData.post.slug}`}
-              className="group border-default-400 relative flex h-full w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-md border-2 bg-auto p-2 md:flex-row"
+              className="group border-default-400 relative flex h-full w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-xl border-2 bg-auto p-2 md:flex-row"
             >
               <div className="absolute inset-0 z-0 h-full w-full bg-black/80" />
               <div className="z-10 flex w-full items-stretch gap-2">
@@ -284,7 +251,7 @@ export default function HomePage({ userStreak, nextBirthdayUser, randomImage }: 
               </div>
             </Link>
           ) : (
-            <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-md border-2 py-12 text-center text-sm font-light opacity-50">
+            <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-12 text-center text-sm font-light opacity-50">
               <NewsPaperIcon size={40} />
               <p>Hôm nay chưa có bản tin</p>
             </div>
