@@ -1,7 +1,7 @@
 "use client";
 
-import ImagePreviewModal from "@/components/preview-modal";
 import { SendIcon } from "@/components/svg";
+import ImagePreviewModal from "@/components/ui/preview-modal";
 import { STATUS_CODE } from "@/constants/enums";
 import { ChatMessage, ChatMessageStatusEnum, ChatMessageTypeEnum } from "@/interfaces/chat";
 import { useUser } from "@/providers/user.provider";
@@ -109,7 +109,7 @@ export default function ChatUploadModal({
         const data = result.data;
         if (!data) return;
 
-        updateMessage(data);
+        updateMessage(data, id);
       })
       .catch(() => {
         console.log("Lỗi gửi tin nhắn");
