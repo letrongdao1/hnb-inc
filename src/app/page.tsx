@@ -1,15 +1,28 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "./auth/actions";
 import HomePage from "@/components/home";
+import { SupabaseClient } from "@supabase/supabase-js";
+import { CommonUtils } from "@/utils/common.utils";
 
 export default async function Home() {
-  const userStreak = await getCurrentUserStreak();
+  const supabase = await createClient();
 
-  return <HomePage userStreak={userStreak} />;
+  const userStreak = await getCurrentUserStreak(supabase);
+
+  const nextBirthdayUser = await getNextBirthday(supabase);
+
+  const randomImage = await getRandomImage(supabase);
+
+  return (
+    <HomePage
+      userStreak={userStreak}
+      nextBirthdayUser={nextBirthdayUser}
+      randomImage={randomImage}
+    />
+  );
 }
 
-export async function getCurrentUserStreak() {
-  const supabase = await createClient();
+export async function getCurrentUserStreak(supabase: SupabaseClient) {
   const userId = await getCurrentUserId();
 
   if (!userId) return null;
@@ -24,4 +37,16 @@ export async function getCurrentUserStreak() {
     .single();
 
   return data || null;
+}
+
+export async function getNextBirthday(supabase: SupabaseClient) {
+  const { data } = await supabase.rpc("get_next_birthday_user");
+
+  return data ? data?.[0] || data : null;
+}
+
+export async function getRandomImage(supabase: SupabaseClient) {
+  const { data } = await supabase.rpc("get_daily_image");
+
+  return data ? CommonUtils.getSingleDataFromUnknown(data) : null;
 }

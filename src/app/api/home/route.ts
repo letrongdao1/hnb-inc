@@ -26,7 +26,7 @@ export async function GET() {
     const { data: eventData } = await supabase
       .from("events")
       .select("id, slug, title, description, start_at, venue_name, image")
-      .eq("is_ended", 0)
+      .eq("status", 0)
       .order("start_at", { ascending: true })
       .limit(1)
       .maybeSingle();

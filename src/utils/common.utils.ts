@@ -20,7 +20,10 @@ export const CommonUtils = {
   getSingleDataFromUnknown: (data: any) => {
     if (!data) return data;
     if (typeof data === "object") return data;
-    else if (Array.isArray(data) && data.length) return data[0];
+    else if (Array.isArray(data) && data.length) {
+      console.log("is array");
+      return data[0];
+    } else return data;
   },
 
   checkIsYou: async (userId?: string) => {
