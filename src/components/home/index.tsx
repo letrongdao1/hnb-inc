@@ -105,11 +105,9 @@ export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }:
                 <CandleIcon size={32} className="text-lime-400" />
               </div>
               <div
-                className={`${birthdayCakeCommonClassName} flex h-20 w-2/3 items-end justify-evenly rounded-t-xl border-b-0 border-green-400 text-3xl`}
+                className={`${birthdayCakeCommonClassName} flex h-20 w-2/3 items-center justify-evenly rounded-t-xl border-b-0 border-green-400 text-3xl`}
               >
-                <CandleIcon size={32} className="text-orange-400" />
-                <CandleIcon size={32} className="text-cyan-400" />
-                <CandleIcon size={32} className="text-purple-400" />
+                Tháng 1
               </div>
               <div
                 className={`${birthdayCakeCommonClassName} flex h-24 w-64 items-end justify-evenly rounded-xl border-blue-400 sm:w-80`}
