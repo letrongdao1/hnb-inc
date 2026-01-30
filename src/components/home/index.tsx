@@ -1,12 +1,7 @@
 "use client";
 
-import LogoComponent from "@/components/logo/logo";
-import Maintenance from "@/components/maintenance";
-import { UserStreak } from "@/interfaces/common";
-import { Button, Chip, Image, Skeleton } from "@heroui/react";
-import { FireAnimatedIcon } from "../svg/complex";
-import { motion } from "framer-motion";
-import HeroSection from "./HeroSection";
+import { UploadFile, UserStreak } from "@/interfaces/common";
+import { Avatar, AvatarGroup, Badge, Chip, Image, Skeleton, Tooltip } from "@heroui/react";
 import { useEffect, useState } from "react";
 import { PostInfo } from "@/interfaces/news";
 import { Event } from "@/interfaces/events";
@@ -15,16 +10,27 @@ import { STATUS_CODE } from "@/constants/enums";
 import Countdown from "react-countdown";
 import { SpinningGlass } from "../events/SingleEvent";
 import FlipClockCountdown from "@leenguyen/react-flip-clock-countdown";
-import { CalendarIcon, LocationIcon } from "../svg";
+import { CalendarIcon, CandleIcon, LocationIcon, NewsPaperIcon } from "../svg";
 import Link from "next/link";
 import { renderContentWithMentions } from "@/app/news/[slug]/PostInfo";
-import DetailPageLoader from "../loader/DetailPageLoader";
+import { UserInfo } from "@/interfaces/user";
+import StreakSection from "./StreakSection";
+import EmptyComponent from "../empty/empty";
+import { Sriracha } from "next/font/google";
+import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
+
+const sriracha = Sriracha({ subsets: ["latin"], weight: "400" });
 
 type HomeProps = {
   userStreak: UserStreak | null;
+  nextBirthdayUsers: UserInfo[];
+  randomImage: UploadFile | null;
 };
 
-export default function HomePage({ userStreak }: HomeProps) {
+export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }: HomeProps) {
+  const router = useRouter();
+
   const [homeData, setHomeData] = useState<{
     post: Partial<PostInfo> | null;
     event: Partial<Event> | null;
@@ -50,6 +56,8 @@ export default function HomePage({ userStreak }: HomeProps) {
     fetchHomeData();
   }, [setLoading]);
 
+  const birthdayCakeCommonClassName = `mx-auto flex items-center justify-center border-6 shadow-[0_0_20px_rgba(236,72,153,0.6)] ${sriracha.className}`;
+
   if (loading)
     return (
       <div className="flex w-full flex-col gap-4 p-6 md:gap-8 xl:max-w-2/3">
@@ -69,93 +77,127 @@ export default function HomePage({ userStreak }: HomeProps) {
     );
 
   return (
-    <div className="flex w-full flex-col items-stretch gap-4 px-2 xl:max-w-2/3">
-      <HeroSection userStreak={userStreak} />
+    <div className="flex w-full flex-col items-stretch gap-2 px-2 xl:max-w-2/3">
+      <StreakSection userStreak={userStreak} />
 
-      {homeData.event && (
-        <div className="space-y-2">
-          <p className="px-2 text-xs font-light">Sự kiện sắp tới</p>
-
-          <Link
-            href={`/events/${homeData.event.slug}`}
-            className="group relative flex min-h-40 w-full cursor-pointer flex-col items-stretch justify-center gap-2 overflow-hidden rounded-md border p-2 md:flex-row md:justify-between"
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat duration-200 group-hover:scale-110"
-              style={{
-                backgroundImage: homeData.event.image ? `url(${homeData.event.image})` : "none",
-              }}
-            />
-            <div className="absolute inset-0 z-0 h-full w-full bg-black/10 duration-200 group-hover:bg-black/20 dark:bg-black/70 group-hover:dark:bg-black/50" />
-            <div className="z-10 space-y-4 md:flex-1">
-              <p className="text-center text-lg font-bold wrap-anywhere uppercase group-hover:underline md:text-start md:text-2xl">
-                {homeData.event.title}
-              </p>
-
-              <div className="hidden flex-wrap items-stretch justify-start gap-2 md:flex">
-                <Chip radius="sm" startContent={<CalendarIcon size={16} />} variant="bordered">
-                  <p className="line-clamp-1">
-                    <time dateTime={homeData.event.start_at}>
-                      {new Date(homeData.event!.start_at!).toLocaleDateString("vi", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })}
-                      &ensp;
-                      {new Date(homeData.event!.start_at!).toLocaleTimeString("en", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      })}
-                    </time>
-                  </p>
-                </Chip>
-
-                <Chip radius="sm" startContent={<LocationIcon size={16} />} variant="bordered">
-                  <p className="xs:max-w-64 max-w-40 overflow-hidden text-ellipsis whitespace-nowrap md:max-w-[500px]">
-                    {homeData.event.venue_name}
-                  </p>
-                </Chip>
+      <div className="flex min-h-40 w-full flex-col items-stretch justify-between gap-2 overflow-hidden sm:flex-row">
+        <div className="border-default-400 flex h-full flex-1 items-center justify-center rounded-xl border-2">
+          {!nextBirthdayUsers.length ? (
+            <></>
+          ) : (
+            <div className="flex flex-col items-stretch justify-end px-2 py-4">
+              <AvatarGroup isBordered max={8} className="mx-auto">
+                {nextBirthdayUsers.map((user) => (
+                  <Tooltip key={user.id} content={user.display_name}>
+                    <Avatar
+                      src={user.avatar}
+                      alt=""
+                      size="md"
+                      className="mx-auto mb-2 lg:scale-125"
+                    />
+                  </Tooltip>
+                ))}
+              </AvatarGroup>
+              <div
+                className={`${birthdayCakeCommonClassName} flex h-16 w-1/2 items-end justify-evenly rounded-t-xl border-b-0 border-red-400 text-3xl`}
+              >
+                <CandleIcon size={32} className="text-yellow-400" />
+                <CandleIcon size={32} className="text-lime-400" />
+              </div>
+              <div
+                className={`${birthdayCakeCommonClassName} flex h-20 w-2/3 items-center justify-evenly rounded-t-xl border-b-0 border-green-400 text-3xl`}
+              >
+                {new Date().toLocaleDateString("vi", { month: "long" })}
+              </div>
+              <div
+                className={`${birthdayCakeCommonClassName} flex h-24 w-64 items-end justify-evenly rounded-xl border-blue-400 sm:w-80`}
+              >
+                <CandleIcon size={32} className="text-teal-400" />
+                <CandleIcon size={32} className="text-amber-400" />
+                <CandleIcon size={32} className="text-violet-400" />
+                <CandleIcon size={32} className="text-emerald-400" />
+                <CandleIcon size={32} className="text-rose-400" />
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="flex min-w-max shrink-0 flex-col items-center justify-center px-2 md:pr-12">
-              <Countdown
-                date={homeData.event.start_at}
-                renderer={({ days, completed }) =>
-                  completed ? (
-                    <Chip
-                      size="lg"
-                      color="primary"
-                      variant="shadow"
-                      startContent={<SpinningGlass />}
-                    >
-                      Đang diễn ra
-                    </Chip>
-                  ) : days > 0 ? (
-                    <FlipClockCountdown
-                      to={homeData.event!.start_at!}
-                      renderMap={[true, true, false, false]}
-                      labels={["Ngày", "Giờ", "Phút", "Giây"]}
-                      digitBlockStyle={{ fontSize: 20, width: 20, height: 32 }}
-                      labelStyle={{ fontSize: 8 }}
-                      separatorStyle={{ size: 2 }}
-                    >
-                      <></>
-                    </FlipClockCountdown>
-                  ) : (
-                    <FlipClockCountdown
-                      to={homeData.event!.start_at!}
-                      showLabels={false}
-                      renderMap={[false, true, true, true]}
-                      digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
-                      dividerStyle={{ color: "transparent" }}
-                      spacing={{
-                        clock: 4,
-                      }}
-                      separatorStyle={{ size: 3 }}
-                    >
+        <Link
+          href={randomImage?.folder ? `/hnb-evird/folder/${randomImage?.folder}` : `#`}
+          className="group border-default-400 relative flex-1 cursor-pointer overflow-hidden rounded-xl border-2"
+        >
+          <div
+            className="z-10 h-full min-h-64 rounded-xl bg-cover bg-center bg-no-repeat transition-transform duration-300 ease-out group-hover:scale-110 md:min-h-80"
+            style={{ backgroundImage: `url(${randomImage?.url})` }}
+          />
+
+          {randomImage ? (
+            <>
+              <div className="pointer-events-none absolute inset-0 z-20 bg-gradient-to-b from-black/50 via-transparent to-black/50 opacity-0 duration-200 group-hover:opacity-100" />
+
+              <div className="absolute inset-0 z-30 flex h-full w-full flex-col items-stretch justify-start gap-2 p-2 opacity-0 duration-200 group-hover:opacity-100">
+                <p className="text-default-800 text-sm font-semibold">Daily Random Memory</p>
+                <p className="mt-auto text-end text-xs font-light">
+                  {dayjs(randomImage.created_at).format("DD/MM/YYYY")}
+                </p>
+              </div>
+            </>
+          ) : (
+            <EmptyComponent imageSize={80} title="Không tìm thấy hình ảnh" />
+          )}
+        </Link>
+      </div>
+
+      <div className="flex w-full flex-1 flex-col items-stretch justify-center gap-2 sm:flex-row">
+        <div className="h-full w-1/2">
+          {!homeData.event ? (
+            <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-12 text-center text-sm font-light opacity-50">
+              <CalendarIcon size={40} />
+              <p>Sắp tới chưa có sự kiện</p>
+            </div>
+          ) : (
+            <Link
+              href={`/events/${homeData.event.slug}`}
+              className="group border-default-400 relative flex h-full min-h-40 w-full cursor-pointer flex-col items-stretch justify-center gap-2 overflow-hidden rounded-xl border-2 p-2 md:flex-row md:justify-between"
+            >
+              <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat duration-200 group-hover:scale-110"
+                style={{
+                  backgroundImage: homeData.event.image ? `url(${homeData.event.image})` : "none",
+                }}
+              />
+              <div className="absolute inset-0 z-0 h-full w-full bg-black/70 group-hover:bg-black/50" />
+              <div className="z-10 space-y-4 md:flex-1">
+                <p className="line-clamp-2 text-center text-lg font-bold wrap-anywhere uppercase group-hover:underline md:text-start md:text-2xl">
+                  {homeData.event.title}
+                </p>
+
+                <div className="hidden flex-wrap items-stretch justify-start gap-2 md:flex">
+                  <Chip radius="sm" startContent={<CalendarIcon size={16} />} variant="bordered">
+                    <span className="line-clamp-1">
+                      <time dateTime={homeData.event.start_at}>
+                        {new Date(homeData.event!.start_at!).toLocaleDateString("vi", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                        &ensp;-&ensp;
+                        {new Date(homeData.event!.start_at!).toLocaleTimeString("en", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: false,
+                        })}
+                      </time>
+                    </span>
+                  </Chip>
+                </div>
+              </div>
+
+              <div className="flex min-w-max shrink-0 flex-col items-center justify-center px-2">
+                <Countdown
+                  date={homeData.event.start_at}
+                  renderer={({ days, hours, completed }) =>
+                    completed ? (
                       <Chip
                         size="lg"
                         color="primary"
@@ -164,52 +206,62 @@ export default function HomePage({ userStreak }: HomeProps) {
                       >
                         Đang diễn ra
                       </Chip>
-                    </FlipClockCountdown>
-                  )
-                }
-              />
-            </div>
-          </Link>
-        </div>
-      )}
-
-      <div className="space-y-2">
-        <p className="px-2 text-xs font-light">Bản tin hôm nay</p>
-
-        {homeData.post ? (
-          <Link
-            href={`/news/${homeData.post.slug}`}
-            className="group relative flex w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-md border bg-auto p-2 md:flex-row"
-          >
-            <div className="absolute inset-0 z-0 h-full w-full bg-black/80" />
-            <div className="z-10 flex w-full items-stretch gap-2">
-              <div className="flex flex-1 flex-col items-stretch justify-between gap-4">
-                <p className="text-lg font-bold uppercase group-hover:underline">
-                  {homeData.post.title}
-                </p>
-                <span className="line-clamp-3 opacity-50">
-                  {renderContentWithMentions(homeData.post.content || "")}
-                </span>
+                    ) : (
+                      <FlipClockCountdown
+                        to={homeData.event!.start_at!}
+                        renderMap={[days > 0, hours > 0, days === 0, days === 0 && hours === 0]}
+                        labels={["Ngày", "Giờ", "Phút", "Giây"]}
+                        digitBlockStyle={{ fontSize: 16, width: 20, height: 32 }}
+                        dividerStyle={{ color: "transparent" }}
+                        labelStyle={{ fontSize: 10 }}
+                        spacing={{
+                          clock: 4,
+                        }}
+                        separatorStyle={{ size: 3 }}
+                      >
+                        <Chip
+                          size="lg"
+                          color="primary"
+                          variant="shadow"
+                          startContent={<SpinningGlass />}
+                        >
+                          Đang diễn ra
+                        </Chip>
+                      </FlipClockCountdown>
+                    )
+                  }
+                />
               </div>
-              {homeData.post.image ? (
-                <span className="flex flex-1 items-center justify-center">
-                  <Image src={homeData.post.image} alt="" className="max-w-40 rounded-md" />
-                </span>
-              ) : (
-                <></>
-              )}
-            </div>
-          </Link>
-        ) : (
-          <p className="border-default-200 rounded-md border py-16 text-center text-sm font-light opacity-50">
-            Chưa có bản tin hôm nay
-          </p>
-        )}
-      </div>
+            </Link>
+          )}
+        </div>
 
-      <p className="text-tiny mt-auto pt-20 text-center opacity-50">
-        Tính năng mới sẽ xuất hiện ở đây
-      </p>
+        <div className="h-full w-1/2">
+          {homeData.post ? (
+            <Link
+              href={`/news/${homeData.post.slug}`}
+              className="group border-default-400 relative flex h-full w-full cursor-pointer flex-col items-stretch justify-between gap-2 overflow-hidden rounded-xl border-2 bg-auto p-2 md:flex-row"
+            >
+              <div className="absolute inset-0 z-0 h-full w-full bg-black/80" />
+              <div className="z-10 flex w-full items-stretch gap-2">
+                <div className="flex flex-1 flex-col items-stretch justify-between gap-4">
+                  <p className="line-clamp-1 text-2xl font-bold uppercase group-hover:underline">
+                    {homeData.post.title}
+                  </p>
+                  <span className="line-clamp-3 opacity-50">
+                    {renderContentWithMentions(homeData.post.content || "")}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div className="border-default-400 flex flex-col items-center justify-center gap-2 rounded-xl border-2 py-12 text-center text-sm font-light opacity-50">
+              <NewsPaperIcon size={40} />
+              <p>Hôm nay chưa có bản tin</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

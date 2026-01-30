@@ -34,6 +34,7 @@ import {
   OfficeIcon,
   PaleteIcon,
   SettingIcon,
+  ShapesIcon,
   SunIcon,
   UserGroupIcon,
   UserIcon,
@@ -82,6 +83,7 @@ export default function Navbar() {
     () => [
       { label: "Bảng tin", icon: <NewsPaperIcon size={16} />, href: "/news", type: "link" },
       { label: "Sự kiện", icon: <CalendarIcon size={16} />, href: "/events", type: "link" },
+      { label: "ĐHBC", icon: <ShapesIcon size={16} />, href: "/dhbc", type: "link" },
       {
         label: "Danh sách",
         href: "",

@@ -33,7 +33,7 @@ import Countdown from "react-countdown";
 import { useUser } from "@/providers/user.provider";
 import { TopBanner } from "@/interfaces/common";
 import CreateUpdateTopBannerForm from "@/components/management/hub/top-banners/CreateUpdateTopBannerForm";
-import ImagePreviewModal from "@/components/preview-modal";
+import ImagePreviewModal from "@/components/ui/preview-modal";
 
 export default function TopBannerManagement() {
   const { user } = useUser();

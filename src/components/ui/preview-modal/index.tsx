@@ -4,7 +4,7 @@ interface ImagePreviewModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onClose?: () => void;
-  src: string;
+  src?: string;
   alt?: string;
   isVideo?: boolean;
 }
@@ -17,6 +17,8 @@ export default function ImagePreviewModal({
   alt,
   isVideo = false,
 }: ImagePreviewModalProps) {
+  if (!src) return;
+
   return (
     <Modal
       isOpen={isOpen}

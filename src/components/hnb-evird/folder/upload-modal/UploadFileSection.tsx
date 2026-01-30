@@ -1,6 +1,6 @@
 "use client";
 
-import ImagePreviewModal from "@/components/preview-modal";
+import ImagePreviewModal from "@/components/ui/preview-modal";
 import {
   DeleteIcon,
   FileIcon,

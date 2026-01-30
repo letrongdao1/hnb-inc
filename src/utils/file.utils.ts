@@ -1,7 +1,6 @@
 import { encode, isBlurhashValid } from "blurhash";
 import { fileTypeFromBuffer } from "file-type";
 import { intToRGBA, Jimp, JimpMime } from "jimp";
-import sharp from "sharp";
 
 export enum FileTypeEnum {
   IMAGE = "img",

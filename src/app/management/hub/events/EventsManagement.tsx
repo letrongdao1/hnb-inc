@@ -35,7 +35,7 @@ import Countdown from "react-countdown";
 import { Event, EventStatusEnum } from "@/interfaces/events";
 import CreateUpdateEventForm from "@/components/management/hub/events/CreateUpdateEventForm";
 import ConfirmModal from "@/components/ui/modal/ConfirmModal";
-import ImagePreviewModal from "@/components/preview-modal";
+import ImagePreviewModal from "@/components/ui/preview-modal";
 
 export default function EventsManagement() {
   const router = useRouter();

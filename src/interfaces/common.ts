@@ -95,3 +95,10 @@ export interface UploadFile {
   type: FileTypeEnum;
   created_at: string;
 }
+
+export interface DailyImage {
+  id: number;
+  file: UploadFile;
+  date: string;
+  created_at: string;
+}
