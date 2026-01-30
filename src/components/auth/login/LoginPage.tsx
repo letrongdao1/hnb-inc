@@ -8,7 +8,6 @@ import Link from "next/link";
 import LogoComponent from "@/components/logo/logo";
 import { STATUS_CODE } from "@/constants/enums";
 import { useUser } from "@/providers/user.provider";
-import { login } from "@/app/auth/actions";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,14 +41,16 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.email || !form.password) {
+    const { email, password } = form;
+
+    if (!email || !password) {
       return addToast({
         title: "Vui lòng nhập email và mật khẩu!",
         color: "warning",
       });
     }
 
-    if (form.password.length < 6) {
+    if (password.length < 6) {
       return addToast({
         title: "Mật khẩu dài ít nhất 6 kí tự!",
         color: "warning",
@@ -58,37 +59,42 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append("email", form.email);
-      formData.append("password", form.password);
-
-      const response = await login(formData);
-      if (response && response.status) {
-        switch (response.status) {
-          case STATUS_CODE.OK: {
-            if (response.data) {
-              setUser(response.data);
-              router.replace(redirectTo);
-            } else {
-              router.push("/get-start");
+    await fetch("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result && result.status) {
+          switch (result.status) {
+            case STATUS_CODE.OK: {
+              if (result.data) {
+                setUser(result.data);
+                router.replace(redirectTo);
+              } else {
+                router.push("/get-start");
+              }
+              break;
             }
-            break;
-          }
-          case STATUS_CODE.INVALID_CREDENTIALS: {
-            addToast({
-              title: response.message,
-              color: "danger",
-            });
-            setLoading(false);
-            break;
+            case STATUS_CODE.INVALID_CREDENTIALS: {
+              addToast({
+                title: result.message,
+                color: "danger",
+              });
+              break;
+            }
           }
         }
-      }
-    } catch {
-      console.log("Login error");
-      setLoading(false);
-    }
+      })
+      .catch(() => {
+        addToast({
+          title: "Lỗi đăng nhập. Vui lòng liên hệ phòng IT để được hỗ trợ!",
+          color: "danger",
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   return (

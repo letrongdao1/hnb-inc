@@ -5,54 +5,6 @@ import { UserInfo } from "@/interfaces/user";
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
 
-export async function login(formData: FormData) {
-  const supabase = await createClient();
-
-  const params = {
-    email: formData.get("email") as string,
-    password: formData.get("password") as string,
-  };
-
-  const { data, error } = await supabase.auth.signInWithPassword(params);
-
-  if (error) {
-    if (error.code === "invalid_credentials") {
-      return {
-        status: STATUS_CODE.INVALID_CREDENTIALS,
-        message: "Email hoặc mật khẩu không đúng. Vui lòng thử lại!",
-      };
-    }
-  } else {
-    const checkUser = await supabase.from("users").select("*").eq("id", data.user.id).single();
-    if (checkUser && checkUser.data) {
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role:user_roles_role_fkey(*)")
-        .eq("user_id", data.user.id);
-
-      const roles = roleData
-        ? roleData.map((r) => CommonUtils.getSingleDataFromUnknown(r.role))
-        : [];
-
-      const userDataWithRoles: UserInfo = {
-        ...checkUser.data,
-        roles,
-      };
-      return {
-        status: STATUS_CODE.OK,
-        data: userDataWithRoles,
-        message: "Đăng nhập thành công.",
-      };
-    } else {
-      return {
-        status: STATUS_CODE.OK,
-        data: null,
-        message: "Đăng nhập thành công.",
-      };
-    }
-  }
-}
-
 export async function checkSession() {
   const supabase = await createClient();
 
