@@ -107,9 +107,7 @@ export default function HomePage({ userStreak, nextBirthdayUsers, randomImage }:
               <div
                 className={`${birthdayCakeCommonClassName} flex h-20 w-2/3 items-end justify-evenly rounded-t-xl border-b-0 border-green-400 text-3xl font-bold`}
               >
-                <CandleIcon size={32} className="text-orange-400" />
-                <CandleIcon size={32} className="text-cyan-400" />
-                <CandleIcon size={32} className="text-purple-400" />
+                {new Date().toLocaleDateString("vi", { month: "long" })}
               </div>
               <div
                 className={`${birthdayCakeCommonClassName} h-24 w-64 rounded-xl border-blue-400 p-2 text-center sm:w-80`}
