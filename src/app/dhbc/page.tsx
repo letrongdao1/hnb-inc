@@ -20,13 +20,14 @@ export default async function DHBCPage() {
   const supabase = await createClient();
   const user = await getCurrentUserInfo();
 
- 
-
   const { nextQuizStartTime, isAvailable } = getDHBCTime();
   const userTodayQuiz = await getUserTodayQuizSubmission(supabase);
 
-  if (!isAvailable || (user && RoleUtils.checkIsRole(user, ROLE.IT))) {
-    return <DHBCWaitSection nextQuizStartTime={nextQuizStartTime} />;
+  if (isAvailable || (user && RoleUtils.checkIsRole(user, ROLE.IT))) {
+    const latestAnswers = await getLatestAnswers(supabase);
+    return (
+      <DHBCWaitSection nextQuizStartTime={nextQuizStartTime} latestAnswers={latestAnswers || []} />
+    );
   }
 
   const todayQuiz = await getTodayQuizQuestion(
@@ -94,4 +95,29 @@ export function getDHBCTime() {
   const isAvailable = DHBCUtils.checkIsAtQuizAvailableTime();
 
   return { nextQuizStartTime, isAvailable };
+}
+
+export async function getLatestAnswers(supabase: SupabaseClient) {
+  const yesterday = CommonUtils.getYesterday();
+
+  const { data: quizData, error: quizError } = await supabase
+    .from("dhbc_quizzes")
+    .select("*")
+    .eq("date", yesterday)
+    .limit(1)
+    .maybeSingle();
+
+  if (!quizData || quizError) return null;
+
+  if (!quizData.id) return;
+
+  const { data: wordData, error: wordError } = await supabase
+    .from("dhbc_quiz_words")
+    .select("id, index, word")
+    .eq("quiz", quizData.id)
+    .order("index", { ascending: true });
+
+  if (!wordData || wordError) return null;
+
+  return wordData.map((word) => word.word);
 }

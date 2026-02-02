@@ -7,6 +7,8 @@ import timezone from "dayjs/plugin/timezone";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+const TIME_ZONE = "Asia/Ho_Chi_Minh";
+
 export const cn = (...classes: (string | boolean | undefined | null)[]) => {
   return classes.filter(Boolean).join(" ");
 };
@@ -135,6 +137,10 @@ export const CommonUtils = {
   getTodayAsDate: () => {
     const d = new Date();
     return d.toISOString().split("T")[0];
+  },
+
+  getYesterday(): string {
+    return dayjs.tz(new Date(), "YYYY-MM-DD", TIME_ZONE).subtract(1, "day").format("YYYY-MM-DD");
   },
 
   compareDate: (date1: string | Date, date2: string | Date) => {

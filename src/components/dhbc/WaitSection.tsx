@@ -11,9 +11,13 @@ import { useRouter } from "next/navigation";
 
 type DHBCWaitSectionProps = {
   nextQuizStartTime: string;
+  latestAnswers?: string[];
 };
 
-export default function DHBCWaitSection({ nextQuizStartTime }: DHBCWaitSectionProps) {
+export default function DHBCWaitSection({
+  nextQuizStartTime,
+  latestAnswers,
+}: DHBCWaitSectionProps) {
   const router = useRouter();
 
   const [isTooltipOpen, setIsTooltipOpen] = useState<boolean>(false);
@@ -72,6 +76,13 @@ export default function DHBCWaitSection({ nextQuizStartTime }: DHBCWaitSectionPr
           <Skeleton className="h-16 w-80 rounded-md opacity-50" />
         )}
       </div>
+
+      {latestAnswers && latestAnswers.length > 0 && (
+        <div className="text-start px-4">
+          <p className="text-default-500 text-sm">Kết quả trận trước:</p>
+          <p className="text-2xl font-semibold uppercase">{latestAnswers.join(" ")}</p>
+        </div>
+      )}
 
       <DHBCLeaderboard />
     </div>
