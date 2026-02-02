@@ -44,13 +44,13 @@ export default function DHBCWaitSection({ nextQuizStartTime }: DHBCWaitSectionPr
         {nextQuizStartTime ? (
           <Countdown
             date={nextQuizStartTime}
-            renderer={({ completed, hours, minutes }) =>
+            renderer={({ completed }) =>
               completed ? (
                 <></>
               ) : (
                 <FlipClockCountdown
                   to={nextQuizStartTime}
-                  renderMap={[false, hours > 0, minutes > 0, true]}
+                  renderMap={[false, true, true, true]}
                   labels={["Ngày", "Giờ", "Phút", "Giây"]}
                   digitBlockStyle={{ fontSize: 24, width: 30, height: 40 }}
                   labelStyle={{ fontSize: 10 }}

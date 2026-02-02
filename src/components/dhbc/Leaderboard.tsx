@@ -61,7 +61,7 @@ export default function DHBCLeaderboard() {
         selectedKey={leaderboardMode}
         onSelectionChange={(key) => setLeaderboardMode(key as DHBCLeaderboardModeType)}
       >
-        <Tab key="latest" title={<p className="text-xs">Trận gần nhất</p>} />
+        <Tab key="latest" title={<p className="text-xs">Trận hôm nay</p>} />
         <Tab key="all_time" title={<p className="text-xs">Mọi thời đại</p>} />
       </Tabs>
 
@@ -125,7 +125,9 @@ const LeaderboardTable = ({
                 shape="circle"
                 showOutline={false}
                 isOneChar
-                hidden={submission.total_trial > 1}
+                hidden={
+                  submission.total_trial > 1 || submission.status !== DHBCQuizSubmissionStatus.DONE
+                }
               >
                 <p
                   className={`${submission.status === DHBCQuizSubmissionStatus.UNDONE ? "bg-default-200 text-default-500" : "bg-green-600 font-semibold text-white"} flex aspect-square min-w-10 items-center justify-center rounded-md px-1.5 py-1 text-sm duration-200`}
