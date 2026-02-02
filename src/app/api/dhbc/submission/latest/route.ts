@@ -9,10 +9,11 @@ export async function GET() {
 
     const todayDate = CommonUtils.getTodayAsDate();
 
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("dhbc_quiz_submissions")
       .select("*, quiz!inner(date), user(id, display_name, avatar)")
       .eq("quiz.date", todayDate)
+      .order("status", { ascending: false })
       .order("total_trial", { ascending: true })
       .order("created_at", { ascending: false });
 
