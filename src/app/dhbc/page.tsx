@@ -23,7 +23,7 @@ export default async function DHBCPage() {
   const { nextQuizStartTime, isAvailable } = getDHBCTime();
   const userTodayQuiz = await getUserTodayQuizSubmission(supabase);
 
-  if (isAvailable || (user && RoleUtils.checkIsRole(user, ROLE.IT))) {
+  if (!isAvailable || (user && RoleUtils.checkIsRole(user, ROLE.IT))) {
     const latestAnswers = await getLatestAnswers(supabase);
     return (
       <DHBCWaitSection nextQuizStartTime={nextQuizStartTime} latestAnswers={latestAnswers || []} />
