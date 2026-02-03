@@ -32,8 +32,8 @@ export async function GET() {
         acc[userId].allTimeStats.totalSubmission += 1;
         if (submission.status === DHBCQuizSubmissionStatus.DONE) {
           acc[userId].allTimeStats.totalSuccess += 1;
+          acc[userId].allTimeStats.totalTrial += submission.total_trial;
         }
-        acc[userId].allTimeStats.totalTrial += submission.total_trial;
 
         return acc;
       }, {})
