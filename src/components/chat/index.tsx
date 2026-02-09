@@ -21,17 +21,18 @@ import { ChatMessage } from "@/interfaces/chat";
 import ChatUploadModal from "./chat-upload/ChatUploadModal";
 import { STATUS_CODE } from "@/constants/enums";
 import ChatModalHeader from "./header";
+import { CommonUtils } from "@/utils/common.utils";
 
 const supabase = createClient();
 
 export default function ChatModal() {
   const { user } = useUser();
   const { messages, setMessages, fetchMessages } = useChatStore();
-
-  const [pastedFile, setPastedFile] = useState<File>();
-
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const chatUploadModal = useDisclosure();
+
+  const [pastedFile, setPastedFile] = useState<File>();
+  const [isMobile, setIsMobile] = useState<boolean>(CommonUtils.isMobile());
 
   useEffect(() => {
     fetchMessages();
@@ -94,6 +95,17 @@ export default function ChatModal() {
     return () => window.removeEventListener("paste", handlePaste);
   }, [isOpen, chatUploadModal]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleResize = () => {
+      setIsMobile(CommonUtils.isMobile());
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen]);
+
   return (
     <div>
       <button
@@ -109,7 +121,7 @@ export default function ChatModal() {
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         onClose={onClose}
-        size="full"
+        size={isMobile ? "full" : "5xl"}
         scrollBehavior="inside"
         classNames={{
           wrapper: "px-2 md:px-16",

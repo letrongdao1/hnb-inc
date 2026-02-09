@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { PlusIcon, SendIcon } from "@/components/svg";
+import { ImageIcon, PlusIcon, SendIcon } from "@/components/svg";
 import { ChatMessage, ChatMessageStatusEnum, ChatMessageTypeEnum } from "@/interfaces/chat";
 import { useUser } from "@/providers/user.provider";
 import { useChatStore } from "@/stores/chat.store";
@@ -9,11 +9,14 @@ import { CommonUtils } from "@/utils/common.utils";
 import { addToast, Button, Textarea } from "@heroui/react";
 import { v4 as uuidv4 } from "uuid";
 import { STATUS_CODE } from "@/constants/enums";
+import { motion, AnimatePresence } from "framer-motion";
+import { MemeIcon } from "@/components/svg";
 
 export default function ChatActionSection() {
   const { user } = useUser();
   const { updateMessage, setMessages } = useChatStore();
   const [messageInput, setMessageInput] = useState<string>("");
+  const [isActionMenuExtended, setIsActionMenuExtended] = useState<boolean>(false);
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (CommonUtils.isMobile()) {
@@ -94,8 +97,34 @@ export default function ChatActionSection() {
       className={`border-default-300 flex h-full w-full flex-0 shrink-0 items-stretch justify-between gap-1 border-t py-1 pr-2`}
       id="chat-input-container"
     >
-      <div className="shrink-0">
-        <Button startContent={<PlusIcon />} isIconOnly color="default" />
+      <div className="flex shrink-0 items-center justify-start gap-2 pl-2">
+        <Button
+          isIconOnly
+          color="default"
+          startContent={
+            <PlusIcon
+              className={`${isActionMenuExtended ? "rotate-z-90" : "rotate-0"} duration-200`}
+            />
+          }
+          onPress={() => {
+            setIsActionMenuExtended((isExtended) => !isExtended);
+          }}
+        />
+
+        <AnimatePresence>
+          {isActionMenuExtended && (
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: "fit-content" }}
+              exit={{ width: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="flex h-1 items-center justify-start gap-2"
+            >
+              <Button variant="bordered" startContent={<ImageIcon />} isIconOnly />
+              <Button variant="bordered" startContent={<MemeIcon />} isIconOnly />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <Textarea
@@ -116,9 +145,10 @@ export default function ChatActionSection() {
       <Button
         color="primary"
         isIconOnly
+        radius="sm"
         startContent={<SendIcon size={16} />}
         onPress={handleSendMessage}
-        className="xl:hidden"
+        className=""
       />
     </div>
   );

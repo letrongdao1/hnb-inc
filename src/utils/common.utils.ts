@@ -12,7 +12,16 @@ export const cn = (...classes: (string | boolean | undefined | null)[]) => {
 };
 
 export const CommonUtils = {
-  isMobile: () => typeof window !== "undefined" && /Mobi|Android/i.test(navigator.userAgent),
+  isMobile: () => {
+    if (typeof window === "undefined") return false;
+
+    const ua = navigator.userAgent || "";
+    const isMobileUA = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+    const isSmallScreen = window.matchMedia("(max-width: 768px)").matches;
+    const hasTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+    return isMobileUA || (isSmallScreen && hasTouch);
+  },
 
   formatMetaData: (title?: string) => {
     const mainTitle = "HNB Hub";
@@ -23,7 +32,6 @@ export const CommonUtils = {
     if (!data) return data;
     if (typeof data === "object") return data;
     else if (Array.isArray(data) && data.length) {
-      console.log("is array");
       return data[0];
     } else return data;
   },

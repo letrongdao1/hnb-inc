@@ -73,7 +73,7 @@ export default function ChatMessageList({ isModalOpen }: ChatMessageListProps) {
   return (
     <div className="relative flex flex-1 flex-col justify-end space-y-2 overflow-hidden">
       {!isAtBottom && (
-        <div className="absolute right-4 bottom-4 z-50">
+        <div className="absolute bottom-4 left-1/2 z-50 -translate-x-1/2">
           <Button
             size="sm"
             color="default"
