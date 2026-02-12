@@ -17,7 +17,7 @@ type ChatMessageListProps = {
 };
 
 export default function ChatMessageList({ isModalOpen }: ChatMessageListProps) {
-  const { messages, fetchMessages, hasMore, isFetching } = useChatStore();
+  const { messages, fetchMessages, hasMore, isFetching, isTyping } = useChatStore();
 
   const msgContainerRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -71,7 +71,7 @@ export default function ChatMessageList({ isModalOpen }: ChatMessageListProps) {
     );
 
   return (
-    <div className="relative flex flex-1 flex-col justify-end space-y-2 overflow-hidden">
+    <div className="relative flex flex-1 flex-col justify-end overflow-hidden">
       {!isAtBottom && (
         <div className="absolute bottom-4 left-1/2 z-50 -translate-x-1/2">
           <Button
@@ -94,17 +94,30 @@ export default function ChatMessageList({ isModalOpen }: ChatMessageListProps) {
 
       <div
         ref={msgContainerRef}
-        className="relative flex max-h-full flex-col gap-2 overflow-y-auto"
+        className="relative flex max-h-full flex-col overflow-y-auto pr-1"
         onScroll={handleScroll}
       >
-        {groupedMessageList.map((groupMsg) => (
+        {groupedMessageList.map((groupMsg, index) => (
           <SingleGroupMessage
             key={`${dayjs(groupMsg.date).format("YYYYMMDD")}`}
+            index={index}
             dateGroupMsg={groupMsg}
           />
         ))}
 
         <div ref={bottomRef} />
+      </div>
+
+      <div
+        className={`flex min-h-6 items-center py-1 pl-2 ${isTyping.length === 0 && "invisible"}`}
+      >
+        {isTyping.map((user, i) => (
+          <div
+            key={i}
+            className={`bg-default-300 aspect-square w-6 rounded-full bg-cover bg-center bg-no-repeat text-sm font-medium ${i > 0 ? "-ml-1" : ""} `}
+            style={{ backgroundImage: `url(${user.avatar})` }}
+          />
+        ))}
       </div>
     </div>
   );

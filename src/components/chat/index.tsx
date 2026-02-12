@@ -22,12 +22,14 @@ import ChatUploadModal from "./chat-upload/ChatUploadModal";
 import { STATUS_CODE } from "@/constants/enums";
 import ChatModalHeader from "./header";
 import { CommonUtils } from "@/utils/common.utils";
+import { UserInfo } from "@/interfaces/user";
 
 const supabase = createClient();
+export const typingChannel = supabase.channel(`hnb-talk-typing`);
 
 export default function ChatModal() {
   const { user } = useUser();
-  const { messages, setMessages, fetchMessages } = useChatStore();
+  const { messages, setMessages, fetchMessages, isTyping } = useChatStore();
   const { isOpen, onOpen, onOpenChange, onClose } = useDisclosure();
   const chatUploadModal = useDisclosure();
 
@@ -96,6 +98,21 @@ export default function ChatModal() {
   }, [isOpen, chatUploadModal]);
 
   useEffect(() => {
+    typingChannel
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        console.log({ payload, isTyping });
+        if (user && payload.user.id !== user.id) {
+          sendTyping(payload.user, true);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(typingChannel);
+    };
+  }, [user]);
+
+  useEffect(() => {
     if (!isOpen) return;
 
     const handleResize = () => {
@@ -133,7 +150,7 @@ export default function ChatModal() {
             <ChatModalHeader />
           </ModalHeader>
 
-          <ModalBody className="overflow-hidden px-0 py-1">
+          <ModalBody className="gap-0 overflow-hidden px-0 py-1">
             <ChatMessageList isModalOpen={isOpen} />
 
             <ChatActionSection />
@@ -153,3 +170,16 @@ export default function ChatModal() {
     </div>
   );
 }
+
+export const sendTyping = (user: UserInfo | undefined, isTyping: boolean) => {
+  if (!user) return;
+
+  typingChannel.send({
+    type: "broadcast",
+    event: "typing",
+    payload: {
+      user: { id: user.id, display_name: user.display_name, avatar: user.avatar },
+      isTyping,
+    },
+  });
+};

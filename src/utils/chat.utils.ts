@@ -89,7 +89,7 @@ export const ChatUtils = {
     if (date.isToday()) {
       return dayjs(date).format("hh:mm A");
     }
-    if (date.isYesterday()) return `Hôm qua lúc ${dayjs(date).format("hh:mm A")}`;
+    if (date.isYesterday()) return `Hôm qua ${dayjs(date).format("hh:mm A")}`;
     return dayjs(date).format("DD/MM/YYYY hh:mm A");
   },
 

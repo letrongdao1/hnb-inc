@@ -1,17 +1,21 @@
 "use client";
 
+import { TALK_MESSAGE_ID_PREFIX } from "@/constants/constants";
 import { ChatMessage, ChatMessageStatusEnum, ChatMessageTypeEnum } from "@/interfaces/chat";
 import { ChatUtils } from "@/utils/chat.utils";
 import { Avatar, Image, Spinner } from "@heroui/react";
 import dayjs from "dayjs";
-import React from "react";
 
 type SingleMessageProps = {
   message: ChatMessage;
   isTopMessage: boolean;
 };
 
+
+
 export default function SingleMessage({ message, isTopMessage }: SingleMessageProps) {
+
+
   const renderMessageContent = () => {
     switch (message.type) {
       case ChatMessageTypeEnum.TEXT:
@@ -40,15 +44,17 @@ export default function SingleMessage({ message, isTopMessage }: SingleMessagePr
         );
     }
   };
+
   if (message.sender)
     return (
       <div
+        id={[TALK_MESSAGE_ID_PREFIX, message.id].join("")}
         className={`hover:bg-default-100 group flex items-stretch justify-start gap-1 py-1 pl-2 duration-200`}
       >
         <div className="flex shrink-0 items-start">
           {isTopMessage ? (
             <span className="flex w-[50px] items-center justify-center">
-              <Avatar src={message.sender?.avatar} alt="" className="shrink-0" />
+              <Avatar src={message.sender.avatar} alt="" className="shrink-0" />
             </span>
           ) : (
             <p className="text-default-400 invisible w-[50px] pt-1 text-[0.6em] group-hover:visible">

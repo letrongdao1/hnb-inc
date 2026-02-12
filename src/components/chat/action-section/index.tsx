@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ImageIcon, PlusIcon, SendIcon } from "@/components/svg";
 import { ChatMessage, ChatMessageStatusEnum, ChatMessageTypeEnum } from "@/interfaces/chat";
 import { useUser } from "@/providers/user.provider";
@@ -10,13 +10,46 @@ import { addToast, Button, Textarea } from "@heroui/react";
 import { v4 as uuidv4 } from "uuid";
 import { STATUS_CODE } from "@/constants/enums";
 import { motion, AnimatePresence } from "framer-motion";
-import { MemeIcon } from "@/components/svg";
+import MessageExtendedAction from "./MessageExtendedAction";
+import { sendTyping } from "..";
 
 export default function ChatActionSection() {
   const { user } = useUser();
-  const { updateMessage, setMessages } = useChatStore();
+
+  let typingTimeout: NodeJS.Timeout;
+
+  const { updateMessage, setMessages, isTyping, setTyping } = useChatStore();
   const [messageInput, setMessageInput] = useState<string>("");
   const [isActionMenuExtended, setIsActionMenuExtended] = useState<boolean>(false);
+
+  const isUserTyping = useMemo(
+    () => user && isTyping.some((u) => u.id === user.id),
+    [isTyping, user]
+  );
+
+  const handleMessageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value;
+    setMessageInput(input);
+
+    if (!user) return;
+    sendTyping(user, true);
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      sendTyping(user, false);
+    }, 4000);
+
+    const isInputEmpty = input.trim().length === 0;
+    if (isUserTyping) {
+      if (isInputEmpty) {
+        sendTyping(user, false);
+      }
+    } else {
+      if (!isInputEmpty) {
+        sendTyping(user, true);
+      }
+    }
+  };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (CommonUtils.isMobile()) {
@@ -111,33 +144,21 @@ export default function ChatActionSection() {
           }}
         />
 
-        <AnimatePresence>
-          {isActionMenuExtended && (
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "fit-content" }}
-              exit={{ width: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="flex h-1 items-center justify-start gap-2"
-            >
-              <Button variant="bordered" startContent={<ImageIcon />} isIconOnly />
-              <Button variant="bordered" startContent={<MemeIcon />} isIconOnly />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <AnimatePresence>{isActionMenuExtended && <MessageExtendedAction />}</AnimatePresence>
       </div>
 
       <Textarea
         value={messageInput}
-        onChange={(e) => {
-          setMessageInput(e.target.value);
-        }}
+        onChange={handleMessageInputChange}
         onKeyDown={handleInputKeyDown}
         placeholder={`Nhắn tin`}
         radius="sm"
         minRows={1}
         maxRows={10}
         fullWidth
+        onFocusChange={(isFocused) => {
+          setIsActionMenuExtended(!isFocused && messageInput.length === 0);
+        }}
         classNames={{ inputWrapper: "px-0 pl-3" }}
         className="flex-1"
       />

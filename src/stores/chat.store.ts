@@ -3,10 +3,11 @@
 import { create } from "zustand";
 import { ChatMessage } from "@/interfaces/chat";
 import { DEFAULT_MESSAGE_PAGE_SIZE } from "@/constants/constants";
+import { BaseUserInfo } from "@/interfaces/user";
 
 interface ChatState {
   messages: ChatMessage[];
-  isTyping: string[];
+  isTyping: BaseUserInfo[];
   reactions: Record<string, Record<string, string>>;
   seenBy: Record<string, string[]>;
   hasMore: boolean;
@@ -22,7 +23,7 @@ interface ChatState {
 
   markSeen: (messageId: string, userId: string) => void;
 
-  setTyping: (userId: string, typing: boolean) => void;
+  setTyping: (user: BaseUserInfo, typing: boolean) => void;
 
   fetchMessages: () => Promise<void>;
 }
@@ -97,12 +98,12 @@ export const useChatStore = create<ChatState>((set, get) => ({
       };
     }),
 
-  setTyping: (userId, typing) =>
+  setTyping: (user, typing) =>
     set((state) => {
       const current = state.isTyping;
       const next = typing
-        ? Array.from(new Set([...current, userId]))
-        : current.filter((id) => id !== userId);
+        ? Array.from(new Set([...current, user]))
+        : current.filter((u) => u.id !== user.id);
       return { isTyping: next };
     }),
 
