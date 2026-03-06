@@ -20,7 +20,7 @@ export default function ChatActionSection() {
 
   const { updateMessage, setMessages, isTyping, setTyping } = useChatStore();
   const [messageInput, setMessageInput] = useState<string>("");
-  const [isActionMenuExtended, setIsActionMenuExtended] = useState<boolean>(false);
+  const [isActionMenuExtended, setIsActionMenuExtended] = useState<boolean>(true);
 
   const isUserTyping = useMemo(
     () => user && isTyping.some((u) => u.id === user.id),
@@ -131,19 +131,6 @@ export default function ChatActionSection() {
       id="chat-input-container"
     >
       <div className="flex shrink-0 items-center justify-start gap-2 pl-2">
-        <Button
-          isIconOnly
-          color="default"
-          startContent={
-            <PlusIcon
-              className={`${isActionMenuExtended ? "rotate-z-90" : "rotate-0"} duration-200`}
-            />
-          }
-          onPress={() => {
-            setIsActionMenuExtended((isExtended) => !isExtended);
-          }}
-        />
-
         <AnimatePresence>{isActionMenuExtended && <MessageExtendedAction />}</AnimatePresence>
       </div>
 
@@ -157,7 +144,9 @@ export default function ChatActionSection() {
         maxRows={10}
         fullWidth
         onFocusChange={(isFocused) => {
-          setIsActionMenuExtended(!isFocused && messageInput.length === 0);
+          if (CommonUtils.isMobile()) {
+            setIsActionMenuExtended(!isFocused && messageInput.length === 0);
+          }
         }}
         classNames={{ inputWrapper: "px-0 pl-3" }}
         className="flex-1"

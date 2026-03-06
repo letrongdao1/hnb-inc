@@ -34,3 +34,18 @@ export default function EmptyComponent({
     </div>
   );
 }
+
+export function KnotFoundEmptyIcon({
+  imageSize = 100,
+  className,
+}: {
+  imageSize: number;
+  className?: string;
+}) {
+  return (
+    <div className={`flex items-center justify-center gap-4 ${className}`}>
+      <KnotIcon size={imageSize * 1.5} />
+      <FloatIcon size={imageSize} />
+    </div>
+  );
+}

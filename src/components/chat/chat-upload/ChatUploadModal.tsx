@@ -44,7 +44,9 @@ export default function ChatUploadModal({
   const previewModal = useDisclosure();
 
   useEffect(() => {
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     if (file.type.startsWith("image/")) {
       setCurrentUrl(URL.createObjectURL(file));
