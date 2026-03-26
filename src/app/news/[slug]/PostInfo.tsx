@@ -104,7 +104,7 @@ export default function PostInfoPage({ post }: { post: PostInfo | null }) {
           className="border-default-100 bg-background/60 w-full shadow-lg backdrop-blur-lg"
           radius="lg"
         >
-          {post.image && (
+          {post.title && (
             <CardHeader className="relative flex w-full items-center justify-center p-0">
               <PageTitle>{post.title}</PageTitle>
             </CardHeader>
