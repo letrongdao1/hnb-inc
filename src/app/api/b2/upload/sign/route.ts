@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const command = new PutObjectCommand({
     Bucket: B2_BUCKET_NAME,
     Key: key,
-    ContentType: contentType,
+    ContentType: contentType || "application/octet-stream",
   });
 
   const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
