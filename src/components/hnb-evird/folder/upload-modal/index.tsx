@@ -83,7 +83,7 @@ export default function UploadAssetsModal({
 
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadUrl);
-    xhr.setRequestHeader("Content-Type", file.type);
+    // xhr.setRequestHeader("Content-Type", file.type);
 
     let prev = 0;
     xhr.upload.onprogress = (e) => {

@@ -19,7 +19,8 @@ export async function POST(req: Request) {
       type,
       folder,
     })
-    .select("id");
+    .select("id")
+    .maybeSingle();
 
   if (error || !data) {
     console.log({ error });
