@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
 import { Metadata } from "next";
-import EventInfoPage from "./EventInfoPage";
+import EventInfoPage from "@/components/events/EventInfoPage";
 import { Event } from "@/interfaces/events";
 import { getEventParticipation } from "../page";
 import { SupabaseClient } from "@supabase/supabase-js";

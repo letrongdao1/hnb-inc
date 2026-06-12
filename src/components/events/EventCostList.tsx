@@ -1,6 +1,8 @@
 import { STATUS_CODE } from "@/constants/enums";
-import { Event, EventCost } from "@/interfaces/events";
+import { Event, EventCost, EventStatusEnum } from "@/interfaces/events";
 import {
+  Accordion,
+  AccordionItem,
   addToast,
   Avatar,
   Button,
@@ -33,6 +35,7 @@ import { CommonUtils } from "@/utils/common.utils";
 import TableLoader from "../loader/TableLoader";
 import ConfirmModal from "../ui/modal/ConfirmModal";
 import { useUser } from "@/providers/user.provider";
+import EmptyComponent from "../empty/empty";
 
 type CreateEventCostFieldProps = yup.InferType<typeof schema>;
 
@@ -62,6 +65,18 @@ export default function EventCostList({ event }: { event: Event }) {
 
   const [eventCostList, setEventCostList] = useState<EventCost[]>([]);
   const [selectedCost, setSelectedCost] = useState<EventCost>();
+
+  const eventCostByUser = useMemo(
+    () =>
+      eventCostList.reduce<Record<string, EventCost[]>>((acc, eventCost) => {
+        if (!acc[eventCost.user.id]) {
+          acc[eventCost.user.id] = [];
+        }
+        acc[eventCost.user.id].push(eventCost);
+        return acc;
+      }, {}),
+    [eventCostList]
+  );
 
   const totalCost = useMemo(
     () => eventCostList.reduce((prev, current) => (prev += current.amount), 0),
@@ -108,30 +123,6 @@ export default function EventCostList({ event }: { event: Event }) {
         setLoading(false);
       });
   }, [event, setLoading]);
-
-  const columns = [
-    {
-      key: "user",
-      label: "Người chi trả",
-    },
-    {
-      key: "type",
-      label: "Danh mục",
-    },
-    {
-      key: "amount",
-      label: "Số tiền",
-    },
-    {
-      key: "created_at",
-      label: "Thời gian",
-    },
-    {
-      key: "action",
-      label: "",
-      maxWidth: 50,
-    },
-  ];
 
   const renderCell = useCallback(
     (eventCost: EventCost, columnKey: any) => {
@@ -262,90 +253,76 @@ export default function EventCostList({ event }: { event: Event }) {
 
   return (
     <div>
-      {Boolean(eventCostList.length) ? (
-        <Table
-          isHeaderSticky
-          isCompact
-          topContentPlacement="outside"
-          topContent={
-            <div className="ml-auto flex items-center gap-2">
-              <Button
-                startContent={<ReloadIcon />}
-                color="secondary"
-                variant="flat"
-                onPress={() => {
-                  fetchEventCostList();
-                }}
-                isIconOnly
-              />
-              <Button
-                startContent={<PlusIcon />}
-                color="success"
-                onPress={() => {
-                  addCostModal.onOpen();
-                }}
-                hidden={
-                  event.is_ended ||
-                  (!event.is_cost_split && event.will_pay_user && !event.is_will_pay_user)
-                }
-              >
-                <p className="hidden md:inline">Tạo khoản chi phí</p>
-              </Button>
-            </div>
-          }
-          bottomContentPlacement="outside"
-          bottomContent={
-            <>
-              {eventCostList.length > 0 && (
-                <p className="shrink-0 text-end text-xs font-light">
-                  Tổng:{" "}
-                  <span className="text-sm font-medium">
-                    {CommonUtils.formatMoneyVND(totalCost)}
-                  </span>
-                </p>
-              )}
-            </>
-          }
-        >
-          <TableHeader columns={columns}>
-            {(column) => (
-              <TableColumn key={column.key} align={"center"}>
-                {column.label}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody items={eventCostList}>
-            {(item) => (
-              <TableRow key={item.id}>
-                {(columnKey) => <TableCell>{renderCell(item, columnKey as any)}</TableCell>}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      ) : (
-        <div className="flex w-full flex-col items-center justify-center gap-2 py-8">
-          {!event.is_ended &&
-          ((event.is_cost_split && !event.will_pay_user) || event.is_will_pay_user) ? (
-            <Button
-              startContent={<PlusIcon />}
-              color="success"
-              onPress={() => {
-                addCostModal.onOpen();
-              }}
-            >
-              Tạo khoản chi phí
-            </Button>
+      {event.is_cost_split ? (
+        <div className="flex flex-col">
+          {!eventCostList.length ? (
+            <EmptyComponent title="Chưa có chi phí" />
           ) : (
-            <div className="flex items-center gap-1">
-              <Avatar src={event.will_pay_user?.avatar} alt="" className="mr-1" />
-              <p className="font-semibold">{event.will_pay_user?.display_name}</p>
-              <span className="font-light">
-                {event.is_ended ? "đã" : "sẽ"} chi trả toàn bộ chi phí cho sự kiện này
-              </span>
-            </div>
+            <Accordion selectionMode="multiple" variant="light">
+              {Object.entries(eventCostByUser).map(([userId, costList]) => {
+                const costUser = costList[0]?.user;
+                const personalTotal = costList.reduce(
+                  (acc, eventCost) => (acc += eventCost.amount),
+                  0
+                );
+                return (
+                  <AccordionItem
+                    key={userId}
+                    title={
+                      <div className="flex w-full items-center justify-between text-sm md:text-base">
+                        <p className="line-clamp-1 font-semibold">{costUser.display_name}</p>
+                        <p className="text-success-400 shrink-0 font-semibold md:text-lg">
+                          {CommonUtils.formatMoneyVND(personalTotal)}
+                        </p>
+                      </div>
+                    }
+                    startContent={
+                      <Avatar src={costUser.avatar} alt="" className="scale-75 md:scale-100" />
+                    }
+                  >
+                    <div className="flex w-full flex-col items-stretch gap-2">
+                      {costList.map((cost, index) => (
+                        <div
+                          key={cost.id}
+                          className={`flex w-full items-center justify-between gap-2 py-1 md:gap-8 ${index < costList.length - 1 && "border-default-300 border-b"}`}
+                        >
+                          <div className="flex-1 space-y-1">
+                            <span>
+                              <p className="text-sm font-semibold">{cost.type}</p>
+                            </span>
+                            <p className="text-xs font-light">{cost.note}</p>
+                          </div>
+
+                          <div className="flex shrink-0 items-center gap-1">
+                            <p className="font-semibold">
+                              {CommonUtils.formatMoneyVND(cost.amount)}
+                            </p>
+
+                            {cost.user.id === user?.id && (
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                variant="light"
+                                color="danger"
+                                startContent={<DeleteIcon size={16} />}
+                                onPress={() => {
+                                  setSelectedCost(cost);
+                                  deleteCostModal.onOpen();
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           )}
-          <p className="text-sm font-light opacity-75">Chưa có khoản chi phí nào</p>
         </div>
+      ) : (
+        <></>
       )}
 
       <Modal
@@ -449,7 +426,7 @@ export default function EventCostList({ event }: { event: Event }) {
         title="Xác nhận xóa chi phí"
         extra={<span className="text-red-500">Thao tác này không thể hoàn tác</span>}
         onConfirm={handleDeleteEventCost}
-        confirmText="Xóa"
+        confirmText="Xác nhận"
         okButtonProps={{
           startContent: !deleteLoading.loading && <DeleteIcon size={16} />,
           color: "danger",

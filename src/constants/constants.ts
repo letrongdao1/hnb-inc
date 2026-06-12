@@ -11,6 +11,9 @@ export const GLOBAL_DATE_FORMAT = "DD/MM/YYYY";
 export const DEFAULT_PAGE_SIZE = 20;
 export const DEFAULT_IMAGE_PAGE_SIZE = 50;
 
+export const DEFAULT_MESSAGE_PAGE_SIZE = 20;
+export const TALK_MESSAGE_ID_PREFIX = "talk-msg-";
+
 export const UPLOAD_REQUIRED_SECOND_PER_MB = 1;
 
 export const MAX_BANK_ACCOUNT_CAPACITY = 4;

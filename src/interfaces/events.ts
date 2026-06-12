@@ -1,5 +1,11 @@
 import { BaseUserInfo } from "./user";
 
+export enum EventStatusEnum {
+  IN_PROGRESS = 1,
+  FINALIZING = 2,
+  ENDED = 3,
+}
+
 export interface EventTag {
   id: number;
   tag_name: string;
@@ -18,7 +24,7 @@ export interface Event {
   has_alcohol: boolean;
   description: string;
   image?: string;
-  is_ended: boolean;
+  status: EventStatusEnum;
   is_cost_split: boolean;
   will_pay_user?: BaseUserInfo;
   is_will_pay_user?: boolean;

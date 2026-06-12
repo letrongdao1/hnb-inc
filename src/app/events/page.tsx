@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { CommonUtils } from "@/utils/common.utils";
 import { SupabaseClient } from "@supabase/supabase-js";
 import React from "react";
-import AllEventsPage from "./AllEventsPage";
+import AllEventsPage from "@/components/events/AllEventsPage";
 import { Event } from "@/interfaces/events";
 import { getCurrentUserId } from "../auth/actions";
 
@@ -13,7 +13,7 @@ export async function generateMetadata() {
   };
 }
 
-export default async function page() {
+export default async function EventPage() {
   const supabase = await createClient();
   const events = await getEventList(supabase);
 
@@ -26,7 +26,7 @@ export async function getEventList(supabase: SupabaseClient): Promise<Event[]> {
   const { data: eventData, error } = await supabase
     .from("events")
     .select("*, will_pay_user:events_will_pay_user_fkey(id, display_name, avatar)")
-    .order("is_ended", { ascending: true })
+    .order("status", { ascending: true })
     .order("start_at", { ascending: false });
 
   if (error || !eventData) {

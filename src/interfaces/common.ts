@@ -102,3 +102,14 @@ export interface DailyImage {
   date: string;
   created_at: string;
 }
+
+export interface Meme {
+  id: string;
+  user: BaseUserInfo;
+  title: string;
+  keywords?: string;
+  url: string;
+  usage_count: number;
+  is_active: boolean;
+  created_at: string;
+}

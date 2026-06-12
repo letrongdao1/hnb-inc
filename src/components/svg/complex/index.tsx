@@ -274,7 +274,7 @@ export const FireIcon = ({ fill = "currentColor", size, height, width, ...props 
     <svg
       width={size || width || 200}
       height={size || height || 200}
-      viewBox="-33 0 255 255"
+      viewBox="0 0 24 24"
       xmlns="http://www.w3.org/2000/svg"
       preserveAspectRatio="xMidYMid"
       {...props}

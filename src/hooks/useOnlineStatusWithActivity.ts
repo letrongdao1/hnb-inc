@@ -11,6 +11,9 @@ type PresenceStateProps = {
 };
 
 const AWAY_TIMEOUT = 5 * 60 * 1000;
+const LAST_ACTIVE_UPDATE_INTERVAL = Boolean(process.env.NEXT_PUBLIC_IS_TESTING)
+  ? 1000 * 60 * 60
+  : 1000 * 60 * 1;
 
 export function useOnlineStatusWithActivity(userId?: string) {
   const [availableUserList, setAvailableUserList] = useState<UserInfo[]>([]);
@@ -85,7 +88,7 @@ export function useOnlineStatusWithActivity(userId?: string) {
   useEffect(() => {
     const updateLastActive = () => {
       const now = Date.now();
-      if (now - lastActiveRef.current < 1000 * 60 * 1) {
+      if (now - lastActiveRef.current < LAST_ACTIVE_UPDATE_INTERVAL) {
         return;
       }
 

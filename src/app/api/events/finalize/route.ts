@@ -1,4 +1,3 @@
-import { getCurrentUserId } from "@/app/auth/actions";
 import { STATUS_CODE } from "@/constants/enums";
 import { EventStatusEnum } from "@/interfaces/events";
 import { createClient } from "@/lib/supabase/server";
@@ -13,20 +12,20 @@ export async function PATCH(request: NextRequest) {
 
     const { error } = await supabase
       .from("events")
-      .update({ status: EventStatusEnum.ENDED })
+      .update({ status: EventStatusEnum.FINALIZING })
       .eq("id", eventId);
 
     if (error) {
       console.log({ error });
       return NextResponse.json({
         status: STATUS_CODE.ERROR,
-        message: "Kết thúc sự kiện thất bại. Vui lòng thử lại sau!",
+        message: "Bắt đầu tổng kết sự kiện thất bại. Vui lòng thử lại sau!",
       });
     }
 
     return NextResponse.json({
       status: STATUS_CODE.OK,
-      message: "Kết thúc sự kiện thành công.",
+      message: "Bắt đầu tổng kết sự kiện thành công",
     });
   } catch {
     return NextResponse.json({

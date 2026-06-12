@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         count: "exact",
       })
       .range(from, to)
-      .order("is_ended", { ascending: true })
+      .order("status", { ascending: true })
       .order("start_at", { ascending: true });
 
     if (error || !data) {
