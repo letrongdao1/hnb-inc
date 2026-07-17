@@ -14,7 +14,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { setUser } = useUser();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectedFrom") || "/";
+  const redirectTo = searchParams.get("redirectedFrom") ?? "/";
   const [loading, setLoading] = useState<boolean>(false);
 
   const [form, setForm] = useState({
@@ -43,17 +43,21 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.email || !form.password) {
-      return addToast({
+      addToast({
         title: "Vui lòng nhập email và mật khẩu!",
         color: "warning",
       });
+
+      return;
     }
 
     if (form.password.length < 6) {
-      return addToast({
+      addToast({
         title: "Mật khẩu dài ít nhất 6 kí tự!",
         color: "warning",
       });
+
+      return;
     }
 
     setLoading(true);
@@ -69,7 +73,7 @@ export default function LoginPage() {
           case STATUS_CODE.OK: {
             if (response.data) {
               setUser(response.data);
-              router.replace(redirectTo);
+              router.replace(redirectTo || "/");
             } else {
               router.push("/get-start");
             }
@@ -83,10 +87,17 @@ export default function LoginPage() {
             setLoading(false);
             break;
           }
+          default: {
+            throw new Error("Lỗi đăng nhập. Vui lòng liên hệ phòng IT để được hỗ trợ!");
+          }
         }
       }
-    } catch {
-      console.log("Login error");
+    } catch (err: any) {
+      addToast({
+        title: err?.message ?? "Lỗi đăng nhập. Vui lòng liên hệ phòng IT để được hỗ trợ!",
+        color: "danger",
+      });
+
       setLoading(false);
     }
   };
