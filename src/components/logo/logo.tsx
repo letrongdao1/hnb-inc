@@ -1,15 +1,18 @@
 import React from "react";
+import LIGHT_LOGO from "@/assets/logo/light.svg";
+import DARK_LOGO from "@/assets/logo/dark.svg";
+import { useTheme } from "next-themes";
+import Image from "next/image";
 
-export const AcmeLogo = () => {
+export const HNBLogo = () => {
+  const { theme } = useTheme();
+
   return (
-    <svg fill="currentColor" width="64" height="64" viewBox="0 0 32 32">
-      <path
-        clipRule="evenodd"
-        d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z"
-        fill="currentColor"
-        fillRule="evenodd"
-      />
-    </svg>
+    <Image
+      src={theme === "light" ? DARK_LOGO : LIGHT_LOGO}
+      alt="Logo"
+      className="aspect-square w-16"
+    />
   );
 };
 
@@ -20,7 +23,7 @@ export default function LogoComponent({
 }) {
   return (
     <div className="flex items-center gap-2 text-inherit">
-      <AcmeLogo />
+      <HNBLogo />
       <p
         className={`text-2xl font-bold text-inherit ${responsive && `hidden ${responsive}:block`}`}
       >

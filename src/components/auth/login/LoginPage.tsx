@@ -13,7 +13,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { setUser } = useUser();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirectedFrom") || "/";
+  const redirectTo = searchParams.get("redirectedFrom") ?? "/";
   const [loading, setLoading] = useState<boolean>(false);
 
   const [form, setForm] = useState({
@@ -48,6 +48,8 @@ export default function LoginPage() {
         title: "Vui lòng nhập email và mật khẩu!",
         color: "warning",
       });
+
+      return;
     }
 
     if (password.length < 6) {
@@ -55,6 +57,8 @@ export default function LoginPage() {
         title: "Mật khẩu dài ít nhất 6 kí tự!",
         color: "warning",
       });
+
+      return;
     }
 
     setLoading(true);
