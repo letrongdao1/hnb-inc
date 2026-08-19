@@ -4,12 +4,12 @@ import {
   Head,
   Heading,
   Html,
+  Img,
   Link,
   Section,
   Text,
   Font,
 } from "@react-email/components";
-import { AcmeLogo } from "../logo/logo";
 
 interface PlaidVerifyIdentityEmailProps {
   validationCode?: string;
@@ -31,7 +31,13 @@ export const PlaidVerifyIdentityEmail = ({ validationCode }: PlaidVerifyIdentity
     <Body style={main}>
       <Container style={container}>
         <Container style={{ margin: "0 auto" }}>
-          <AcmeLogo />
+          <Img
+            src={`${process.env.NEXT_SITE_URL}/logo-email.png`}
+            width="64"
+            height="64"
+            alt="HNB Hub"
+            style={{ margin: "0 auto" }}
+          />
         </Container>
 
         <Text style={tertiary}>Xác thực tài khoản HNB Hub</Text>
@@ -54,7 +60,7 @@ export const PlaidVerifyIdentityEmail = ({ validationCode }: PlaidVerifyIdentity
         </Text>
       </Container>
 
-      <Text style={footer}>Phát triển bởi phòng IT của HNB.</Text>
+      <Text style={footer}>Phát triển bởi HNB.</Text>
     </Body>
   </Html>
 );
