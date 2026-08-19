@@ -94,7 +94,7 @@ export default function ChatMessageList({ isModalOpen }: ChatMessageListProps) {
 
       <div
         ref={msgContainerRef}
-        className="relative flex max-h-full flex-col overflow-y-auto pr-1"
+        className="relative flex max-h-full h-[90vh] flex-col overflow-y-auto pr-1"
         onScroll={handleScroll}
       >
         {groupedMessageList.map((groupMsg, index) => (
